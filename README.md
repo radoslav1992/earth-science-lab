@@ -59,10 +59,10 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 
 ## Google Analytics 4
 
-Put the measurement ID in `src/lib/site.mjs`:
+The measurement ID lives in `src/lib/site.mjs` (currently `G-JE3DTV9N7R`):
 
 ```js
-analyticsId: 'G-XXXXXXXXXX',
+analyticsId: 'G-JE3DTV9N7R',
 ```
 
 While it is empty, no Google tag is rendered and no cookies are set, so the cookie banner and the footer's
