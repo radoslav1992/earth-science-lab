@@ -1,0 +1,18 @@
+---
+// A plate-boundary cross-section drawn on the server from the same model the explorer animates.
+import { scene, sceneSvg, describeScene, VIEW } from '../../lib/plates.mjs';
+import './plates.css';
+
+interface Props {
+  boundary: string;
+  t?: number;
+  speed?: number;
+  /** Accessible description; defaults to one generated from the scene. */
+  label?: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+const { boundary, t, speed, label, class: className, ...attrs } = Astro.props;
+const sc = scene(boundary, t, speed);
+---
+<svg class:list={['xs', className]} viewBox={`0 0 ${VIEW.width} ${VIEW.height}`} role="img" aria-label={label ?? describeScene(sc)} set:html={sceneSvg(sc)} {...attrs} />

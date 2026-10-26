@@ -1,0 +1,142 @@
+---
+// The interactive Plate Tectonics Explorer. The server draws the default boundary with its controls
+// disabled; ./explorer.ts switches them on, animates the cross-section and runs Challenge mode.
+import CrossSection from './CrossSection.astro';
+import PlateMap from './PlateMap.astro';
+import './plates.css';
+import {
+  CASES, TYPES, PLATES, TYPE_NAMES, PLATE_NAMES, PAIR_HINTS, VALID, DEFAULT_STATE, DEPTH_CLASSES, TIME_RANGE, SPEED_RANGE,
+  caseKey, caseTitle, distanceKm, describeMap, evidenceHtml, fmt, kmPerMyr, halfRate, seafloorAgeMyr,
+} from '../../lib/plates.mjs';
+
+const st = DEFAULT_STATE;
+const key = caseKey(st.type, st.plates);
+const c = CASES[key];
+// The calculator's starting numbers, worked out by the model.
+const calc = { rate: 5, time: 10, km: 200, full: 4 };
+const half = halfRate(calc.full);
+---
+<section class="pt-explorer" id="explorer" data-plates data-mode="explore" aria-label="Plate Tectonics Explorer">
+  <div class="pt-bar">
+    <div class="pt-pickers">
+      <div class="pt-group" role="group" aria-labelledby="pt-type-label">
+        <span class="pt-group-label" id="pt-type-label">Boundary</span>
+        <div class="mode-switch">
+          {TYPES.map(type => <button type="button" data-type={type} aria-pressed={String(type === st.type)} disabled>{TYPE_NAMES[type]}</button>)}
+        </div>
+      </div>
+      <div class="pt-group" role="group" aria-labelledby="pt-plates-label" aria-describedby="pt-plates-hint">
+        <span class="pt-group-label" id="pt-plates-label">Plates</span>
+        <div class="mode-switch">
+          {PLATES.map(p => <button type="button" data-pair={p} aria-pressed={String(p === st.plates)} data-valid={String(VALID[st.type].includes(p))} disabled>{PLATE_NAMES[p]}</button>)}
+        </div>
+      </div>
+    </div>
+    <div class="pt-tools">
+      <div class="mode-switch" role="group" aria-label="Mode">
+        <button type="button" data-mode-btn="explore" aria-pressed="true" disabled>Explore</button>
+        <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+      </div>
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+    </div>
+  </div>
+  <p class="pt-hint" id="pt-plates-hint" data-plates-hint>{PAIR_HINTS[st.type]}</p>
+  <div class="note pt-note" data-note hidden></div>
+  <noscript><p class="note pt-noscript">The explorer needs JavaScript to animate. Below it, every kind of boundary is drawn as a cross-section, with a table comparing them.</p></noscript>
+
+  <div data-explore>
+    <div class="pt-grid">
+      <div class="pt-stage">
+        <h3 class="pt-case"><span data-case-name>{c.name}</span> <small data-case-sub>{caseTitle(key)}</small></h3>
+        <div class="pt-figure">
+          <CrossSection boundary={key} t={st.t} speed={st.speed} data-section />
+        </div>
+        <div class="pt-legend" aria-hidden="true">
+          {DEPTH_CLASSES.map(k => <span><i class={`pt-chip pt-chip-${k.id}`}></i>{k.name} quake ({k.min}–{k.max} km)</span>)}
+          <span><i class="pt-chip pt-chip-magma"></i>Magma</span>
+          <span><svg width="14" height="12" viewBox="0 0 14 12"><path d="M0 12 6 1h2l6 11Z" fill="#6f5a4a" /></svg>Volcano</span>
+        </div>
+        <div class="pt-controls">
+          <button type="button" class="btn primary pt-play" data-play disabled>Play</button>
+          <div class="pt-slider">
+            <label for="pt-time">Time: <output data-time-out>{fmt(st.t)}</output> million years</label>
+            <input id="pt-time" type="range" min={TIME_RANGE[0]} max={TIME_RANGE[1]} step="0.1" value={st.t} data-time disabled />
+          </div>
+          <div class="pt-slider">
+            <label for="pt-speed">Speed: <output data-speed-out>{fmt(st.speed)}</output> cm per year</label>
+            <input id="pt-speed" type="range" min={SPEED_RANGE[0]} max={SPEED_RANGE[1]} step="0.5" value={st.speed} data-speed disabled />
+          </div>
+        </div>
+        <p class="pt-readout" data-readout>{fmt(st.speed)} cm per year for {fmt(st.t)} million years: the plates move <b>{Math.round(distanceKm(st.speed, st.t))} km</b>.</p>
+        <div class="pt-toggles">
+          <label class="toggle"><input type="checkbox" data-toggle="labels" checked disabled /> Show labels</label>
+          <label class="toggle"><input type="checkbox" data-toggle="quakes" checked disabled /> Show earthquakes</label>
+          <label class="toggle"><input type="checkbox" data-toggle="volcanoes" checked disabled /> Show volcanoes</label>
+        </div>
+      </div>
+      <div class="pt-side">
+        <figure class="pt-panel pt-map">
+          <figcaption>Seen from above</figcaption>
+          <PlateMap boundary={key} t={st.t} speed={st.speed} label={describeMap(key, st.t, st.speed)} data-map />
+        </figure>
+        <div class="pt-panel pt-evidence">
+          <h3>Evidence</h3>
+          <div data-evidence set:html={evidenceHtml(key)} />
+        </div>
+      </div>
+
+      <div class="pt-calc">
+        <form class="pt-panel" data-calc="distance" novalidate>
+          <h3>How far in <span data-c-title>{fmt(calc.time)}</span> million years?</h3>
+          <div class="pt-calc-row">
+            <label class="field"><span>Speed (cm per year)</span><input type="number" inputmode="decimal" min="0" max="100" step="0.1" value={calc.rate} data-c="rate" disabled /></label>
+            <label class="field"><span>Time (million years)</span><input type="number" inputmode="decimal" min="0" max="4500" step="0.1" value={calc.time} data-c="time" disabled /></label>
+          </div>
+          <p class="pt-answer"><output data-c-out="distance">{fmt(distanceKm(calc.rate, calc.time))} km</output></p>
+          <p class="pt-working" data-c-work="distance">{fmt(calc.rate)} cm per year = {fmt(kmPerMyr(calc.rate))} km per million years, and {fmt(kmPerMyr(calc.rate))} × {fmt(calc.time)} = {fmt(distanceKm(calc.rate, calc.time))} km.</p>
+          <button type="button" class="btn small" data-c-use disabled>Use the explorer’s speed and time</button>
+        </form>
+        <form class="pt-panel" data-calc="age" novalidate>
+          <h3>How old is the seafloor?</h3>
+          <div class="pt-calc-row">
+            <label class="field"><span>Distance from the ridge (km)</span><input type="number" inputmode="decimal" min="0" max="20000" step="1" value={calc.km} data-c="km" disabled /></label>
+            <label class="field"><span>Spreading rate (cm per year, total)</span><input type="number" inputmode="decimal" min="0" max="100" step="0.1" value={calc.full} data-c="full" disabled /></label>
+          </div>
+          <p class="pt-answer"><output data-c-out="age">{fmt(seafloorAgeMyr(calc.km, half))} million years old</output></p>
+          <p class="pt-working" data-c-work="age">Each plate moves away at half the rate: {fmt(calc.full)} ÷ 2 = {fmt(half)} cm per year = {fmt(kmPerMyr(half))} km per million years. Age = {fmt(calc.km)} ÷ {fmt(kmPerMyr(half))} = {fmt(seafloorAgeMyr(calc.km, half))} million years.</p>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-challenge" data-challenge hidden>
+    <div class="challenge-bar">
+      <span>Question <strong data-q-num>1</strong> of <span data-q-total>8</span></span>
+      <span>Score <strong data-q-score>0</strong></span>
+    </div>
+    <div class="pt-q" data-q>
+      <div class="pt-q-show" data-q-show></div>
+      <div class="pt-q-body">
+        <p class="pt-q-prompt" data-q-prompt></p>
+        <div class="pt-choices" role="group" aria-label="Answer choices" data-q-choices></div>
+        <div class="pt-feedback" data-q-feedback hidden tabindex="-1"></div>
+        <button type="button" class="btn primary" data-q-next hidden>Next question</button>
+      </div>
+    </div>
+    <div class="pt-panel pt-done" data-q-done hidden tabindex="-1">
+      <p class="pt-done-score" data-q-final></p>
+      <p data-q-message></p>
+      <div class="page-actions">
+        <button type="button" class="btn primary" data-q-restart>Try again</button>
+        <button type="button" class="btn" data-q-explore>Back to Explore</button>
+      </div>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initPlates } from './explorer';
+  const root = document.querySelector<HTMLElement>('[data-plates]');
+  if (root) initPlates(root);
+</script>
