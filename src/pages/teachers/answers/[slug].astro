@@ -3,6 +3,7 @@ import Layout from '../../../layouts/Layout.astro';
 import RecordTable from '../../../components/RecordTable.astro';
 import Seismogram from '../../../components/Seismogram.astro';
 import ContourKeyFigure from '../../../components/contour/ContourKeyFigure.astro';
+import RiverKeyFigure from '../../../components/river/RiverKeyFigure.astro';
 import { activities, standards } from '../../../lib/activities.mjs';
 import { GUIDED, readings, picked } from '../../../lib/seismology.mjs';
 import { traceSeed } from '../../../lib/seismogram.mjs';
@@ -29,6 +30,7 @@ const traces = act.tool === 'earthquake-epicenter' ? readings(GUIDED) : [];
     <p class="worksheet-meta">{act.keyNote ?? act.tableNote ?? 'Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.'}</p>
     <RecordTable act={act} answers />
     {act.tool === 'contour-map' && <ContourKeyFigure />}
+    {act.tool === 'river-erosion' && <RiverKeyFigure />}
     {traces.length > 0 && <h2 class="no-print">The seismograms, marked</h2>}
     {traces.length > 0 && <div class="worksheet-traces no-print">
       {traces.map((r, i) => {

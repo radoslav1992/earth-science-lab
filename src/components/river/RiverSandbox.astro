@@ -1,0 +1,162 @@
+---
+// The interactive River Erosion Sandbox. The server draws the default run (stream table, side view, Hjulström
+// diagram and results) with the controls disabled; ./sandbox.ts switches them on, runs the water and the
+// Challenge mode, and redraws everything from the same functions.
+import './river.css';
+import {
+  DEFAULT_STATE, GRAINS, SLOPE_RANGE, FLOW_RANGE, SUPPLY_RANGE, TIME_RANGE, CHALLENGE_COUNT,
+  simulate, measure, describeRun, grainById, fmt, fmtSpeed, fmtVolume, fmtDepth,
+} from '../../lib/river.mjs';
+import { PLAN, PROFILE, planInner, profileInner, describePlan, describeProfile, hjulstromSvg, grainRows } from '../../lib/river-svg.mjs';
+
+const st = DEFAULT_STATE;
+const run = simulate(st);
+const m = measure(run, st.t);
+const grain = grainById(st.grain);
+const degrees = (pct: number) => fmt((Math.atan(pct / 100) * 180) / Math.PI, 1);
+const rows = grainRows(m.speedNow);
+---
+<section class="rv-tool" id="sandbox" data-river data-mode="explore" aria-label="River Erosion Sandbox">
+  <div class="finder-bar">
+    <div class="mode-switch" role="group" aria-label="Mode">
+      <button type="button" data-mode-btn="explore" aria-pressed="true" disabled>Explore</button>
+      <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+    </div>
+    <div class="finder-tools">
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+    </div>
+  </div>
+  <div class="note" data-note hidden></div>
+  <noscript><p class="note">The sandbox needs JavaScript to run the water. Below is the default stream table after {st.t} minutes, with the Hjulström diagram; the guide underneath explains what it shows.</p></noscript>
+  <div class="rv-hint" data-hint hidden>
+    <ol>
+      <li>Pick a sediment, then set the slope and the water flow.</li>
+      <li>Press <strong>Run</strong> to watch the channel cut down and a delta grow, or drag the time slider.</li>
+      <li>Check the Hjulström diagram below: is your sediment eroded, transported or deposited?</li>
+    </ol>
+    <button type="button" class="btn small" data-hint-close>Got it</button>
+  </div>
+
+  <div class="rv-challenge" data-challenge hidden>
+    <div class="challenge-bar">
+      <span>Question <strong data-q-num>1</strong> of <span>{CHALLENGE_COUNT}</span></span>
+      <span>Score <strong data-q-score>0</strong></span>
+    </div>
+    <div class="rv-q" data-q>
+      <div>
+        <p class="rv-q-prompt" data-q-prompt></p>
+        <p class="rv-q-help" data-q-help></p>
+        <div class="rv-choices" role="group" aria-label="Answer choices" data-q-choices></div>
+        <div class="rv-feedback" data-q-feedback hidden tabindex="-1"></div>
+        <button type="button" class="btn primary" data-q-next hidden>Next question</button>
+      </div>
+      <div class="rv-q-show" data-q-show></div>
+    </div>
+    <div class="rv-done" data-q-done hidden tabindex="-1">
+      <p class="rv-done-score" data-q-final></p>
+      <p data-q-message></p>
+      <div class="page-actions">
+        <button type="button" class="btn primary" data-q-restart>Try again</button>
+        <button type="button" class="btn" data-q-explore>Back to Explore</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rv-grid">
+    <div class="rv-col">
+    <figure class="rv-pane rv-area-plan">
+      <div class="rv-pane-head"><h3>The stream table from above</h3><span>Water flows from left to right</span></div>
+      <svg class="rv-plan" viewBox={`0 0 ${PLAN.width} ${PLAN.height}`} role="img" aria-label={describePlan(run, st.t)} data-plan set:html={planInner(run, st.t)} />
+      <figcaption class="rv-legend" aria-hidden="true">
+        <span><i class="rv-swatch" style="background:#3d8fb8"></i>Water</span>
+        <span><i class="rv-swatch" style="background:#a47652"></i>Valley cut by the river</span>
+        <span><i class="rv-swatch" style="background:#f3e2b5"></i>New sediment</span>
+        <span><i class="rv-swatch" style="background:#9fcad3"></i>Sea (darker is deeper)</span>
+      </figcaption>
+    </figure>
+
+    <div class="rv-time rv-area-time">
+      <button type="button" class="btn primary rv-run" data-play disabled>Run</button>
+      <div class="rv-slider">
+        <label for="rv-time">Time: <output data-out="t">{fmt(st.t)}</output> minutes <small>of running water</small></label>
+        <input id="rv-time" type="range" min={TIME_RANGE[0]} max={TIME_RANGE[1]} step="0.5" value={st.t} data-input="t" disabled />
+      </div>
+    </div>
+
+    <figure class="rv-pane rv-area-profile">
+      <div class="rv-pane-head"><h3>Side view down the channel</h3><span>Heights stretched ×2</span></div>
+      <svg class="rv-profile" viewBox={`0 0 ${PROFILE.width} ${PROFILE.height}`} role="img" aria-label={describeProfile(run, st.t)} data-profile set:html={profileInner(run, st.t)} />
+      <figcaption class="rv-legend" aria-hidden="true">
+        <span><svg width="22" height="10"><path d="M1 5h20" stroke="#6d5a45" stroke-width="1.5" stroke-dasharray="5 3" /></svg>Starting surface</span>
+        <span><i class="rv-swatch" style="background:#f3dcd2"></i>Cut away</span>
+        <span><i class="rv-swatch" style="background:#efd27a"></i>Laid down</span>
+        <span><i class="rv-swatch" style="background:#a34722"></i>Cutting down now</span>
+        <span><i class="rv-swatch" style="background:#d9a21e"></i>Building up now</span>
+      </figcaption>
+    </figure>
+    </div>
+    <div class="rv-col">
+
+    <div class="rv-controls rv-area-controls">
+      <div role="group" aria-labelledby="rv-grain-label">
+        <span class="rv-group-label" id="rv-grain-label">Sediment in the tray</span>
+        <div class="rv-chips">
+          {GRAINS.map(g => <button type="button" class="rv-chip" data-grain={g.id} aria-pressed={String(g.id === st.grain)} disabled><i class="rv-grain-dot" style={`background:${g.color}`}></i>{g.name}</button>)}
+        </div>
+        <p class="rv-grain-note" data-grain-note>{grain.name}: grains about {fmt(grain.mm, 3)} mm across, {grain.note}.</p>
+      </div>
+      <div class="rv-slider">
+        <label for="rv-slope">Slope: <output data-out="slope">{fmt(st.slope)}%</output> <small data-out="degrees">(a tilt of {degrees(st.slope)}°)</small></label>
+        <input id="rv-slope" type="range" min={SLOPE_RANGE[0]} max={SLOPE_RANGE[1]} step="0.5" value={st.slope} data-input="slope" disabled />
+      </div>
+      <div class="rv-slider">
+        <label for="rv-flow">Water flow: <output data-out="flow">{fmt(st.flow)} L/min</output></label>
+        <input id="rv-flow" type="range" min={FLOW_RANGE[0]} max={FLOW_RANGE[1]} step="0.5" value={st.flow} data-input="flow" disabled />
+      </div>
+      <div class="rv-slider">
+        <label for="rv-supply">Sediment fed in: <output data-out="supply">{st.supply} cm³ per minute</output> <small data-out="supply-note">{st.supply ? '' : '(clear water)'}</small></label>
+        <input id="rv-supply" type="range" min={SUPPLY_RANGE[0]} max={SUPPLY_RANGE[1]} step="10" value={st.supply} data-input="supply" disabled />
+      </div>
+      <div class="rv-toggles">
+        <label class="toggle"><input type="checkbox" data-toggle-labels checked disabled /> Show labels</label>
+      </div>
+    </div>
+
+    <dl class="rv-stats rv-area-stats" aria-label="Results">
+      <div class="rv-stat"><dt>Water speed</dt><dd><span data-stat="speed">{fmtSpeed(m.startSpeed)}</span> cm/s<small data-stat="speed-now">at the start; now {fmtSpeed(m.speedNow)} cm/s</small></dd></div>
+      <div class="rv-stat"><dt>Sediment eroded</dt><dd><span data-stat="eroded">{fmtVolume(m.eroded)}</span> cm³<small>cut from the channel</small></dd></div>
+      <div class="rv-stat"><dt>Deepest cut</dt><dd><span data-stat="cut">{fmtDepth(m.deepestCut)}</span> cm<small>below the starting surface</small></dd></div>
+      <div class="rv-stat"><dt>Delta length</dt><dd><span data-stat="delta">{m.deltaLength}</span> cm<small>past the old shoreline</small></dd></div>
+    </dl>
+    <p class="rv-summary rv-area-summary" data-summary>{describeRun(run, st.t)}</p>
+    </div>
+  </div>
+
+  <div class="rv-hj-panel">
+    <figure class="rv-hj-figure">
+      <h3>Erode, carry or drop? The Hjulström diagram</h3>
+      <Fragment set:html={hjulstromSvg({ speed: m.speedNow, grain: st.grain, attrs: ' tabindex="0" data-hj' })} />
+      <figcaption>Approximate curves after Hjulström (1935) and Sundborg (1956), for rivers about 1 m deep; the shaded band is a reminder that real thresholds vary. The lower curve is how fast each grain sinks in still water (Ferguson and Church, 2004). Point at the diagram, or focus it and use the arrow keys, to read any grain and speed.</figcaption>
+      <p class="rv-probe-out" data-probe-out>Point at the diagram to read off what happens to any grain size at any speed.</p>
+    </figure>
+    <div>
+      <h3>What each sediment does at <span data-hj-speed>{fmtSpeed(m.speedNow)}</span> cm/s</h3>
+      <p class="rv-caption">The water’s speed in the channel now. Faster water erodes; slower water drops what it carries.</p>
+      <ul class="rv-grain-rows" data-grain-rows>
+        {rows.map(r => <li class:list={{ on: r.id === st.grain }}><span class={`rv-pill rv-pill-${r.zone}`}>{r.zone === 'erode' ? 'Eroded' : r.zone === 'transport' ? 'Transported' : 'Deposited'}</span><span><strong>{r.name} ({fmt(r.mm, 3)} mm)</strong>{r.text.replace(/^[^.]*\. /, '')}</span></li>)}
+      </ul>
+      <div class="rv-zone-key" aria-hidden="true">
+        <span><i style="background:var(--rv-erode)"></i>Eroded: picked up from the bed</span>
+        <span><i style="background:var(--rv-transport)"></i>Transported: keeps moving if already moving</span>
+        <span><i style="background:var(--rv-deposit)"></i>Deposited: settles out</span>
+      </div>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initRiver } from './sandbox';
+  const root = document.querySelector<HTMLElement>('[data-river]');
+  if (root) initRiver(root);
+</script>
