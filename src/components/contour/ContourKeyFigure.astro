@@ -1,0 +1,18 @@
+---
+// Answer-key figures for the contour worksheet: the printed map with the river's flow arrows added,
+// and the true cross-section from X to Y, both drawn from the model.
+import { createTerrain } from '../../lib/terrain.mjs';
+import { mapSvg, profileSvg, describeProfile } from '../../lib/contour-svg.mjs';
+import { WORKSHEET_MAP, WORKSHEET_POINTS, WORKSHEET_LINE, worksheetProfile } from '../../lib/activities/contour-map.mjs';
+import '../../styles/contour.css';
+
+const t = createTerrain(WORKSHEET_MAP.preset);
+const marks = Object.entries(WORKSHEET_POINTS).map(([label, p]) => ({ ...p, label }));
+const map = mapSvg(t, { interval: WORKSHEET_MAP.interval, seaLevel: WORKSHEET_MAP.seaLevel, overlays: ['index'], arrows: true, marks, line: WORKSHEET_LINE, label: 'The worksheet map with arrows showing the river flowing west' });
+const chart = profileSvg(worksheetProfile, { seaLevel: WORKSHEET_MAP.seaLevel, labels: WORKSHEET_LINE.labels, label: 'The true cross-section from X to Y' });
+---
+<h2>The map and the X–Y cross-section</h2>
+<div class="worksheet-map">
+  <figure class="cm-figure"><Fragment set:html={map} /><figcaption>Arrows show the river flowing west, away from the points of the Vs.</figcaption></figure>
+  <figure class="cm-figure"><Fragment set:html={chart.svg} /><figcaption>{describeProfile(chart.stats, 'X', 'Y')}</figcaption></figure>
+</div>

@@ -1,0 +1,148 @@
+---
+// The interactive Contour Map Playground. The server renders the default landscape (height tints, the
+// contour map and a cross-section) with the controls disabled; src/scripts/contour.ts switches them on,
+// draws the shaded relief and runs sculpting, overlays, cross-sections and Match & Read.
+import { createTerrain, profile, PRESETS, DEFAULT_PRESET } from '../../lib/terrain.mjs';
+import { mapSvg, tintSvg, profileSvg, describeProfile } from '../../lib/contour-svg.mjs';
+import { DEFAULT_STATE, DEFAULT_LINE, INTERVALS, SEA_RANGE } from '../../lib/contour-share.mjs';
+import { CHALLENGE_COUNT } from '../../lib/contour-challenges.mjs';
+import { RAMP, WATER_SHALLOW, WATER_DEEP, rgb } from '../../lib/relief.mjs';
+
+const t = createTerrain(DEFAULT_PRESET);
+const { interval, sea, overlays } = DEFAULT_STATE;
+const map = mapSvg(t, {
+  interval, seaLevel: sea, overlays, interactive: true, line: DEFAULT_LINE,
+  label: 'Topographic map. Point or tap to read the elevation; with a brush tool, drag to sculpt. Keyboard: arrow keys move the cursor, Enter uses the tool.',
+});
+const points = profile(t, DEFAULT_LINE.a, DEFAULT_LINE.b);
+const chart = profileSvg(points, { seaLevel: sea, label: 'Cross-section from A to B across the single hill' });
+const ramp = `linear-gradient(90deg, ${RAMP.map(([h, c]) => `${rgb(c)} ${((h / 900) * 100).toFixed(1)}%`).join(', ')})`;
+const water = `linear-gradient(90deg, ${rgb(WATER_DEEP)}, ${rgb(WATER_SHALLOW)})`;
+const tools: [string, string][] = [['read', 'Read'], ['raise', 'Raise'], ['lower', 'Lower'], ['smooth', 'Smooth'], ['flatten', 'Flatten'], ['section', 'Cross-section']];
+const overlayInfo: [string, string, string][] = [
+  ['index', 'Index contours', 'Every fifth line is drawn thicker and labeled with its height. Count the thin lines between two labels to find the interval.'],
+  ['steep', 'Steepness', 'Orange marks lines that crowd close together: slopes steeper than 15°. Close lines mean steep ground; far-apart lines mean gentle ground.'],
+  ['hills', 'Hilltops & hollows', 'Closed loops are shaded: brown for hilltops (▲ marks the summit), blue for hollows. Ticks on a loop point downhill, into a hollow.'],
+  ['vrule', 'V-rule', 'Where lines cross a river they bend into a V that points upstream. Arrows show the way the water flows: away from the point of the V.'],
+];
+---
+<section class="contour" id="playground" data-contour data-mode="sculpt" aria-label="Contour Map Playground">
+  <div class="finder-bar">
+    <div class="mode-switch" role="group" aria-label="Mode">
+      <button type="button" data-mode-btn="sculpt" aria-pressed="true" disabled>Sculpt</button>
+      <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Match &amp; Read</button>
+    </div>
+    <div class="finder-tools">
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+      <button type="button" class="btn small" data-reset disabled>Reset landscape</button>
+    </div>
+  </div>
+  <p class="cm-share-note">Share links keep the landscape and settings but not hand-sculpted changes, which stay saved in this browser until you press Reset landscape.</p>
+  <div class="note finder-note" data-note hidden></div>
+  <noscript><p class="note noscript-note">The playground needs JavaScript to sculpt and redraw. Below is the single hill as a contour map with a cross-section, and the guide underneath explains how to read it.</p></noscript>
+
+  <div class="cm-sculpt" data-sculpt>
+    <div class="cm-row">
+      <div class="cm-group" role="group" aria-label="Landscape">
+        <span class="cm-group-label" aria-hidden="true">Landscape</span>
+        {PRESETS.map(p => <button type="button" class="cm-chip" data-preset={p.id} aria-pressed={p.id === DEFAULT_PRESET ? 'true' : 'false'} disabled>{p.name}</button>)}
+      </div>
+    </div>
+    <div class="cm-row">
+      <div class="cm-group" role="group" aria-label="Tool">
+        <span class="cm-group-label" aria-hidden="true">Tool</span>
+        {tools.map(([id, name]) => <button type="button" class="cm-chip" data-tool={id} aria-pressed={id === 'read' ? 'true' : 'false'} disabled>{name}</button>)}
+      </div>
+      <div class="cm-brush-controls" data-brush-controls hidden>
+        <label class="cm-slider"><span>Brush size <output data-size-out>400 m</output></span><input type="range" min="150" max="1000" step="50" value="400" data-brush-size disabled /></label>
+        <label class="cm-slider"><span>Strength <output data-strength-out>5</output></span><input type="range" min="1" max="10" step="1" value="5" data-brush-strength disabled /></label>
+      </div>
+    </div>
+
+    <div class="cm-split">
+      <figure class="cm-pane">
+        <div class="cm-pane-head">
+          <h3>Landscape</h3>
+          <label class="toggle"><input type="checkbox" data-view3d disabled /> 3D view</label>
+        </div>
+        <div class="cm-relief" data-relief-wrap>
+          <div class="cm-fallback" data-relief-fallback set:html={tintSvg(t, { seaLevel: sea, label: 'The single hill, colored by height: green lowland, tan and brown slopes' })} />
+          <canvas class="cm-canvas" data-relief width="480" height="320" role="img" aria-label="Shaded relief view of the landscape" hidden></canvas>
+          <svg class="cm-overlay" viewBox="0 0 600 400" data-relief-overlay aria-hidden="true"><g data-layer="section"></g><g data-layer="cursor"></g></svg>
+        </div>
+        <figcaption class="cm-legend">
+          <span class="cm-ramp"><span class="cm-ramp-bar" style={`background:${ramp}`}></span><span class="cm-ramp-labels"><span>0</span><span>300</span><span>600</span><span>900 m</span></span></span>
+          <span class="cm-key"><span class="cm-swatch" style={`background:${water}`}></span>Water</span>
+          <span class="cm-view-note" data-view-note>Colored by height, seen from above.</span>
+        </figcaption>
+      </figure>
+      <figure class="cm-pane">
+        <div class="cm-pane-head">
+          <h3>Topographic map</h3>
+          <span class="cm-interval-note" data-interval-note>Contour interval {interval} m</span>
+        </div>
+        <div class="cm-map-wrap" data-map-wrap set:html={map} />
+        <figcaption class="cm-legend" aria-hidden="true">
+          <span class="cm-key"><svg width="22" height="10"><path d="M1 5h20" stroke="#9a6b3f" stroke-width="1.2" /></svg>Contour</span>
+          <span class="cm-key"><svg width="22" height="10"><path d="M1 5h20" stroke="#7d5230" stroke-width="2.4" /></svg>Index contour</span>
+          <span class="cm-key"><svg width="22" height="12"><path d="M1 3h20M5 3v6M11 3v6M17 3v6" stroke="#9a6b3f" stroke-width="1.2" fill="none" /></svg>Hollow</span>
+          <span class="cm-key"><svg width="22" height="10"><path d="M1 5h20" stroke="#3f7479" stroke-width="2.4" /></svg>Coastline</span>
+          <span class="cm-key"><svg width="22" height="10"><path d="M1 6c6-4 10 3 20-2" stroke="#2f7fa6" stroke-width="2.4" fill="none" /></svg>River</span>
+        </figcaption>
+      </figure>
+    </div>
+    <p class="cm-readout" data-readout>Point at either view to read the elevation and slope.</p>
+
+    <div class="cm-row cm-settings">
+      <label class="cm-slider cm-sea"><span>Sea level <output data-sea-out>{sea} m</output></span><input type="range" min={SEA_RANGE[0]} max={SEA_RANGE[1]} step="10" value={sea} data-sea disabled /></label>
+      <div class="cm-group" role="group" aria-label="Contour interval">
+        <span class="cm-group-label" aria-hidden="true">Contour interval</span>
+        {INTERVALS.map(ci => <button type="button" class="cm-chip" data-interval={ci} aria-pressed={ci === interval ? 'true' : 'false'} disabled>{ci} m</button>)}
+      </div>
+    </div>
+
+    <fieldset class="cm-overlays">
+      <legend>Overlays</legend>
+      {overlayInfo.map(([id, name, caption]) => (
+        <div class="cm-overlay-card" data-overlay-card={id}>
+          <label class="toggle"><input type="checkbox" data-overlay={id} checked={overlays.includes(id)} disabled /> {name}</label>
+          <p data-overlay-caption={id}>{caption}</p>
+        </div>
+      ))}
+    </fieldset>
+
+    <div class="cm-section-panel">
+      <div class="cm-pane-head">
+        <h3>Cross-section A–B</h3>
+        <button type="button" class="btn small" data-tool-shortcut="section" disabled>Draw a new line</button>
+      </div>
+      <div class="cm-section-body">
+        <div class="cm-profile" data-profile set:html={chart.svg} />
+        <p class="cm-section-text" data-section-text aria-live="polite">{describeProfile(chart.stats, 'A', 'B')}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="cm-challenge" data-challenge hidden>
+    <div class="challenge-bar">
+      <span>Question <strong data-q-num>1</strong> of {CHALLENGE_COUNT}</span>
+      <span>Score <strong data-score>0</strong></span>
+    </div>
+    <div class="cm-challenge-grid">
+      <div class="cm-challenge-question" data-q-panel tabindex="-1">
+        <h3 data-q-prompt></h3>
+        <div class="cm-choices" data-choices role="group" aria-label="Answers"></div>
+        <p class="feedback" data-q-feedback hidden></p>
+        <div class="reveal-row"><button type="button" class="btn primary" data-q-next hidden>Next question</button></div>
+      </div>
+      <div class="cm-challenge-map" data-q-map></div>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initContour } from '../../scripts/contour';
+  const root = document.querySelector<HTMLElement>('[data-contour]');
+  if (root) initContour(root);
+</script>

@@ -1,0 +1,170 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import PlateExplorer from '../../../components/plates/PlateExplorer.astro';
+import CrossSection from '../../../components/plates/CrossSection.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import { CASES, MOTION_NAMES, DEPTH_NAMES, caseTitle, distanceKm, halfRate, kmPerMyr, seafloorAgeMyr, metersPerCentury, fmt } from '../../../lib/plates.mjs';
+
+const title = 'Plate Tectonics Explorer – Interactive Plate Boundaries';
+const description = 'Animate divergent, convergent and transform plate boundaries in cross-section and see where earthquakes, volcanoes and mountains form. Free, with a worksheet.';
+const url = new URL('/tools/plate-tectonics/', Astro.site).href;
+
+// Worked example: a ridge spreading 2.5 cm per year in total (the Mid-Atlantic Ridge spreads about 2–5).
+const ex = { rate: 2.5, time: 10, km: 500 };
+const exDistance = distanceKm(ex.rate, ex.time);
+const exHalf = halfRate(ex.rate);
+const exAge = seafloorAgeMyr(ex.km, exHalf);
+
+const figure = (key: string) => ({ key, c: CASES[key] });
+const groups = [
+  { type: 'divergent', keys: ['divergent-oo', 'divergent-cc'].map(figure) },
+  { type: 'convergent', keys: ['convergent-oc', 'convergent-oo', 'convergent-cc'].map(figure) },
+  { type: 'transform', keys: ['transform-cc', 'transform-oo'].map(figure) },
+];
+
+const faq: [string, string][] = [
+  ['What are the three types of plate boundaries?', 'At divergent boundaries plates move apart, as along the Mid-Atlantic Ridge and the East African Rift. At convergent boundaries they move together: one plate sinks under another, as under the Andes and Japan, or two continents collide, as in the Himalaya. At transform boundaries they slide past each other, as along the San Andreas Fault.'],
+  ['How fast do tectonic plates move?', 'Most plates move between about 1 and 10 centimeters a year, roughly as fast as fingernails grow. The Mid-Atlantic Ridge spreads about 2–5 cm per year. That sounds slow, but 1 cm per year adds up to 10 km every million years, which is enough to open an ocean over tens of millions of years.'],
+  ['Why do some earthquakes happen hundreds of kilometers deep?', 'Below a few tens of kilometers, rock is usually too hot to break suddenly; it bends and flows instead. At subduction zones, though, a cold slab of ocean plate sinks into the mantle, and rock inside it can still break. Its earthquakes get deeper and deeper away from the trench, down to about 700 km. Divergent and transform boundaries have only shallow earthquakes.'],
+  ['Do tectonic plates float on liquid magma?', 'No. The mantle under the plates is almost all solid rock. It is so hot that over millions of years it can flow very slowly, a few centimeters a year, and the plates move along on top of it. Magma forms only in small places where rock partly melts, such as under mid-ocean ridges and above sinking slabs.'],
+  ['Why are there no volcanoes at transform boundaries?', 'Magma forms when hot rock rises and the pressure on it drops, as at ridges and rifts, or when water from a sinking slab lowers the melting point of the mantle above it. At a transform boundary the plates only slide sideways past each other, so neither happens.'],
+  ['Can I use the Plate Tectonics Explorer in class?', 'Yes. It is free with no sign-up and runs on school Chromebooks. Use the printable activity to compare the boundaries, then let students try Challenge mode, eight questions that ask them to identify a boundary from a cross-section or from evidence. Teachers can find the answer key on the For teachers page.'],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Plate Tectonics Explorer',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Plate Tectonics" crumbs={[['Plate Tectonics Explorer']]}>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Plate tectonics</span>
+      <h1>Plate Tectonics Explorer</h1>
+      <p class="lede">Pick a plate boundary and run time forward. Watch plates pull apart, collide or grind past each other, and see where trenches, mountains, volcanoes and earthquakes appear.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/plate-tectonics/activity/">Printable activity</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <PlateExplorer />
+
+    <section class="section prose" aria-labelledby="types">
+      <h2 id="types">The three types of plate boundaries</h2>
+      <p>Earth’s rigid outer shell, the lithosphere, is broken into seven or eight large plates and many smaller ones. They move a few centimeters a year, about as fast as your fingernails grow. Most earthquakes and volcanoes happen where plates meet, at their boundaries. There are three kinds, named for how the plates move.</p>
+    </section>
+
+    {groups.map(({ type, keys }, i) => (
+      <section class="section pt-type" aria-labelledby={`type-${type}`} style="padding-top:0">
+        <div class="prose">
+          <h3 id={`type-${type}`}>{i + 1}. {type === 'divergent' ? 'Divergent boundaries: plates move apart' : type === 'convergent' ? 'Convergent boundaries: plates move together' : 'Transform boundaries: plates slide past each other'}</h3>
+          {type === 'divergent' && <p>Where plates pull apart, hot mantle rock rises into the gap. As it rises the pressure on it drops, so some of it melts. The magma cools into new crust. Under the ocean this builds a <strong>mid-ocean ridge</strong>, a mountain chain longer than any on land, with new seafloor moving away on both sides. When a continent pulls apart, it first sags into a <strong>rift valley</strong>; if rifting goes on long enough, the sea floods in and a new ocean is born.</p>}
+          {type === 'convergent' && <p>Where plates push together, what happens depends on the crust they carry. Ocean crust is thinner and denser than continental crust, so an ocean plate sinks, or <strong>subducts</strong>, under a continent or under a younger ocean plate. That makes a deep <strong>trench</strong>, and water squeezed out of the sinking slab helps the rock above it melt, feeding a line of volcanoes. When two continents meet, neither sinks far: the crust crumples and stacks up into the highest mountains on Earth.</p>}
+          {type === 'transform' && <p>Where plates slide past each other sideways, crust is neither made nor destroyed. The rocks lock together, bend, and then slip suddenly in an <strong>earthquake</strong>. There are no volcanoes, because nothing rises or sinks. Most transform faults are on the seafloor, cutting mid-ocean ridges into segments; a few, like the San Andreas Fault, cross continents.</p>}
+        </div>
+        <div class="pt-figures">
+          {keys.map(({ key, c }) => (
+            <figure>
+              <CrossSection boundary={key} />
+              <figcaption><strong>{c.name}</strong> ({caseTitle(key).toLowerCase()}). {c.examples[0]}.</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <section class="section" aria-labelledby="compare" style="padding-top:0">
+      <h2 id="compare">Plate boundaries compared</h2>
+      <div class="pt-compare">
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th scope="col">Boundary</th><th scope="col">Plates move</th><th scope="col">Landforms</th><th scope="col">Deepest earthquakes</th><th scope="col">Volcanoes</th><th scope="col">Example</th></tr></thead>
+            <tbody>
+              {Object.entries(CASES).map(([key, c]) => (
+                <tr>
+                  <th scope="row">{c.name}<small>{caseTitle(key)}</small></th>
+                  <td>{MOTION_NAMES[c.motion]}</td>
+                  <td><ul class="pt-cell-list">{c.landforms.map(item => <li>{item}</li>)}</ul></td>
+                  <td>{DEPTH_NAMES[c.quakeDepth]}</td>
+                  <td>{c.volcanoes ? 'Yes' : 'No'}</td>
+                  <td>{c.examples[0]}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <p class="muted" style="margin-top:10px">Earthquake depths: shallow is less than 70 km, intermediate 70–300 km and deep 300–700 km.</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="worked" style="padding-top:0">
+      <h2 id="worked">Worked example: how far, and how old?</h2>
+      <p>Plate speeds are tiny in a year but huge over geologic time. One centimeter a year for a million years is 1,000,000 cm, which is 10 km. So:</p>
+      <p class="formula">distance (km) = speed (cm per year) × time (million years) × 10</p>
+      <p><strong>How far?</strong> Suppose a ridge spreads {fmt(ex.rate)} cm per year (the Mid-Atlantic Ridge spreads about 2–5 cm per year). That is {fmt(kmPerMyr(ex.rate))} km per million years, so in {fmt(ex.time)} million years the plates move {fmt(kmPerMyr(ex.rate))} × {fmt(ex.time)} = <strong>{fmt(exDistance)} km</strong> apart. At that speed, two markers on opposite sides of the ridge end up {fmt(metersPerCentury(ex.rate))} m farther apart every century.</p>
+      <p><strong>How old?</strong> At a ridge, each plate carries half the new seafloor away, so each moves at half the spreading rate: {fmt(ex.rate, 2)} ÷ 2 = {fmt(exHalf, 2)} cm per year, or {fmt(kmPerMyr(exHalf), 2)} km per million years.</p>
+      <p class="formula">seafloor age (million years) = distance from the ridge (km) ÷ (half the spreading rate × 10)</p>
+      <p>Seafloor {fmt(ex.km)} km from the ridge is {fmt(ex.km)} ÷ {fmt(kmPerMyr(exHalf), 2)} = <strong>{fmt(exAge, 2)} million years old</strong>. The farther from the ridge, the older the seafloor, on both sides. Measuring seafloor ages like this was some of the strongest evidence that plates move.</p>
+      <p>Try your own numbers in the explorer’s calculator, or press <em>Use the explorer’s speed and time</em> to check the slider.</p>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="deeper">
+      <h2 id="deeper">Going deeper</h2>
+      <h3>Earthquakes trace the sinking slab</h3>
+      <p>Plot the depths of earthquakes near a trench and they form a sloping band that dips under the volcanoes, down to about 700 km. This band, called a Wadati–Benioff zone, shows exactly where the cold slab is sinking through the mantle. The explorer colors each quake by its depth class so you can see the band form as the slab grows.</p>
+      <h3>What moves the plates?</h3>
+      <p>Heat escaping from Earth’s interior keeps the mantle slowly churning. The biggest single force is probably <strong>slab pull</strong>: an old, cold ocean plate is denser than the mantle beneath it, so where it sinks at a trench it drags the rest of the plate behind it. Plates also slide gently downhill away from the high, hot ridges. That is one reason plates attached to long subduction zones, around the Pacific, tend to move fastest.</p>
+      <h3>Why ocean floor is young</h3>
+      <p>New seafloor is made at ridges and destroyed at trenches, so it never gets very old: almost all of it is younger than about 200 million years. Continental crust is too light to sink, so it survives far longer, and some continental rocks are billions of years old.</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="mistakes" style="padding-top:0">
+      <h2 id="mistakes">Common misconceptions</h2>
+      <ul>
+        <li><strong>“The plates float on liquid magma.”</strong> They don’t. The mantle under the plates is almost all solid rock. Magma forms only in small pockets where rock partly melts, mostly at ridges, rifts and above sinking slabs.</li>
+        <li><strong>“The mantle is a sea of lava.”</strong> The mantle is solid, but it is so hot and under so much pressure that, over millions of years, it can flow very slowly, a few centimeters a year, like extremely stiff putty.</li>
+        <li><strong>“Every plate boundary has volcanoes.”</strong> Transform boundaries have none, and continental collisions have few or none.</li>
+        <li><strong>“Plates move suddenly.”</strong> Plates creep a few centimeters a year. Rock along a locked fault stores up that motion and releases it in a sudden slip: an earthquake.</li>
+        <li><strong>“Continents sink at subduction zones.”</strong> Only ocean plates sink far. Continental crust is too thick and light, which is why colliding continents pile up into mountains instead.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>The cross-sections are diagrams, not maps of real places. Depths below the surface follow the scale on the left, but mountains, trenches, ridges and the crust are drawn many times taller than they really are, or they would be too thin to see. Each boundary starts from a simple shape and grows at one steady speed; real boundaries change speed and direction, slabs sink at different angles, and many boundaries mix types. The earthquake dots show the pattern of depths, not real recorded earthquakes. Speeds and depths are rounded classroom values.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Plate boundaries activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes: students compare six boundaries in the explorer, record landforms, earthquake depths and volcanoes, then answer six questions, including plate-speed and seafloor-age calculations.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/plate-tectonics/activity/">Open the activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the explorer with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <Faq items={faq} title="Plate tectonics questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>

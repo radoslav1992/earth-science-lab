@@ -1,0 +1,16 @@
+---
+// The from-above map of a plate boundary, with plate-motion arrows.
+import { mapSvg, MAP_VIEW } from '../../lib/plates.mjs';
+import './plates.css';
+
+interface Props {
+  boundary: string;
+  t?: number;
+  speed?: number;
+  label: string;
+  class?: string;
+  [attr: string]: unknown;
+}
+const { boundary, t, speed, label, class: className, ...attrs } = Astro.props;
+---
+<svg class:list={['plate-map', className]} viewBox={`0 0 ${MAP_VIEW.width} ${MAP_VIEW.height}`} role="img" aria-label={label} set:html={mapSvg(boundary, t, speed)} {...attrs} />

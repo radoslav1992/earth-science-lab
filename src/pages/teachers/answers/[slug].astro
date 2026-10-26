@@ -2,6 +2,7 @@
 import Layout from '../../../layouts/Layout.astro';
 import RecordTable from '../../../components/RecordTable.astro';
 import Seismogram from '../../../components/Seismogram.astro';
+import ContourKeyFigure from '../../../components/contour/ContourKeyFigure.astro';
 import { activities, standards } from '../../../lib/activities.mjs';
 import { GUIDED, readings, picked } from '../../../lib/seismology.mjs';
 import { traceSeed } from '../../../lib/seismogram.mjs';
@@ -23,12 +24,13 @@ const traces = act.tool === 'earthquake-epicenter' ? readings(GUIDED) : [];
     </header>
     <p class="key-note no-print">For teachers. This page is hidden from search engines and not linked from student pages, but it is not password-protected, so please don’t share the link with students. Student worksheet: <a href={`/tools/${act.tool}/activity/`}>{act.title}</a>.</p>
     <p class="worksheet-goal"><strong>Goal:</strong> {act.goal}</p>
-    <p class="worksheet-meta">Connects to NGSS {act.standards.map(code => `${code} (${standards[code]})`).join('; ')}</p>
+    <p class="worksheet-meta">{act.standards.length ? `Connects to NGSS ${act.standards.map(code => `${code} (${standards[code]})`).join('; ')}` : act.standardsNote}</p>
     <h2>Completed results table</h2>
-    <p class="worksheet-meta">Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.</p>
+    <p class="worksheet-meta">{act.keyNote ?? act.tableNote ?? 'Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.'}</p>
     <RecordTable act={act} answers />
-    <h2 class="no-print">The seismograms, marked</h2>
-    <div class="worksheet-traces no-print">
+    {act.tool === 'contour-map' && <ContourKeyFigure />}
+    {traces.length > 0 && <h2 class="no-print">The seismograms, marked</h2>}
+    {traces.length > 0 && <div class="worksheet-traces no-print">
       {traces.map((r, i) => {
         const read = picked(r);
         return (
@@ -38,7 +40,7 @@ const traces = act.tool === 'earthquake-epicenter' ? readings(GUIDED) : [];
           </figure>
         );
       })}
-    </div>
+    </div>}
     <h2>Answers</h2>
     <ol class="questions key-answers">
       {act.questions.map(q => <li><p class="key-question">{q.q}</p><p>{q.a}</p></li>)}

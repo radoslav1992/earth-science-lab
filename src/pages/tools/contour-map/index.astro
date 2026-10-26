@@ -1,0 +1,152 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import ContourPlayground from '../../../components/contour/ContourPlayground.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import { createTerrain, sample, summits } from '../../../lib/terrain.mjs';
+import { mapSvg, STEEP_DEGREES } from '../../../lib/contour-svg.mjs';
+import { pointOnContour } from '../../../lib/contour-challenges.mjs';
+import '../../../styles/contour.css';
+
+const title = 'Contour Map Playground – Interactive Topographic Map Practice';
+const description = 'Sculpt hills, valleys and volcanoes and watch contour lines redraw. Practice reading topographic maps: interval, index lines, slope, V-rule and cross-sections.';
+const url = new URL('/tools/contour-map/', Astro.site).href;
+
+// Worked example: the Single hill preset at a 20 m interval.
+const hill = createTerrain('hill');
+const top = summits(hill)[0];
+const Q = { x: 2300, y: 1500 };
+const hQ = sample(hill, Q.x, Q.y);
+const below = Math.floor(hQ / 20) * 20;
+// How steep is the east side? The 300 m and 400 m lines due east of the summit.
+const e300 = pointOnContour(hill, top, 0, 300)!, e400 = pointOnContour(hill, top, 0, 400)!;
+const run = Math.hypot(e300.x - e400.x, e300.y - e400.y);
+const grade = 100 / run, degrees = (Math.atan(grade) * 180) / Math.PI;
+const worked = mapSvg(hill, {
+  interval: 20, overlays: ['index'], className: 'worked-map',
+  marks: [{ ...Q, label: 'Q' }, { ...e400, label: '' }, { ...e300, label: '' }],
+  label: `Contour map of the single hill at a 20 m interval with point Q between the ${below} m and ${below + 20} m lines`,
+});
+const figures = [
+  { preset: 'steep', overlays: ['index', 'steep'], caption: 'Close lines, steep ground: this hill’s east side is steep (orange), its west side gentle.' },
+  { preset: 'volcano', overlays: ['index', 'hills'], caption: 'Closed loops are hilltops. The loops with ticks inside the summit are a hollow: the crater.' },
+  { preset: 'river', overlays: ['index', 'vrule'], caption: 'Where lines cross the river they form Vs pointing upstream (east), so the river flows west.' },
+].map(f => ({ ...f, svg: mapSvg(createTerrain(f.preset), { interval: f.preset === 'volcano' ? 50 : 20, overlays: f.overlays, arrows: f.preset === 'river', label: f.caption }) }));
+
+const faq: [string, string][] = [
+  ['What is a contour line?', 'A contour line joins points on a map that are at the same height above sea level. If you walked along one, you would never go uphill or downhill. A map full of contour lines (a topographic map) shows the shape of the land on flat paper.'],
+  ['What is the contour interval?', 'The contour interval is the difference in height between neighboring contour lines, for example 20 m. It is usually printed in the map key. If it isn’t, find two labeled index lines, subtract their heights and divide by the number of steps between them.'],
+  ['How can you tell if a slope is steep on a contour map?', `Look at the spacing. Lines that are close together mean the height changes quickly over a short distance: steep ground. Lines far apart mean a gentle slope. In this playground, the Steepness overlay marks slopes steeper than ${STEEP_DEGREES}°.`],
+  ['What do the small ticks on a contour line mean?', 'Short ticks (hachures) on a closed loop mark a depression: a hollow, pit or crater that is lower than the ground around it. The ticks point downhill, into the hollow. Without them, a closed loop is a hilltop.'],
+  ['How do contour lines show which way a river flows?', 'Where contour lines cross a stream or river, they bend into a V or U shape. The point of the V always points upstream, toward higher ground. The water flows the opposite way. This is called the V-rule.'],
+  ['Can contour lines cross or split?', 'No. A point can only have one height, so two different contour lines never cross and a line never splits. They can run very close together at a cliff. Every contour line eventually closes into a loop, though on a map it may leave the edge first.'],
+  ['Is the Contour Map Playground free for classrooms?', 'Yes. It is free with no sign-up and runs in any modern browser, including school Chromebooks. There is a printable 15-minute activity and an answer key for teachers.'],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Contour Map Playground',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Contour Maps" crumbs={[['Contour Map Playground']]}>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Maps and landforms</span>
+      <h1>Contour Map Playground</h1>
+      <p class="lede">Shape a landscape and watch its topographic map draw itself alongside. Raise hills, carve valleys, flood the land with the sea, and slice a cross-section to see the shape the lines describe.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/contour-map/activity/">Printable activity</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <ContourPlayground />
+
+    <section class="section" aria-labelledby="how-to">
+      <div class="prose">
+        <h2 id="how-to">How to read contour lines</h2>
+        <p>A topographic map shows the height of the land with contour lines. Each line joins places at the same elevation, so the pattern of lines shows the shape of hills, valleys and cliffs on a flat sheet of paper.</p>
+        <ol class="steps-list">
+          <li><strong>Elevation.</strong> A contour line’s number is its height above sea level, in meters. Every point on the line is at exactly that height. The coastline is the 0 m contour.</li>
+          <li><strong>Contour interval.</strong> The height difference between one line and the next is the contour interval. On one map it never changes: 10 m, 20 m or 50 m in this playground.</li>
+          <li><strong>Index lines.</strong> Every fifth line is thicker and labeled. Count the steps between two labels to find the interval: 100 m apart with four thin lines between them means 100 ÷ 5 = 20 m.</li>
+          <li><strong>Steep or gentle.</strong> Lines close together mean steep ground; lines far apart mean gentle ground. A cliff squeezes many lines into a tiny space.</li>
+          <li><strong>Closed loops.</strong> A set of loops, one inside another, is a hill. The smallest loop in the middle is the hilltop.</li>
+          <li><strong>Depressions.</strong> A loop with small ticks (hachures) pointing inward is a hollow, lower than the line around it, like a volcano’s crater.</li>
+          <li><strong>The V-rule.</strong> Where lines cross a river they bend into a V. The V points upstream, so the river flows the other way.</li>
+          <li><strong>Ridges and valleys.</strong> Lines bend into U or V shapes in both. If the point of the bend aims toward lower numbers (downhill), it is a ridge; if it aims toward higher numbers (uphill), it is a valley.</li>
+        </ol>
+      </div>
+      <div class="grid-3 cm-figures">
+        {figures.map(f => <figure class="cm-figure"><Fragment set:html={f.svg} /><figcaption>{f.caption}</figcaption></figure>)}
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="worked">
+      <h2 id="worked">Worked example</h2>
+      <p class="prose">This is the Single hill, the landscape the playground opens with, drawn with a 20 m contour interval.</p>
+      <div class="worked">
+        <div class="prose">
+          <h3>1. Find the contour interval</h3>
+          <p>Two neighboring index lines are labeled 300 and 400: they are 100 m apart. Between them are four thin lines, which split the 100 m into five equal steps. Interval = 100 ÷ 5 = <strong>20 m</strong>.</p>
+          <h3>2. Read the elevation at Q</h3>
+          <p>Q lies between the {below} m and {below + 20} m lines, a little closer to the {below + 20} m line. A good estimate is about {Math.round(hQ / 5) * 5} m. The model’s exact value is {hQ.toFixed(1)} m.</p>
+          <h3>3. How steep is the east side?</h3>
+          <p>Due east of the summit, the 400 m line and the 300 m line are about {Math.round(run / 10) * 10} m apart on the ground (use the scale bar). The slope is rise ÷ run = 100 ÷ {Math.round(run / 10) * 10} ≈ {grade.toFixed(2)}, a {Math.round(grade * 100)}% grade or about {Math.round(degrees)}°. A road that steep would be very hard to cycle up.</p>
+          <p>Slope as rise over run is the same idea as the slope of a line in math: see <a href="https://geometrylab.net/learn/slope-and-lines/">slope and lines on Geometry Lab</a>.</p>
+        </div>
+        <figure class="hero-art cm-figure">
+          <Fragment set:html={worked} />
+          <figcaption>Point Q, and two dots on the 400 m and 300 m lines due east of the summit, used to measure the slope.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common mistakes</h2>
+      <ul>
+        <li><strong>Reading the number of lines as the height.</strong> Count steps, then multiply by the interval: the fifth line above 200 m on a 20 m map is 300 m, not 205 m.</li>
+        <li><strong>Assuming the interval is 10 m.</strong> Always work it out from the index lines or the key. Maps of mountains often use 50 m or more.</li>
+        <li><strong>Thinking a closed loop is always a hilltop.</strong> Check for ticks: a loop with hachures is a hollow.</li>
+        <li><strong>Getting the V-rule backwards.</strong> The V points upstream, toward higher ground. Rivers flow away from the point of the V.</li>
+        <li><strong>Forgetting the vertical exaggeration.</strong> Cross-sections stretch heights so slopes are easy to see. The real hill is much flatter than the profile looks.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>The landscape is a grid of 96 × 64 squares, each 62.5 m across, covering 6 km × 4 km. Heights between grid points are filled in by straight-line (bilinear) interpolation, and contour lines are traced with the marching squares method, the same idea mapping software uses. Real topographic maps come from surveys, aerial photos and laser scanning (lidar), with much finer detail, and they show roads, buildings and vegetation too. The landscapes are fictional, the river simply follows the steepest way down, and the sea is a flat level you can raise or lower.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Contour map activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes: a printed contour map of a river valley, a table of elevations and six questions, from the contour interval to sketching a cross-section.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/contour-map/activity/">Open the activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the playground with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <Faq items={faq} title="Contour map questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>
