@@ -1,0 +1,47 @@
+---
+// One Adsterra unit. Renders nothing while its keys in src/lib/ads.mjs are empty.
+// Once keys are set: space is reserved up front so the page never jumps, and the ad script loads only
+// when the slot nears the viewport, on the production hostname, after cookie consent where it is needed,
+// and never for students sent from a school platform (see AdFree.astro).
+// type: 'leaderboard' (728×90 desktop / 320×50 phones), 'rectangle' (300×250) or 'native'.
+import { adsEnabled } from '../lib/ads.mjs';
+const { type = 'leaderboard' } = Astro.props;
+const enabled = adsEnabled[type];
+---
+{enabled && <aside class={`ad-slot ad-${type}`} data-ad={type} aria-label="Advertisement"><span class="ad-label">Advertisement</span><div class="ad-unit"></div></aside>}
+{enabled && <script>
+import { ads } from '../lib/ads.mjs';
+// Adsterra banner snippets read one global `atOptions`, so banners load strictly one at a time.
+let queue = Promise.resolve();
+const wide = () => matchMedia('(min-width: 800px)').matches;
+function fill(slot: HTMLElement) {
+  const box = slot.querySelector('.ad-unit') as HTMLElement;
+  if (slot.dataset.ad === 'native') {
+    box.id = `container-${ads.native}`;
+    const script = document.createElement('script'); script.async = true; script.dataset.cfasync = 'false'; script.src = `${ads.host}/21/${ads.native}`;
+    box.before(script);
+    return;
+  }
+  const [key, width, height] = slot.dataset.ad === 'rectangle' ? [ads.rectangle, 300, 250] : wide() ? [ads.leaderboard, 728, 90] : [ads.mobile, 320, 50];
+  queue = queue.then(() => new Promise<void>(resolve => {
+    const options = document.createElement('script'); options.text = `atOptions = ${JSON.stringify({ key, format: 'iframe', height, width, params: {} })};`;
+    const script = document.createElement('script'); script.src = `${ads.host}/22/${key}`;
+    script.onload = script.onerror = () => resolve(); setTimeout(resolve, 8000);
+    box.append(options, script);
+  }));
+}
+const live = (location.hostname === ads.domain || location.hostname === `www.${ads.domain}`) && !document.documentElement.classList.contains('ad-free');
+const slots = document.querySelectorAll<HTMLElement>('.ad-slot');
+let started = false;
+function start() {
+  if (started) return; started = true;
+  if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver(entries => entries.forEach(entry => { if (!entry.isIntersecting) return; observer.unobserve(entry.target); fill(entry.target as HTMLElement); }), { rootMargin: '300px 0px' });
+    slots.forEach(slot => observer.observe(slot));
+  } else slots.forEach(fill);
+}
+// In consent regions ads wait for Accept (see ConsentDefaults.astro / ConsentBanner.astro).
+const consent = document.documentElement.classList;
+if (live && !consent.contains('consent-pending') && !consent.contains('consent-denied')) start();
+else if (live) addEventListener('consentchange', event => { if ((event as CustomEvent).detail === 'granted') start(); });
+</script>}

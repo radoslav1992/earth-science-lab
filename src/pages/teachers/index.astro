@@ -1,0 +1,96 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Faq from '../../components/Faq.astro';
+import ClassroomShare from '../../components/ClassroomShare.astro';
+import { activities, standards } from '../../lib/activities.mjs';
+import { site } from '../../lib/site.mjs';
+import { anyAds } from '../../lib/ads.mjs';
+
+const toolUrl = new URL('/tools/earthquake-epicenter/', Astro.site).href;
+const tracking = site.analyticsId
+  ? 'The site uses Google Analytics for anonymous, aggregated usage statistics, and asks for consent first where the law requires it.'
+  : 'The site currently runs no analytics.';
+const adsLine = anyAds
+  ? 'Students who open a tool from Google Classroom, Canvas or Schoology, or through a Share to Google Classroom link on this site, see no ads on that device for 30 days.'
+  : 'There are no ads on Earth Science Lab today. If ads are added later, students who arrive from Google Classroom, Canvas or Schoology, or through a Share to Google Classroom link, will not see them, and teacher pages will stay ad-free.';
+
+const faq: [string, string][] = [
+  ['Is Earth Science Lab free for classrooms?', 'Yes. The Epicenter Finder, the student activity and the answer key are free, with no sign-up and no limit on the number of students.'],
+  ['Do students need accounts or logins?', 'No. Students open a link and start. Nothing is saved to an account, and worksheets are completed on paper or in your own Classroom assignment.'],
+  ['Does it work on Chromebooks and tablets?', 'Yes. The finder runs in any modern browser, including Chrome on school Chromebooks and Safari on iPads, with nothing to install. JavaScript must be enabled. On small screens, students can type arrival times and distances instead of dragging.'],
+  ['Will my students see ads?', adsLine],
+  ['Which standards does the activity support?', 'It connects to NGSS MS-ESS3-2 (analyzing and interpreting data on natural hazards) and practices students use along the way: analyzing and interpreting data, and using mathematics and computational thinking. It is a supplement to your curriculum, not a full unit.'],
+  ['Can the whole class try the same challenge?', 'Yes. Open Challenge mode, press Copy share link and send that link. Everyone who opens it gets the same three quakes, so scores can be compared fairly.'],
+];
+---
+<Layout title="Earth Science Lab for Teachers: Free Activities & Answer Keys" description="Free earthquake epicenter virtual lab with a printable student worksheet, answer key and NGSS MS-ESS3-2 connection. No logins; works on Chromebooks." section="For teachers" ads={false} crumbs={[['For teachers']]}>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">For teachers</span>
+      <h1>Earth Science Lab for teachers</h1>
+      <p class="lede">Free interactive earth science labs with a printable student activity and an answer key for each. Students need no accounts, and the labs run on school Chromebooks with nothing to install.</p>
+      <div class="page-actions">
+        <span class="share-lead">Share the Epicenter Finder with your class:</span>
+        <ClassroomShare url={toolUrl} />
+      </div>
+    </div>
+
+    <section class="section">
+      <h2>Ready-made classroom activity</h2>
+      <p class="prose">The activity is a one-page worksheet that walks students through the finder’s Guided mode, with a results table and six questions. Times are for a typical class working in pairs.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Tool</th><th scope="col">Activity</th><th scope="col">Grades</th><th scope="col">Time</th><th scope="col">Standards</th><th scope="col">Resources</th></tr></thead>
+          <tbody>
+            {activities.map(act => (
+              <tr>
+                <td><a href={`/tools/${act.tool}/`}>{act.toolName}</a></td>
+                <td>{act.title}</td>
+                <td>{act.grade}</td>
+                <td>{act.minutes} min</td>
+                <td>{act.standards.join(', ')}</td>
+                <td><a href={`/tools/${act.tool}/activity/`}>Student worksheet</a><br /><a href={`/teachers/answers/${act.tool}/`}>Answer key</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section prose">
+      <h2>Run it in 10–15 minutes</h2>
+      <ol>
+        <li><strong>Hook (2 min).</strong> Show the map and ask: “Three towns felt the same earthquake. How could we work out where it started?”</li>
+        <li><strong>Guided mode (6–8 min).</strong> In pairs, students mark the P and S waves on each seismogram, record the lag and distance in the worksheet table, and click where the circles meet. Keep “Snap to arrivals” on for younger students.</li>
+        <li><strong>Questions (3 min).</strong> Questions 1–4 in class; questions 5 and 6 for early finishers or homework.</li>
+        <li><strong>Debrief (2 min).</strong> Why did we need three stations? Why don’t the circles meet perfectly? If time allows, send one Challenge link to the whole class.</li>
+      </ol>
+      <p>Before class, open the <a href={`/teachers/answers/${activities[0].tool}/`}>answer key</a>: every number in it is calculated by the same model the finder uses.</p>
+    </section>
+
+    <section class="section prose">
+      <h2>Standards</h2>
+      {activities[0].standards.map(code => <p><strong>NGSS {code}:</strong> {standards[code]} Students analyze seismogram data to locate an earthquake, the first step in mapping where earthquake hazards are.</p>)}
+      <p>Science and engineering practices: analyzing and interpreting data; using mathematics and computational thinking. The finder is a supplement to your curriculum rather than a complete unit.</p>
+    </section>
+
+    <section class="section">
+      <div class="grid-3">
+        <div class="card">
+          <h3>Chromebooks, no logins</h3>
+          <p>Runs in Chrome on Chromebooks and Safari on iPads, with nothing to install and no accounts. Every control works with a keyboard, and arrival times and distances can be typed instead of dragged.</p>
+        </div>
+        <div class="card">
+          <h3>Student privacy</h3>
+          <p>Students never enter a name or any personal details, and the finder saves nothing about them. {tracking} Details are in the <a href="/privacy/">privacy policy</a>.</p>
+        </div>
+        <div class="card">
+          <h3>Print-ready</h3>
+          <p>The worksheet and the answer key each print on a single page. Use the Print button on each page, or paste the questions into your own Classroom assignment.</p>
+        </div>
+      </div>
+    </section>
+
+    <Faq items={faq} title="Questions teachers ask" eyebrow="Teacher FAQ" />
+  </div>
+</Layout>

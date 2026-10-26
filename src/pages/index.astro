@@ -1,0 +1,101 @@
+---
+import Layout from '../layouts/Layout.astro';
+import EpicenterDiagram from '../components/EpicenterDiagram.astro';
+import Seismogram from '../components/Seismogram.astro';
+import LearningApps from '../components/LearningApps.astro';
+import Faq from '../components/Faq.astro';
+import { site } from '../lib/site.mjs';
+import { flagship } from '../lib/learning-apps.mjs';
+import { GUIDED, readings, picked } from '../lib/seismology.mjs';
+import { traceSeed } from '../lib/seismogram.mjs';
+
+const cdrIndex = 2;
+const cdr = readings(GUIDED)[cdrIndex];
+const cdrRead = picked(cdr);
+
+const faq: [string, string][] = [
+  ['What is Earth Science Lab?', 'A growing set of free, interactive earth science simulations for students aged about 10 to 16. Each lab is a working model: change the conditions and see how Earth responds, then check your thinking against the numbers.'],
+  ['Is it free? Do students need to sign up?', 'Everything is free, with no accounts, logins or downloads. Labs run in the browser on Chromebooks, tablets, laptops and phones.'],
+  ['What can I do here today?', 'The Earthquake Epicenter Finder is live: read three seismograms, measure the S–P lag, turn it into distance and triangulate where an earthquake began. It has Guided, Challenge and Explore modes, plus a printable classroom activity.'],
+  ['How accurate are the simulations?', 'They use the same methods scientists use, with simplified models that are honest about what they leave out. Each lab explains its simplifications, and every number on the worksheets and answer keys comes from the same model the lab runs.'],
+  ['Which labs are coming next?', 'A Plate Tectonics Explorer and a Contour Map Playground are in the works.'],
+];
+---
+<Layout title={site.defaultTitle} description={site.defaultDescription} section="Explore">
+  <div class="wrap">
+    <section class="hero">
+      <div>
+        <span class="eyebrow">{site.name} · free interactive labs</span>
+        <h1>{site.tagline}</h1>
+        <p class="lede">Hands-on earth science simulations for students aged 10–16 and the teachers who teach them. Read seismograms, test ideas and learn how scientists work out what the planet is doing, all in the browser.</p>
+        <div class="page-actions">
+          <a class="btn primary" href="/tools/earthquake-epicenter/">Find an earthquake’s epicenter</a>
+          <a class="btn" href="/teachers/">For teachers</a>
+        </div>
+        <p class="muted">From the makers of <a href={flagship.url + '/'}>{flagship.name}</a>.</p>
+      </div>
+      <figure class="hero-art" style="margin:0">
+        <EpicenterDiagram label="Map from the Epicenter Finder: circles around three seismograph stations meet at the earthquake's epicenter." />
+        <figcaption>Three stations, three circles, one epicenter.</figcaption>
+      </figure>
+    </section>
+
+    <section class="section prose">
+      <h2>Labs you can change</h2>
+      <p>Every lab here is a small, working model of a piece of the Earth system. Instead of reading that P waves outrun S waves, you measure the gap yourself and use it to find an earthquake. Instead of memorizing a rule, you see where it comes from and when it stops working.</p>
+    </section>
+
+    <section class="section" aria-labelledby="featured">
+      <div class="featured">
+        <div>
+          <span class="badge">Live now</span>
+          <h2 id="featured" style="margin-top:12px">Earthquake Epicenter Finder</h2>
+          <p>Three seismograph stations recorded the same earthquake. Mark the P and S waves, turn each S–P lag into a distance, and draw three circles to triangulate where it began.</p>
+          <ul class="checklist">
+            <li>Guided mode with hints, a three-quake scored Challenge, and an Explore mode where you drag the quake</li>
+            <li>Travel-time graph, the × 8.4 rule and an optional magnitude estimate</li>
+            <li>Printable one-page activity with a teacher answer key</li>
+          </ul>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/earthquake-epicenter/">Open the Epicenter Finder</a>
+            <a class="btn" href="/tools/earthquake-epicenter/activity/">Classroom activity</a>
+          </div>
+        </div>
+        <figure style="margin:0">
+          <Seismogram p={cdr.p} s={cdr.s} seed={traceSeed(1, cdrIndex)} picks={{ p: cdrRead.p, s: cdrRead.s }} label={`Cedar Ridge seismogram: the P wave arrives at ${cdrRead.p.toFixed(1)} seconds and the S wave at ${cdrRead.s.toFixed(1)} seconds.`} />
+          <figcaption class="muted" style="margin-top:8px;font-size:.92rem">Cedar Ridge: S–P lag {cdrRead.lag.toFixed(1)} s × 8.4 ≈ {Math.round(cdrRead.km)} km from the quake.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="coming">
+      <span class="eyebrow">Coming next</span>
+      <h2 id="coming">More labs on the way</h2>
+      <div class="coming">
+        <div class="card">
+          <h3>Plate Tectonics Explorer</h3>
+          <p class="muted">Pull plates apart, push them together and slide them past each other to see which landforms, earthquakes and volcanoes each boundary makes.</p>
+        </div>
+        <div class="card">
+          <h3>Contour Map Playground</h3>
+          <p class="muted">Shape a landscape and watch its contour lines redraw, then learn to read hills, valleys and cliffs from a topographic map.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="why">
+      <span class="eyebrow">For teachers</span>
+      <h2 id="why">Why Earth Science Lab</h2>
+      <div class="why-grid">
+        <div class="card"><h3>Fits a class period</h3><p class="muted">Each lab comes with a 10–15 minute activity: a one-page worksheet and an answer key.</p></div>
+        <div class="card"><h3>Real methods, honest models</h3><p class="muted">Students use the methods scientists use, and each lab says plainly what its model simplifies.</p></div>
+        <div class="card"><h3>No logins, Chromebook-ready</h3><p class="muted">Nothing to install and no accounts. Share a lab to Google Classroom in one click.</p></div>
+        <div class="card"><h3>Numbers you can trust</h3><p class="muted">Answer keys are calculated by the same code that runs the lab, and automated tests check them.</p></div>
+      </div>
+      <p style="margin-top:18px"><a href="/teachers/">See classroom activities and standards →</a></p>
+    </section>
+
+    <Faq items={faq} />
+    <LearningApps />
+  </div>
+</Layout>

@@ -1,0 +1,10 @@
+{
+  // Cloudflare Workers static assets: `npm run build` writes the site to ./dist, served as-is.
+  "name": "earth-science-lab",
+  "compatibility_date": "2026-10-26",
+  "assets": {
+    "directory": "./dist",
+    "html_handling": "force-trailing-slash",
+    "not_found_handling": "404-page"
+  }
+}

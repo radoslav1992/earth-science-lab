@@ -1,0 +1,33 @@
+---
+// Cookie consent defaults. Render first in <head>, before the Google tag.
+// Visitors in the EEA, UK and Switzerland start with analytics and ad storage denied
+// (Google Consent Mode v2 applies this by region), and see ConsentBanner until they choose.
+// Elsewhere storage is granted by default. A saved choice lasts 180 days.
+// Sets one class on <html> for CSS and the ad loader:
+// consent-pending (in region, no choice yet), consent-granted or consent-denied.
+---
+<script is:inline>
+  (function () {
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
+    var regions = ['AT','BE','BG','HR','CY','CZ','DK','EE','FI','FR','DE','GR','HU','IE','IT','LV','LT','LU','MT','NL','PL','PT','RO','SK','SI','ES','SE','IS','LI','NO','GB','CH'];
+    var denied = { ad_storage: 'denied', ad_user_data: 'denied', ad_personalization: 'denied', analytics_storage: 'denied' };
+    var granted = { ad_storage: 'granted', ad_user_data: 'granted', ad_personalization: 'granted', analytics_storage: 'granted' };
+    gtag('consent', 'default', Object.assign({ region: regions, wait_for_update: 500 }, denied));
+    gtag('consent', 'default', granted);
+    // The banner and the ad gate need a client-side guess at the region: the time zone.
+    var tz = '';
+    try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || ''; } catch (e) {}
+    var inRegion = !tz || /^Europe\//.test(tz) || /^(Atlantic\/(Canary|Madeira|Azores|Reykjavik|Faroe)|Indian\/(Reunion|Mayotte)|America\/(Cayenne|Guadeloupe|Martinique))$/.test(tz);
+    var choice = null;
+    try {
+      var saved = JSON.parse(localStorage.getItem('cookieConsent') || 'null');
+      if (saved && (saved.v === 'granted' || saved.v === 'denied') && saved.t > Date.now() - 15552e6) choice = saved.v;
+    } catch (e) {}
+    var html = document.documentElement;
+    if (choice) {
+      gtag('consent', 'update', choice === 'granted' ? granted : denied);
+      html.classList.add('consent-' + choice);
+    } else if (inRegion) html.classList.add('consent-pending');
+  })();
+</script>

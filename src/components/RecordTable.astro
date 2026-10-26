@@ -1,0 +1,17 @@
+---
+// The worksheet's results table: blank for students, filled in from the model on the answer key.
+const { act, answers = false } = Astro.props;
+const record: string[] = act.record;
+const rows: [string, Record<string, string>][] = act.rows;
+---
+<div class="table-wrap">
+  <table class="record-table">
+    <thead><tr><th scope="col">Station</th>{record.map(col => <th scope="col">{col}</th>)}</tr></thead>
+    <tbody>
+      {rows.map(([station, values]) => (
+        <tr><th scope="row">{station}</th>{record.map(col => answers ? <td>{values[col]}</td> : <td class="blank" />)}</tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+<p class="worksheet-meta">{answers ? act.extraAnswer.a : act.extra}</p>

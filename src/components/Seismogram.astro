@@ -1,0 +1,46 @@
+---
+// A synthetic seismogram (see src/lib/seismogram.mjs), drawn the same way on the server and in the finder.
+// picks: optional {p, s} markers to print on the trace (worked examples and answer keys).
+import { RECORD_SECONDS } from '../lib/seismology.mjs';
+import { TRACE, xForTime, traceSamples, tracePath } from '../lib/seismogram.mjs';
+
+interface Props {
+  p: number;
+  s: number;
+  seed: number;
+  label: string;
+  picks?: { p: number; s: number };
+  /** The finder's version: focusable, with P and S markers it can move. */
+  interactive?: boolean;
+}
+const { p, s, seed, label, picks, interactive = false } = Astro.props;
+const d = tracePath(traceSamples({ p, s, seed }));
+const ticks = Array.from({ length: RECORD_SECONDS / 10 + 1 }, (_, i) => i * 10);
+const axisY = TRACE.mid + TRACE.half + 4;
+const markers = interactive ? [['p', null], ['s', null]] : picks ? [['p', picks.p], ['s', picks.s]] : [];
+---
+<svg
+  class:list={['trace', { 'trace-picker': interactive }]}
+  viewBox={`0 0 ${TRACE.width} ${TRACE.height}`}
+  role={interactive ? 'application' : 'img'}
+  aria-label={label}
+  tabindex={interactive ? 0 : undefined}
+  {...(interactive ? { 'data-trace': '' } : {})}
+>
+  <g class="trace-grid" aria-hidden="true">
+    {ticks.map(t => <line x1={xForTime(t)} y1="4" x2={xForTime(t)} y2={axisY} />)}
+  </g>
+  <line class="trace-axis" x1={TRACE.left} y1={axisY} x2={TRACE.right} y2={axisY} aria-hidden="true" />
+  <g aria-hidden="true">
+    {ticks.filter(t => t % 20 === 0).map(t => (
+      <text class:list={['trace-label', { minor: t % 40 !== 0 }]} x={xForTime(t)} y={TRACE.height - 4} text-anchor={t === 0 ? 'start' : t === RECORD_SECONDS ? 'end' : 'middle'}>{t === RECORD_SECONDS ? `${t} s` : t}</text>
+    ))}
+  </g>
+  <path class="trace-line" d={d} aria-hidden="true" />
+  {markers.map(([kind, t]) => (
+    <g class={`pick pick-${kind}`} data-pick={kind} transform={`translate(${t === null ? -100 : xForTime(t as number)} 0)`} visibility={t === null ? 'hidden' : undefined} aria-hidden="true">
+      <line x1="0" y1="4" x2="0" y2={axisY} />
+      <text x="4" y="17">{(kind as string).toUpperCase()}</text>
+    </g>
+  ))}
+</svg>

@@ -1,0 +1,18 @@
+---
+// Students sent by a teacher (Google Classroom, Canvas, Schoology, or a link carrying ?classroom)
+// browse ad-free on this device for 30 days. Rendered in <head> so it runs before any ad space appears.
+---
+<script is:inline>
+  (function () {
+    var key = 'adFreeUntil', school = false, until = 0;
+    try {
+      var host = document.referrer ? new URL(document.referrer).hostname : '';
+      school = /(^|\.)(classroom\.google\.com|instructure\.com|schoology\.com)$/.test(host) || new URLSearchParams(location.search).has('classroom');
+    } catch (e) {}
+    try {
+      if (school) localStorage.setItem(key, String(Date.now() + 2592e6));
+      until = Number(localStorage.getItem(key)) || 0;
+    } catch (e) {}
+    if (school || until > Date.now()) document.documentElement.classList.add('ad-free');
+  })();
+</script>

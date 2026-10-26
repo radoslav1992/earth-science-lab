@@ -1,0 +1,52 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import RecordTable from '../../../components/RecordTable.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import { activities, standards } from '../../../lib/activities.mjs';
+
+const act = activities.find(a => a.tool === 'earthquake-epicenter')!;
+const url = new URL('/tools/earthquake-epicenter/activity/', Astro.site).href;
+const description = `Free printable earthquake epicenter worksheet for ${act.grade.toLowerCase()}: read three seismograms, find the S–P lag and triangulate the epicenter. About ${act.minutes} minutes.`;
+const resource = {
+  '@context': 'https://schema.org',
+  '@type': 'LearningResource',
+  name: act.title,
+  description: act.goal,
+  url,
+  learningResourceType: 'Worksheet',
+  educationalLevel: act.grade,
+  timeRequired: `PT${act.minutes}M`,
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalAlignment: act.standards.map(code => ({ '@type': 'AlignmentObject', alignmentType: 'educationalSubject', educationalFramework: 'Next Generation Science Standards', targetName: code })),
+};
+---
+<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Epicenter Finder" crumbs={[['Earthquake Epicenter Finder', '/tools/earthquake-epicenter/'], ['Classroom activity']]}>
+  <article class="worksheet">
+    <div class="breadcrumb no-print"><a href="/tools/earthquake-epicenter/">{act.toolName}</a> / Classroom activity</div>
+    <header class="worksheet-head">
+      <div>
+        <span class="eyebrow">Student activity · {act.grade} · about {act.minutes} minutes</span>
+        <h1>{act.title}</h1>
+      </div>
+      <div class="name-lines" aria-hidden="true"><span>Name</span><span>Class</span><span>Date</span></div>
+    </header>
+    <p class="worksheet-goal"><strong>Goal:</strong> {act.goal}</p>
+    <p class="worksheet-meta">Open the finder at <strong>earthsciencelab.org/tools/earthquake-epicenter/</strong> and choose <strong>Guided</strong> mode · Connects to NGSS {act.standards.join(', ')}</p>
+    <div class="page-actions no-print">
+      <button class="btn primary" type="button" data-print>Print worksheet</button>
+      <a class="btn" href="/tools/earthquake-epicenter/">Open the finder</a>
+      <ClassroomShare url={url} />
+    </div>
+    <h2>What to do</h2>
+    <ol class="steps">{act.steps.map(step => <li>{step}</li>)}</ol>
+    <h2>Record your results</h2>
+    <RecordTable act={act} />
+    <h2>Questions</h2>
+    <ol class="questions">
+      {act.questions.map(q => <li><p>{q.q}</p><div class="write-lines" aria-hidden="true">{Array.from({ length: q.lines }, () => <span />)}</div></li>)}
+    </ol>
+    <p class="worksheet-foot">Free from Earth Science Lab · earthsciencelab.org<span class="no-print"> · {act.standards.map(code => `${code}: ${standards[code]}`).join(' ')}</span></p>
+  </article>
+  <script type="application/ld+json" set:html={JSON.stringify(resource)} />
+</Layout>

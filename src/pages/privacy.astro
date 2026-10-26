@@ -1,0 +1,64 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { site } from '../lib/site.mjs';
+import { anyAds } from '../lib/ads.mjs';
+
+const analytics = Boolean(site.analyticsId);
+const consentNeeded = analytics || anyAds;
+---
+<Layout title="Privacy Policy" description="How Earth Science Lab handles your data: no accounts, no personal details, optional anonymous analytics with a cookie choice, and what is kept in your browser." section="" crumbs={[['Privacy policy']]}>
+  <div class="wrap prose">
+    <div class="page-intro">
+      <span class="eyebrow">Privacy</span>
+      <h1>Privacy policy</h1>
+      <p class="lede">Earth Science Lab is built for students. We don’t have accounts, we never ask for names or email addresses, and the labs save nothing about who you are.</p>
+      <p class="muted">Last updated October 26, 2026.</p>
+    </div>
+
+    <h2>No accounts, no personal details</h2>
+    <p>You can use every lab, worksheet and answer key without signing up. The labs run in your browser; your readings, circles and guesses are not sent to us. A shared lab link (Copy share link) carries only the lab’s settings, such as the mode and a challenge number.</p>
+
+    <h2>Analytics</h2>
+    {analytics ? (
+      <p>We use Google Analytics 4 to count visits and see which labs are used, so we can improve them. It records anonymous, aggregated information such as pages viewed, the type of device and browser, the approximate country, and lab events such as “an epicenter was solved” with the error in kilometers. It does not receive names or anything students type. Google processes this data as described in <a href="https://policies.google.com/privacy">Google’s privacy policy</a>.</p>
+    ) : (
+      <p>Earth Science Lab does not run any analytics at the moment, so no analytics cookies are set. If we turn on Google Analytics 4 later, it will count anonymous, aggregated usage (pages viewed, device type, approximate country and lab events such as “an epicenter was solved”), this page will be updated, and visitors in regions that require it will be asked first.</p>
+    )}
+
+    <h2>Cookie choices</h2>
+    {consentNeeded ? (
+      <p>Visitors in the European Economic Area, the United Kingdom and Switzerland see a small banner and choose Accept or Reject before any analytics{anyAds ? ' or advertising' : ''} cookies are used. Your choice is remembered for 180 days, and you can change it any time with <strong>Cookie settings</strong> at the bottom of every page. Elsewhere, anonymous statistics are on by default.</p>
+    ) : (
+      <p>Because the site currently uses no analytics and no ads, it sets no cookies and shows no cookie banner. Each page still sets Google Consent Mode defaults (storage “denied” for visitors in the European Economic Area, the United Kingdom and Switzerland). On their own these send nothing anywhere; they are there so that a banner appears automatically if analytics or ads are switched on.</p>
+    )}
+
+    <h2>What is stored in your browser</h2>
+    <p>The site may keep two small values in your browser’s local storage. They stay on your device and are never sent to us.</p>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Key</th><th scope="col">What it is for</th><th scope="col">How long</th></tr></thead>
+        <tbody>
+          <tr><td><code>cookieConsent</code></td><td>Your Accept or Reject choice from the cookie banner (only saved if the banner is shown and you choose).</td><td>180 days</td></tr>
+          <tr><td><code>adFreeUntil</code></td><td>Set when you arrive from Google Classroom, Canvas or Schoology, or through a Share to Google Classroom link, so school visits stay ad-free.</td><td>30 days</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>The Epicenter Finder itself stores nothing: refreshing the page starts it fresh, and its settings travel only inside a share link’s address.</p>
+
+    <h2>Ads</h2>
+    {anyAds ? (
+      <p>Some pages show a few clearly labeled ads from Adsterra, which keep the site free. Ads load only after cookie consent where it is required, never on teacher pages or answer keys, and never for students who arrive from a school platform or a Share to Google Classroom link.</p>
+    ) : (
+      <p>There are no ads on Earth Science Lab yet. If that changes, ads will be clearly labeled, will wait for cookie consent where it is required, will never appear on teacher pages or answer keys, and will stay off for students who arrive from a school platform or a Share to Google Classroom link. This page will be updated first.</p>
+    )}
+
+    <h2>Fonts and hosting</h2>
+    <p>The site is served by Cloudflare, which processes standard request data (such as IP addresses) to deliver and protect the site. Text is set in fonts loaded from Google Fonts, which receives your IP address when the fonts are downloaded.</p>
+
+    <h2>Children</h2>
+    <p>The labs are designed for students aged about 10 to 16 and do not collect personal information from anyone. Teachers can use them in class without collecting any student data.</p>
+
+    <h2>Contact</h2>
+    <p>Questions about privacy: <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>
+  </div>
+</Layout>

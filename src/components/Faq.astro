@@ -1,0 +1,6 @@
+---
+// Visible FAQ plus matching FAQPage structured data. items: [question, answer][]
+const { items, title = 'Questions students and teachers ask', eyebrow = 'Good questions' } = Astro.props;
+---
+<section class="section faq"><span class="eyebrow">{eyebrow}</span><h2>{title}</h2>{items.map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}</section>
+<script type="application/ld+json" set:html={JSON.stringify({ '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: items.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) })}/>

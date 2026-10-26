@@ -1,0 +1,128 @@
+---
+import '../styles/global.css';
+import AdFree from '../components/AdFree.astro';
+import AdSlot from '../components/AdSlot.astro';
+import ConsentDefaults from '../components/ConsentDefaults.astro';
+import ConsentBanner from '../components/ConsentBanner.astro';
+import { site } from '../lib/site.mjs';
+import { anyAds } from '../lib/ads.mjs';
+import { learningApps, currentApp, flagship } from '../lib/learning-apps.mjs';
+
+interface Props {
+  title?: string;
+  description?: string;
+  section?: string;
+  /** Breadcrumbs after Home: [name, path?][]; the last one is the current page. */
+  crumbs?: [string, string?][];
+  /** false on teacher pages: no ad space at all. */
+  ads?: boolean;
+  noindex?: boolean;
+}
+
+const { title = site.defaultTitle, description = site.defaultDescription, section = '', crumbs = [], ads = true, noindex = false } = Astro.props;
+const suffix = ` | ${site.name}`;
+const fullTitle = title.includes(site.name) || title.length + suffix.length > 65 ? title : title + suffix;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL('/og-image.png', Astro.site).href;
+const isHome = Astro.url.pathname === '/';
+// Cookies only exist once Google Analytics or ads are switched on, so until then there is nothing to ask about.
+const consentNeeded = Boolean(site.analyticsId) || anyAds;
+
+const structured = [];
+if (isHome) {
+  structured.push({ '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: site.url + '/', description, inLanguage: 'en' });
+  structured.push({ '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: site.url + '/', logo: `${site.url}/favicon.svg`, email: site.contactEmail });
+}
+if (crumbs.length) {
+  structured.push({
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [['Home', '/'], ...crumbs].map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: path ? new URL(path, Astro.site).href : canonical.href })),
+  });
+}
+
+const nav = [['Explore', '/'], ['Epicenter Finder', '/tools/earthquake-epicenter/'], ['For teachers', '/teachers/'], ['About', '/about/']];
+const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <AdFree />
+    <ConsentDefaults />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    <meta name="theme-color" content="#f6efe3" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Earth Science Lab: three seismograph circles meeting at an earthquake epicenter on a map" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImage} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bitter:wght@600;700&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,700&display=swap" />
+    {structured.map(data => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+    <slot name="head" />
+    {site.analyticsId && (
+      <Fragment>
+        <script is:inline async src={`https://www.googletagmanager.com/gtag/js?id=${site.analyticsId}`}></script>
+        <script is:inline define:vars={{ id: site.analyticsId }}>
+          gtag('js', new Date());
+          gtag('config', id);
+        </script>
+      </Fragment>
+    )}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="header">
+      <a class="brand" href="/" aria-label={`${site.name} home`}>
+        <img src="/favicon.svg" width="36" height="36" alt="" />
+        <span>Earth Science <span class="brand-accent">Lab</span></span>
+      </a>
+      <nav class="main-nav" aria-label="Main navigation">
+        {nav.map(([name, url]) => <a href={url} aria-current={section === name ? 'page' : undefined}>{name}</a>)}
+      </nav>
+    </header>
+    <main id="main"><slot /></main>
+    {ads && <AdSlot type="leaderboard" />}
+    <footer class="footer">
+      <div class="footer-top">
+        <div>
+          <a href="/" class="brand"><img src="/favicon.svg" width="30" height="30" alt="" /><span>Earth Science <span class="brand-accent">Lab</span></span></a>
+          <p class="footer-tagline">{site.tagline}</p>
+        </div>
+        <p class="footer-maker">From the makers of <a href={flagship.url + '/'}>{flagship.name}</a></p>
+      </div>
+      <div class="footer-links">
+        <a href="/tools/earthquake-epicenter/">Epicenter Finder</a>
+        <a href="/teachers/">For teachers</a>
+        <a href="/about/">About</a>
+        <a href="/privacy/">Privacy policy</a>
+        {consentNeeded && <button type="button" class="footer-link-button" data-cookie-settings>Cookie settings</button>}
+        <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>
+      </div>
+      <nav class="footer-apps" aria-label="More free learning apps">
+        <strong>More free learning apps</strong>
+        {sisterApps.map(app => <a href={app.url + '/'}>{app.name}</a>)}
+      </nav>
+    </footer>
+    {consentNeeded && <ConsentBanner ads={anyAds} />}
+    <script>
+      import { trackCommonEvents } from '../lib/analytics';
+      trackCommonEvents();
+    </script>
+  </body>
+</html>

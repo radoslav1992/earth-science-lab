@@ -1,0 +1,120 @@
+---
+// The interactive Earthquake Epicenter Finder. The server renders the Guided quake (traces, map, empty
+// readings) with its controls disabled; src/scripts/epicenter.ts switches them on and runs every mode.
+import QuakeMap from './QuakeMap.astro';
+import Seismogram from './Seismogram.astro';
+import TravelTimeGraph from './TravelTimeGraph.astro';
+import { GUIDED, STATIONS, readings } from '../lib/seismology.mjs';
+import { traceSeed } from '../lib/seismogram.mjs';
+
+const guided = readings(GUIDED);
+---
+<section class="finder" id="finder" data-finder data-mode="guided" aria-label="Earthquake Epicenter Finder">
+  <div class="finder-bar">
+    <div class="mode-switch" role="group" aria-label="Mode">
+      <button type="button" data-mode-btn="guided" aria-pressed="true" disabled>Guided</button>
+      <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+      <button type="button" data-mode-btn="explore" aria-pressed="false" disabled>Explore</button>
+    </div>
+    <div class="finder-tools">
+      <label class="toggle" data-snap-label><input type="checkbox" data-snap checked disabled /> Snap to arrivals (easy)</label>
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+      <button type="button" class="btn small" data-reset disabled>Reset</button>
+    </div>
+  </div>
+  <div class="note finder-note" data-note hidden></div>
+  <noscript><p class="note noscript-note">The finder needs JavaScript to run. Below the tool, a worked example walks through this same earthquake step by step, with the finished map.</p></noscript>
+  <p class="mode-intro" data-mode-intro>Guided example: an earthquake has just been recorded at three seismograph stations. Follow the four steps to find where it started. Hints tell you if a reading looks off.</p>
+  <div class="challenge-bar" data-challenge-bar hidden>
+    <span>Quake <strong data-round>1</strong> of 3</span>
+    <span>Score <strong data-score>0</strong></span>
+    <span class="muted-inverse" data-challenge-code></span>
+  </div>
+  <ol class="stepper" data-stepper>
+    <li data-step="1" class="current">Read the seismograms</li>
+    <li data-step="2">Convert lag to distance</li>
+    <li data-step="3">Draw circles, click the epicenter</li>
+    <li data-step="4">Reveal and check</li>
+  </ol>
+
+  <div class="finder-grid">
+    <div class="finder-stations" data-stations>
+      {guided.map((r, i) => (
+        <div class="station-card" data-station={i} style={`--station:${r.station.color}`}>
+          <div class="station-head">
+            <h3>{r.station.name} <small>{r.station.code}</small></h3>
+            <span class="station-status" data-station-status>Not read yet</span>
+          </div>
+          <Seismogram p={r.p} s={r.s} seed={traceSeed(1, i)} interactive label={`${r.station.name} seismogram, 0 to 200 seconds. Click to mark the P and S wave arrivals. Press P or S to choose a marker and the arrow keys to move it.`} />
+          <p class="pick-hint" data-pick-hint>Click where the first small wiggles start: the <b>P wave</b>.</p>
+          <div class="station-fields" data-student-fields>
+            <label class="field"><span>P arrives (s)</span><input type="number" inputmode="decimal" min="0" max="200" step="0.1" data-field="p" disabled /></label>
+            <label class="field"><span>S arrives (s)</span><input type="number" inputmode="decimal" min="0" max="200" step="0.1" data-field="s" disabled /></label>
+            <div class="field"><span>S–P lag</span><output data-lag>–</output></div>
+            <div class="field">
+              <label for={`km-${i}`}>Distance (km)</label>
+              <div class="distance-row">
+                <input id={`km-${i}`} type="number" inputmode="decimal" min="0" max="800" step="1" data-field="km" disabled />
+                <button type="button" class="btn small" data-calc disabled aria-label={`Calculate ${r.station.name} distance: lag times 8.4`}>× 8.4</button>
+              </div>
+            </div>
+          </div>
+          <p class="working" data-working></p>
+          <p class="feedback" data-feedback hidden></p>
+          <p class="explore-readout" data-explore-readout hidden></p>
+          <p class="amplitude-line" data-amplitude-line>Largest S-wave swing: <span data-amplitude>{r.amplitude.toFixed(1)}</span> mm</p>
+        </div>
+      ))}
+    </div>
+
+    <div class="finder-map-col">
+      <QuakeMap class="finder-map" label="Map of the region with three seismograph stations. Click or tap to place your epicenter guess, or use the arrow keys to move it. In Explore mode, drag the earthquake instead." interactive>
+        <Fragment slot="under">
+          <g data-layer="true-circles"></g>
+          <g data-layer="circles"></g>
+          <g data-layer="triangle"></g>
+        </Fragment>
+        <g data-layer="waves"></g>
+        <g data-layer="ambiguity"></g>
+        <g data-layer="error"></g>
+        <g data-layer="truth"></g>
+        <g data-layer="guess"></g>
+        <g data-layer="handles"></g>
+      </QuakeMap>
+      <div class="map-legend" aria-hidden="true">
+        {STATIONS.map(st => <span><svg width="14" height="12" viewBox="0 0 14 12"><path d="M7 0 L14 12 L0 12 Z" fill={st.color} /></svg>{st.name}</span>)}
+        <span><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="M-5 0H5M0 -5V5" stroke="#2a2724" stroke-width="2.4" /></svg>Your guess</span>
+        <span><svg width="14" height="14" viewBox="-7 -7 14 14"><path d="M0 -6.5 1.9 -2 6.5 -2 2.8 1 4.2 6 0 3 -4.2 6 -2.8 1 -6.5 -2 -1.9 -2Z" fill="#b4502b" /></svg>Epicenter</span>
+      </div>
+      <p class="map-help" data-map-help>Type a distance or drag a circle's edge. Then click where the three circles meet.</p>
+
+      <div class="finder-panel" data-play-panel>
+        <div class="reveal-row" data-reveal-row>
+          <button type="button" class="btn primary" data-reveal disabled>Reveal the epicenter</button>
+          <p data-guess-readout aria-live="polite">Place your guess on the map first.</p>
+        </div>
+        <div class="explore-controls" data-explore-panel hidden>
+          <label class="field" for="explore-magnitude"><span>Magnitude: <b data-magnitude-out>4.5</b></span></label>
+          <input id="explore-magnitude" type="range" min="2.5" max="7" step="0.1" value="4.5" data-magnitude />
+          <div class="reveal-row">
+            <button type="button" class="btn primary" data-play>Play waves</button>
+            <p data-explore-summary></p>
+          </div>
+        </div>
+      </div>
+      <div class="finder-panel result" data-result hidden tabindex="-1"></div>
+      <details class="graph-details">
+        <summary>Prefer a graph? Read distance off the travel-time graph</summary>
+        <p class="pick-hint">The S–P lag is the gap between the two lines. Slide along until the gap matches your lag, then read the distance below. Each station you measure gets a bar here.</p>
+        <TravelTimeGraph interactive />
+      </details>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initFinder } from '../scripts/epicenter';
+  const root = document.querySelector<HTMLElement>('[data-finder]');
+  if (root) initFinder(root);
+</script>
