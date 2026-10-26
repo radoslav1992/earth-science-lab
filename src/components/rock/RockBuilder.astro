@@ -1,0 +1,147 @@
+---
+// The interactive Rock Cycle Builder. The server draws the default start (granite) with its controls
+// disabled; ./builder.ts switches them on, applies processes, animates the rock's move through the
+// cross-section and runs Challenge mode.
+import './rock.css';
+import {
+  PROCESSES, OPTIONS, START_IDS, MATERIALS, FAMILY_NAMES, PLACES, DEFAULT_START, CHALLENGE,
+  startState, startConditions, options,
+} from '../../lib/rock-cycle.mjs';
+import {
+  SECTION, CYCLE_VIEW, sectionSvg, describeSection, cycleSvg, describeCycle, cardHtml, conditionsHtml, journeyHtml, swatchSvg,
+} from '../../lib/rock-view.mjs';
+
+const start = startState(DEFAULT_START);
+const states = [start];
+const avail = options(start);
+const possible = PROCESSES.filter(p => OPTIONS.some(o => o.process === p.id && avail[o.code].ok)).length;
+const groups: [string, string][] = [['magma', 'Magma'], ['intrusive', 'Igneous rocks: intrusive'], ['extrusive', 'Igneous rocks: extrusive'], ['sedimentary', 'Sedimentary rocks'], ['metamorphic', 'Metamorphic rocks']];
+// Small line icons for the processes (original drawings).
+const ICONS: Record<string, string> = {
+  cool: 'M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5',
+  uplift: 'M3 20h18M6 20l5-8 3 4 2-3 4 7M12 11V3M8.5 6.5 12 3l3.5 3.5',
+  weather: 'M7 14a4 4 0 1 1 .8-7.9A5 5 0 0 1 17.5 8a3 3 0 0 1-.5 6H7ZM8 17l-1.5 3M12 17l-1.5 3M16 17l-1.5 3',
+  deposit: 'M12 3v8M8.5 7.5 12 11l3.5-3.5M3 15h18M3 18.5h18M3 22h18',
+  lithify: 'M7 3v5M12 3v5M17 3v5M5 6l2 2 2-2M10 6l2 2 2-2M15 6l2 2 2-2M3 11h18v10H3ZM3 14.5h18M3 18h18',
+  meta: 'M2 12h5M5 9l2 3-2 3M22 12h-5M19 9l-2 3 2 3M12 4c2.5 3 3.5 5 3.5 7.5a3.5 3.5 0 0 1-7 0C8.5 9.5 10 8.5 10 6c1 .6 1.6 1.2 2 2Z',
+  melt: 'M12 3c3 4 6 7.5 6 11a6 6 0 0 1-12 0c0-3.5 3-7 6-11ZM9.5 15a2.5 2.5 0 0 0 2.5 2.5',
+};
+const now = MATERIALS[start.id];
+---
+<section class="rk" id="builder" data-rock data-mode="explore" aria-label="Rock Cycle Builder">
+  <div class="rk-bar">
+    <label class="rk-start">
+      <span class="rk-group-label">Start from</span>
+      <select data-start disabled>
+        {groups.map(([family, label]) => (
+          <optgroup label={label}>
+            {START_IDS.filter(id => MATERIALS[id].family === family).map(id => <option value={id} selected={id === DEFAULT_START}>{MATERIALS[id].name}</option>)}
+          </optgroup>
+        ))}
+      </select>
+    </label>
+    <div class="rk-tools">
+      <div class="mode-switch" role="group" aria-label="Mode">
+        <button type="button" data-mode-btn="explore" aria-pressed="true" disabled>Explore</button>
+        <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+      </div>
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+    </div>
+  </div>
+  <p class="rk-hint" data-hint><strong>New here?</strong> Granite formed deep underground. Press a process to change it: try <em>Uplift and exposure</em>, then <em>Weathering and erosion</em>. Dashed options can’t happen yet; press one to find out why.</p>
+  <div class="note rk-note" data-note hidden></div>
+  <noscript><p class="note rk-noscript">The builder needs JavaScript to change rocks. Below it, every rock has a card, and a table shows where each process happens and how hot it gets.</p></noscript>
+
+  <div class="rk-challenge" data-challenge hidden>
+    <div class="challenge-bar">
+      <span>Question <strong data-q-num>1</strong> of <span data-q-total>{CHALLENGE.length}</span></span>
+      <span>Score <strong data-q-score>0</strong></span>
+    </div>
+    <div class="rk-panel rk-q" data-q>
+      <div class="rk-q-show" data-q-show hidden></div>
+      <div class="rk-q-body">
+        <p class="rk-q-prompt" data-q-prompt></p>
+        <p class="rk-q-help" data-q-help hidden></p>
+        <p class="rk-q-progress" data-q-progress hidden></p>
+        <div class="rk-choices" role="group" aria-label="Answer choices" data-q-choices></div>
+        <div class="rk-feedback" data-q-feedback hidden tabindex="-1"></div>
+        <div class="rk-q-actions">
+          <button type="button" class="btn small" data-q-skip hidden>Skip: show me a route</button>
+          <button type="button" class="btn small" data-q-route hidden>Show a shortest route</button>
+          <button type="button" class="btn primary" data-q-next hidden>Next question</button>
+        </div>
+      </div>
+    </div>
+    <div class="rk-panel rk-done" data-q-done hidden tabindex="-1">
+      <p class="rk-done-score" data-q-final></p>
+      <p data-q-message></p>
+      <div class="page-actions">
+        <button type="button" class="btn primary" data-q-restart>Try again</button>
+        <button type="button" class="btn" data-q-explore>Back to Explore</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="rk-grid" data-builder>
+    <div class="rk-col rk-col-main">
+      <figure class="rk-panel rk-where">
+        <figcaption class="rk-panel-head">
+          <h3>Where it happens</h3>
+          <label class="toggle"><input type="checkbox" data-labels checked disabled /> Labels</label>
+        </figcaption>
+        <svg class="rx" viewBox={`0 0 ${SECTION.width} ${SECTION.height}`} role="img" aria-label={describeSection(states)} data-section set:html={sectionSvg(states)} />
+        <p class="rk-fig-note">Depths follow the scale on the left. Mountains and the volcano are drawn much taller than they really are.</p>
+      </figure>
+
+      <div class="rk-panel rk-procs">
+        <div class="rk-now" data-now>
+          <span class="rk-now-art" aria-hidden="true" set:html={swatchSvg(start.id, { className: 'rk-mini', label: '' })} />
+          <span class="rk-now-text"><span class="rk-now-label">Now:</span> <strong data-now-name>{now.name}</strong>, <span data-now-where>{PLACES[start.place].short}</span>. <span class="rk-now-count" data-now-count>{possible} of {PROCESSES.length} processes can happen.</span></span>
+        </div>
+        <div class="rk-proc-grid">
+          {PROCESSES.map(p => (
+            <div class={`rk-proc rk-proc-${p.id}`} role="group" aria-labelledby={`rk-proc-${p.id}`} data-proc={p.id}>
+              <h4 class="rk-proc-name" id={`rk-proc-${p.id}`}><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d={ICONS[p.id]} /></svg>{p.name}</h4>
+              <p class="rk-proc-blurb">{p.blurb}</p>
+              <div class="rk-opts">
+                {OPTIONS.filter(o => o.process === p.id).map(o => (
+                  <button type="button" class:list={['rk-opt', { ok: avail[o.code].ok }]} data-code={o.code} aria-disabled={String(!avail[o.code].ok)} disabled>{o.label}</button>
+                ))}
+              </div>
+              <p class="rk-why" data-why hidden></p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div class="rk-panel rk-journey">
+        <div class="rk-panel-head">
+          <h3>Rock journey</h3>
+          <span class="rk-steps" data-steps>0 steps</span>
+        </div>
+        <ol class="rk-j" data-journey set:html={journeyHtml(states, [])} />
+        <div class="rk-j-actions">
+          <button type="button" class="btn small" data-undo disabled>Undo last step</button>
+          <button type="button" class="btn small" data-reset disabled>Start over</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="rk-col rk-col-side">
+      <article class="rk-panel rk-card" aria-label="Rock card" data-card set:html={cardHtml(start)} />
+      <div class="rk-panel rk-conditions" data-conditions set:html={conditionsHtml(startConditions(start), { start: true })} />
+      <figure class="rk-panel rk-cycle">
+        <figcaption class="rk-panel-head"><h3>On the rock cycle</h3></figcaption>
+        <svg class="cy" viewBox={`0 0 ${CYCLE_VIEW.width} ${CYCLE_VIEW.height}`} role="img" aria-label={describeCycle(states)} data-cycle set:html={cycleSvg(states)} />
+        <p class="rk-fig-note">Solid arrows: the loop in most textbooks. Dashed arrows: shortcuts. Orange arrows: your journey, with how many times you took each.</p>
+      </figure>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initRock } from './builder';
+  const root = document.querySelector<HTMLElement>('[data-rock]');
+  if (root) initRock(root);
+</script>
