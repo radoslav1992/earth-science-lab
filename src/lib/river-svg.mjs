@@ -319,7 +319,10 @@ export function hjProbeLayer(probe) {
 export const fmtSize = mm => `${mm >= 10 ? Math.round(mm) : mm >= 1 ? fmt(mm, 1) : String(Number(mm.toPrecision(2)))} mm`;
 export const fmtSpeedPrecise = v => (v >= 10 ? String(Math.round(v)) : v >= 1 ? fmt(v, 1) : String(Number(v.toPrecision(2))));
 
-/** The whole diagram as an SVG element. */
+/**
+ * The whole diagram as an SVG element.
+ * @param {{ speed?: number, grain?: string, probe?: object | null, neutral?: boolean, label?: string, className?: string, attrs?: string }} [options]
+ */
 export function hjulstromSvg({ speed, grain = 'fine-sand', probe = null, neutral = false, label, className = '', attrs = '' } = {}) {
   const aria = label ?? describeHjulstrom(speed, grain);
   return `<svg class="hj ${className}" viewBox="0 0 ${HJ.width} ${HJ.height}" role="img" aria-label="${esc(aria)}"${attrs}>${hjStatic()}<g data-layer="speed">${speed ? hjSpeedLayer(speed, grain, { neutral }) : ''}</g><g data-layer="probe">${hjProbeLayer(probe)}</g></svg>`;

@@ -3,6 +3,7 @@
 // browser canvas, the server-rendered fallback and the tests all use the same numbers.
 
 // [elevation m, [r, g, b]]: lowland green through tan and brown to pale summits.
+/** @type {[number, number[]][]} */
 export const RAMP = [
   [0, [118, 165, 110]],
   [150, [166, 190, 121]],

@@ -28,6 +28,7 @@ There are six labs, listed below. In the first, the Earthquake Epicenter Finder,
 
 - [About Earth Science Lab](https://earthsciencelab.org/about/): What the site is, how the models work and who makes it.
 - [Privacy policy](https://earthsciencelab.org/privacy/): No accounts; optional anonymous analytics with a cookie choice; what is stored in the browser.
+- Contact: info@earthsciencelab.org (questions, corrections and classroom stories).
 
 ## Optional
 
