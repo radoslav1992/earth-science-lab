@@ -1,0 +1,193 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import RockBuilder from '../../../components/rock/RockBuilder.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import {
+  MATERIALS, ROCK_IDS, GRADES, MELT_C, GRADIENT_C_PER_KM, UPLIFT_MM_PER_YR, COMP_NAMES,
+  conditions, startState, depthForTempKm, pressureAtm, upliftMyr, twoSig, fmtRange, fmtNum, stepName,
+} from '../../../lib/rock-cycle.mjs';
+import { guideCardHtml } from '../../../lib/rock-view.mjs';
+import '../../../components/rock/rock.css';
+
+const title = 'Rock Cycle Builder – Interactive Rock Cycle Simulation';
+const description = 'Melt, cool, weather, bury and squeeze rocks to see how granite becomes slate or magma becomes marble, and where in Earth each step happens. Free worksheet.';
+const url = new URL('/tools/rock-cycle/', Astro.site).href;
+
+// The field guide: every rock in the builder, by family.
+const families = [
+  { id: 'intrusive', title: 'Igneous rocks that cooled underground (intrusive)', text: 'Magma that cools slowly, deep underground, has time to grow big crystals you can see. These rocks reach the surface only after uplift and erosion uncover them.' },
+  { id: 'extrusive', title: 'Igneous rocks that cooled at the surface (extrusive)', text: 'Lava cools fast, so its crystals stay tiny, or there are none at all. Gas bubbles can leave holes.' },
+  { id: 'sedimentary', title: 'Sedimentary rocks', text: 'Pieces of older rock, and shells, settle in layers. Buried and squeezed, the layers are glued into rock. Many sedimentary rocks hold fossils.' },
+  { id: 'metamorphic', title: 'Metamorphic rocks', text: 'Heat and pressure change a rock’s minerals and texture while it stays solid. Squeezing from one direction lines minerals up into layers or bands (foliation).' },
+].map(f => ({ ...f, ids: ROCK_IDS.filter(id => MATERIALS[id].family === f.id) }));
+
+// Where each process happens, straight from the model's conditions.
+const at = (id: string, place: string, comp = MATERIALS[id].comp) => ({ id, place, comp });
+const granite = startState('granite'), shale = startState('shale');
+const rows = [
+  { label: 'Cooling slowly, underground', c: conditions('cs', at('granite', 'pluton')), tempText: `About ${fmtRange([MELT_C.felsic[0], MELT_C.mafic[1]], ' °C')} magma, depending on its make-up` },
+  { label: 'Cooling quickly, as lava', c: conditions('cf', at('basalt', 'volcano')), tempText: `Lava at about ${fmtRange([MELT_C.felsic[0], MELT_C.mafic[1]], ' °C')} cools to air temperature` },
+  { label: 'Uplift and exposure', c: conditions('up', at('granite', 'land'), granite) },
+  { label: 'Weathering and erosion', c: conditions('we', at('sediment', 'stream', null)) },
+  { label: 'Deposition', c: conditions('dm', at('mud', 'seafloor', null)), where: 'Rivers, beaches, lakes and the sea floor' },
+  { label: 'Compaction and cementation', c: conditions('cc', shale) },
+  ...GRADES.map(g => ({ label: `Heat and pressure, ${g.name.toLowerCase()}`, c: conditions(`h${g.n}`, at('slate', `meta${g.n}`)) })),
+  ...(['felsic', 'intermediate', 'mafic'] as const).map(comp => ({ label: `Melting ${COMP_NAMES[comp].toLowerCase()} rock`, c: conditions('me', at(`${comp}-magma`, `melt-${comp}`, comp)) })),
+];
+
+// Worked example: gneiss forming at high grade, then rising back to the surface.
+const ex = { temp: 700 };
+const exKm = depthForTempKm(ex.temp);
+const perKm = pressureAtm(1);
+const exAtm = twoSig(pressureAtm(exKm));
+const exMyr = upliftMyr(exKm);
+const lifetime = 80; // years
+const lifetimeCm = (lifetime * UPLIFT_MM_PER_YR) / 10;
+const high = GRADES[3];
+
+const faq: [string, string][] = [
+  ['What is the rock cycle?', 'The rock cycle is the slow recycling of Earth’s rock. Rock melts into magma, which cools into igneous rock. Weathering breaks rock into sediment, which is buried and cemented into sedimentary rock. Heat and pressure change rock into metamorphic rock. Any rock can be changed again, so the same material is used over and over, across millions of years.'],
+  ['What are the three main types of rock?', 'Igneous rock forms when magma or lava cools, like granite and basalt. Sedimentary rock forms from layers of sediment or shells that are buried and cemented, like sandstone and limestone. Metamorphic rock forms when heat and pressure change a rock without melting it, like slate and marble.'],
+  ['What drives the rock cycle?', 'Two sources of energy. Energy from the Sun drives the weather and the water cycle, so rain, ice and wind break rock down and move it; gravity pulls the pieces downhill. Earth’s internal heat melts rock, drives metamorphism, and moves the plates that build mountains and carry rock deep underground.'],
+  ['How long does the rock cycle take?', `Usually millions of years. Weathering can take thousands of years, a buried rock may take millions of years to change, and uplift is slow: at about ${UPLIFT_MM_PER_YR} mm per year, a rock ${fmtNum(exKm)} km down needs about ${fmtNum(exMyr)} million years to reach the surface. Some steps are fast, though: lava can cool into rock in hours.`],
+  ['Does the rock cycle always go in the same order?', 'No. There is no fixed loop. Igneous rock can be squeezed straight into metamorphic rock or melted again; sedimentary rock can be uplifted and weathered into new sediment; metamorphic rock can be weathered, changed again or melted. Try it in the builder: the rock cycle diagram counts every shortcut you take.'],
+  ['What is the difference between magma and lava?', 'They are the same molten rock. It is called magma while it is underground and lava once it erupts at the surface. Magma that cools underground makes coarse-grained rocks like granite; lava cools fast and makes fine-grained or glassy rocks like basalt and obsidian.'],
+  ['Can I use the Rock Cycle Builder in class?', 'Yes. It is free with no sign-up and runs on school Chromebooks. Use the printable activity to follow a rock through six processes, then let students try Challenge mode: two build-a-rock puzzles and six questions about textures, foliation and energy. Teachers can find the answer key on the For teachers page.'],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Rock Cycle Builder',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Rock Cycle" crumbs={[['Rock Cycle Builder']]}>
+  <noscript slot="head"><style is:inline>.rk-hint { display: none; }</style></noscript>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Rocks and the rock cycle</span>
+      <h1>Rock Cycle Builder</h1>
+      <p class="lede">Start with a rock, or with magma, and change its conditions. Melt it, cool it, weather it, bury it or squeeze it, and see which real rock it becomes and where inside Earth each change happens.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/rock-cycle/activity/">Printable activity</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <RockBuilder />
+
+    <section class="section prose" aria-labelledby="what">
+      <h2 id="what">What is the rock cycle?</h2>
+      <p>Earth doesn’t make new rock from nothing. It recycles the rock it has, very slowly. There are three families of rock, named for how they form:</p>
+      <ul>
+        <li><strong>Igneous rock</strong> forms when molten rock cools and hardens. Underground the molten rock is called magma; at the surface it is lava.</li>
+        <li><strong>Sedimentary rock</strong> forms when sediment (loose grains of older rock, or shells) settles in layers and is buried, squeezed and cemented.</li>
+        <li><strong>Metamorphic rock</strong> forms when heat and pressure change a rock’s minerals and texture while it stays solid.</li>
+      </ul>
+      <p>Any rock can become any other kind, if conditions change. A granite can be uplifted, weathered into sand and mud, cemented into shale, squeezed into slate, and melted into magma again. That journey can take hundreds of millions of years.</p>
+      <h3>Energy drives the cycle</h3>
+      <p>Two energy sources keep rock moving. <strong>The Sun</strong> heats the air and water, which drives weather and the water cycle: rain, ice and wind break rock apart, and gravity carries the pieces downhill. <strong>Earth’s internal heat</strong> melts rock, bakes and squeezes it deep underground, and moves the plates that push rock down and lift mountains up.</p>
+      <h3>No single loop</h3>
+      <p>Textbook diagrams often show a neat circle: igneous to sedimentary to metamorphic and back. Real rocks take shortcuts. Granite can be squeezed straight into gneiss. Sandstone can be lifted up and weathered into new sand. Basalt can melt again without ever becoming sediment. The builder’s rock cycle diagram draws every shortcut you take.</p>
+    </section>
+
+    <section class="section" aria-labelledby="guide" style="padding-top:0">
+      <div class="prose">
+        <h2 id="guide">Rock field guide</h2>
+        <p>Every rock in the builder, with a drawing of its texture. Texture is the best clue to how a rock formed: crystal size tells you how fast it cooled, rounded grains tell you water carried them, and lined-up minerals tell you it was squeezed.</p>
+      </div>
+      {families.map(f => (
+        <div>
+          <h3>{f.title}</h3>
+          <p class="prose">{f.text}</p>
+          <div class="rk-guide" set:html={f.ids.map(id => guideCardHtml(id)).join('')} />
+        </div>
+      ))}
+    </section>
+
+    <section class="section rk-table" aria-labelledby="where" style="padding-top:0">
+      <h2 id="where">Where each process happens</h2>
+      <p class="prose">Every process needs its own conditions. Weathering happens only at the surface, where rain, ice and wind can reach the rock. Metamorphism and melting happen deep underground, where it is hot and the rock above presses down hard. All of these values are rough ranges.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Process</th><th scope="col">Where</th><th scope="col">Depth</th><th scope="col">Temperature</th><th scope="col">Pressure</th><th scope="col">Time</th><th scope="col">Energy</th></tr></thead>
+          <tbody>
+            {rows.map(row => (
+              <tr>
+                <th scope="row">{row.label}</th>
+                <td>{row.where ?? row.c.where}</td>
+                <td>{row.c.depthText}</td>
+                <td>{row.tempText ?? row.c.tempText}</td>
+                <td>{row.c.pressureText}</td>
+                <td>{row.c.time}</td>
+                <td>{row.c.energy}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:10px">Depths for heat and pressure and for melting assume the crust gets about {GRADIENT_C_PER_KM} °C hotter for every kilometer down. Real places can be much hotter or cooler, for example near magma or where a cold plate sinks.</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="worked" style="padding-top:0">
+      <h2 id="worked">Worked example: how deep, how squeezed, how long?</h2>
+      <p>Gneiss is a high-grade metamorphic rock. It forms at about {fmtRange(high.temp, ' °C')}. How deep is that, how hard is the rock squeezed, and how long does it take to come back up?</p>
+      <p><strong>How deep?</strong> In much of the crust the temperature rises about {GRADIENT_C_PER_KM} °C for every kilometer down. To reach {ex.temp} °C:</p>
+      <p class="formula">depth = {ex.temp} °C ÷ {GRADIENT_C_PER_KM} °C per km = {fmtNum(exKm)} km</p>
+      <p><strong>How squeezed?</strong> Each kilometer of rock above presses down with about {fmtNum(twoSig(perKm))} times the air pressure at sea level. So {fmtNum(exKm)} km of rock presses with about {fmtNum(exKm)} × {fmtNum(twoSig(perKm))} ≈ <strong>{exAtm.toLocaleString('en-US')} times</strong> the air pressure we feel.</p>
+      <p><strong>How long to come back up?</strong> Mountains rise, and erosion wears the rock above away, at roughly {UPLIFT_MM_PER_YR} mm per year. One millimeter a year for a million years is 1,000,000 mm, which is 1 km. So:</p>
+      <p class="formula">time = {fmtNum(exKm)} km ÷ {UPLIFT_MM_PER_YR} km per million years = {fmtNum(exMyr)} million years</p>
+      <p>In a human lifetime of about {lifetime} years, the gneiss would rise only {fmtNum(lifetimeCm)} cm. That is why gneiss reaches the surface only where mountains have been rising and wearing away for tens of millions of years.</p>
+      <p>Try it in the builder: start from shale, choose <em>{stepName('h4')}</em>, then <em>{stepName('up')}</em>, and read the depth and time in the Conditions panel.</p>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common misconceptions</h2>
+      <ul>
+        <li><strong>“Rocks always go around the cycle in one order.”</strong> They don’t. Any rock can be weathered, squeezed or melted if conditions change, so there are many shortcuts.</li>
+        <li><strong>“Metamorphic rocks form by melting.”</strong> Metamorphic rocks change while they stay solid. If the rock melts, it becomes magma, and when that cools it is igneous rock.</li>
+        <li><strong>“Layers in a rock always mean it is sedimentary.”</strong> Sedimentary rocks have layers called bedding, laid down by water or wind. Metamorphic rocks can have layers or bands too, but theirs form when squeezing lines up the minerals (foliation).</li>
+        <li><strong>“Any magma can make any igneous rock.”</strong> What a magma is made of matters. Melted granite is rich in silica and cools into granite, rhyolite, obsidian or pumice, not basalt.</li>
+        <li><strong>“The rock cycle happens quickly.”</strong> Most steps take thousands to millions of years. Lava cooling is one of the few fast ones.</li>
+        <li><strong>“Rocks under the ground are all molten.”</strong> Almost all of the crust and mantle is solid rock. Magma forms only in places where rock gets hot enough to partly melt.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>Real rocks don’t come in neat boxes. Each name in the builder stands for a range of rocks that blend into each other, and many real rocks are left out, such as hornfels (rock baked by nearby magma), migmatite, metaconglomerate, dacite, coal and rock salt. Conditions in Earth change smoothly, but the builder turns them into steps with rough ranges: the grades of heat and pressure, the melting temperatures, and depths worked out from a steady rise of about {GRADIENT_C_PER_KM} °C per kilometer, when real places can be much hotter or cooler. Each click stands for thousands to millions of years, and uplift always uses {UPLIFT_MM_PER_YR} mm per year.</p>
+      <p>The model tracks only what a rock is roughly made of. It treats melting as if the whole rock melts into magma of the same make-up, but real rocks usually melt only partly, and the first melt is richer in silica; magmas also mix and change. Any sediment can settle in any of the four places, even though real sediment is a mix from many rocks. In the real Earth, fresh basaltic magma keeps rising from the mantle and adds new material to the cycle; in the builder, you can start from it. The cross-section is a diagram, not a real place: depths follow the scale, but mountains and the volcano are drawn many times too tall.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Rock cycle journey activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes: students follow a granite through six processes in the builder, record each rock, where it forms and how hot it gets, and answer six questions about energy, depth and shortcuts.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/rock-cycle/activity/">Open the activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the builder with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <Faq items={faq} title="Rock cycle questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>

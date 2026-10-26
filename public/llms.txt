@@ -2,20 +2,27 @@
 
 > Free interactive earth science simulations for students aged about 10–16 and their teachers. Each lab is a working model with a short explanation, a printable one-page classroom activity and a teacher answer key. No accounts or sign-up. From the makers of Interactive Periodic Table.
 
-The first lab is the Earthquake Epicenter Finder. Students read three synthetic seismograms, mark the P and S wave arrivals, convert each S–P lag to a distance (P waves 6.0 km/s, S waves 3.5 km/s, so distance in km ≈ lag in seconds × 8.4) and triangulate the epicenter on a fictional 600 × 400 km map. It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, plus an optional local-magnitude estimate (M ≈ log10(A) + 3·log10(8·Δt) − 2.92, a classroom approximation).
+There are six labs, listed below. In the first, the Earthquake Epicenter Finder, students read three synthetic seismograms, mark the P and S wave arrivals, convert each S–P lag to a distance (P waves 6.0 km/s, S waves 3.5 km/s, so distance in km ≈ lag in seconds × 8.4) and triangulate the epicenter on a fictional 600 × 400 km map. It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, plus an optional local-magnitude estimate (M ≈ log10(A) + 3·log10(8·Δt) − 2.92, a classroom approximation).
 
 ## Tools
 
 - [Earthquake Epicenter Finder](https://earthsciencelab.org/tools/earthquake-epicenter/): Triangulation virtual lab with a five-step guide, a worked example, P vs S waves, epicenter vs focus, common mistakes and an FAQ.
 - [Plate Tectonics Explorer](https://earthsciencelab.org/tools/plate-tectonics/): Animated cross-sections of all six plate-boundary types (ridges, rifts, subduction zones, island arcs, collision mountains and transform faults), with earthquake depths, volcanoes, a rate × time calculator, a challenge mode and an FAQ.
 - [Contour Map Playground](https://earthsciencelab.org/tools/contour-map/): Sculpt hills, valleys and volcanoes beside their live topographic map. Contour intervals, index lines, slope, the V-rule for rivers, a 3D view, cross-sections drawn on the map and map-reading challenges, with a worked example and an FAQ.
+- [River Erosion Sandbox](https://earthsciencelab.org/tools/river-erosion/): Virtual stream table. Set the slope, water flow, sediment size and supply, then watch erosion, transport and deposition (channel, point bars, delta) with an interactive Hjulström diagram, a challenge mode and an FAQ.
+- [Water Cycle Explorer](https://earthsciencelab.org/tools/water-cycle/): Follow a droplet between Earth's water reservoirs by choice or seeded chance, with typical residence times, climate and sun/gravity what-ifs, USGS "where is Earth's water" zoom bars, a challenge mode and an FAQ.
+- [Rock Cycle Builder](https://earthsciencelab.org/tools/rock-cycle/): Apply melting, cooling, weathering, deposition, burial, heat and pressure, and uplift to turn 21 real rocks into one another, with the depth, temperature, time and energy source for each step, a challenge mode and an FAQ.
+- [All labs](https://earthsciencelab.org/tools/): Every lab with its classroom activity and standards.
 
 ## Classroom
 
-- [For teachers](https://earthsciencelab.org/teachers/): Activities, how to run them in 10–15 minutes, NGSS connections (MS-ESS3-2, MS-ESS2-3, HS-ESS2-1), Chromebook and privacy notes.
+- [For teachers](https://earthsciencelab.org/teachers/): Activities, how to run them in 10–15 minutes, NGSS connections (MS-ESS3-2, MS-ESS2-1, MS-ESS2-2, MS-ESS2-3, MS-ESS2-4, HS-ESS2-1, HS-ESS2-5, 5-ESS2-2), Chromebook and privacy notes.
 - [Earthquake Epicenter Activity](https://earthsciencelab.org/tools/earthquake-epicenter/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
 - [Plate Boundaries Activity](https://earthsciencelab.org/tools/plate-tectonics/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
 - [Reading a Contour Map Activity](https://earthsciencelab.org/tools/contour-map/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
+- [Erosion and Deposition Activity](https://earthsciencelab.org/tools/river-erosion/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
+- [Water Cycle Journey Activity](https://earthsciencelab.org/tools/water-cycle/activity/): Printable one-page student worksheet for grades 5–8, about 15 minutes.
+- [Rock Cycle Journey Activity](https://earthsciencelab.org/tools/rock-cycle/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
 
 ## About
 

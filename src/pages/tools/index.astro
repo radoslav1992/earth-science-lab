@@ -1,0 +1,90 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import EpicenterDiagram from '../../components/EpicenterDiagram.astro';
+import CrossSection from '../../components/plates/CrossSection.astro';
+import { labs } from '../../lib/labs.mjs';
+import { activities } from '../../lib/activities.mjs';
+import { createTerrain } from '../../lib/terrain.mjs';
+import { mapSvg } from '../../lib/contour-svg.mjs';
+import { VIEW as WATER_VIEW, sceneBaseSvg } from '../../lib/water-cycle.mjs';
+import { DEFAULT_STATE as RIVER_START, simulate } from '../../lib/river.mjs';
+import { PLAN, planInner } from '../../lib/river-svg.mjs';
+import { replay } from '../../lib/rock-cycle.mjs';
+import { SECTION, sectionSvg } from '../../lib/rock-view.mjs';
+import '../../styles/contour.css';
+import '../../components/water/water.css';
+import '../../components/river/river.css';
+import '../../components/rock/rock.css';
+
+const title = 'Free Earth Science Simulations and Virtual Labs';
+const description = 'All six Earth Science Lab simulations side by side, from earthquakes and moving plates to rivers, water and rocks, each with a printable worksheet and answer key.';
+const url = new URL('/tools/', Astro.site).href;
+const volcano = mapSvg(createTerrain('volcano'), { interval: 20, overlays: ['index'], className: 'lab-thumb-map', label: 'Contour map of a volcano with a crater at its summit' });
+const river = planInner(simulate(RIVER_START), RIVER_START.t);
+// Granite lifted, weathered, laid down as mud, cemented into shale and squeezed into schist.
+const rockJourney = replay('granite', ['up', 'we', 'dm', 'cc', 'h3']).states;
+const activityFor = slug => activities.find(act => act.tool === slug);
+const itemList = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: title,
+  url,
+  itemListElement: labs.map((lab, i) => ({ '@type': 'ListItem', position: i + 1, name: lab.name, url: new URL(`/tools/${lab.slug}/`, Astro.site).href })),
+};
+---
+<Layout title={title} description={description} section="Labs" crumbs={[['Labs']]}>
+  <script slot="head" type="application/ld+json" set:html={JSON.stringify(itemList)} />
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">All labs</span>
+      <h1>Earth science simulations</h1>
+      <p class="lede">Each lab is a small, working model of the Earth system. Change the conditions, see how Earth responds, and check your thinking against the numbers. Every lab comes with a one-page classroom activity and an answer key.</p>
+    </div>
+
+    <section class="section lab-list" aria-label="Labs">
+      {labs.map(lab => {
+        const act = activityFor(lab.slug);
+        return (
+          <article class="card lab-card">
+            <a class="lab-thumb" href={`/tools/${lab.slug}/`} tabindex="-1" aria-hidden="true">
+              {lab.slug === 'earthquake-epicenter' && <EpicenterDiagram />}
+              {lab.slug === 'plate-tectonics' && <CrossSection boundary="convergent-oc" />}
+              {lab.slug === 'contour-map' && <Fragment set:html={volcano} />}
+              {lab.slug === 'river-erosion' && <svg class="rv-plan" viewBox={`0 0 ${PLAN.width} ${PLAN.height}`} role="img" aria-label="Stream table seen from above: a river channel running into a sea and building a delta" set:html={river} />}
+              {lab.slug === 'rock-cycle' && <svg class="rx" viewBox={`0 0 ${SECTION.width} ${SECTION.height}`} role="img" aria-label="Cross-section of the crust showing a rock's journey from granite to schist" set:html={sectionSvg(rockJourney)} />}
+              {lab.slug === 'water-cycle' && <svg class="wc-scene" viewBox={`0 0 ${WATER_VIEW.width} ${WATER_VIEW.height}`} role="img" aria-label="Water cycle diagram: ocean, atmosphere, glacier, ice sheet, soil, plants, river, lake and groundwater" set:html={sceneBaseSvg()} />}
+            </a>
+            <div class="lab-body">
+              <span class="eyebrow">{lab.topic}</span>
+              <h2><a href={`/tools/${lab.slug}/`}>{lab.name}</a></h2>
+              <p>{lab.blurb}</p>
+              {act && <p class="muted lab-meta">{act.grade} · {act.minutes}-minute classroom activity{act.standards.length ? ` · NGSS ${act.standards.join(', ')}` : ''}</p>}
+              <p class="page-actions"><a class="btn primary" href={`/tools/${lab.slug}/`}>Open the lab</a>{act && <a class="btn" href={`/tools/${lab.slug}/activity/`}>Classroom activity</a>}</p>
+            </div>
+          </article>
+        );
+      })}
+    </section>
+
+    <section class="section prose">
+      <h2>For teachers</h2>
+      <p>Every lab runs in the browser on Chromebooks and tablets, with no accounts. The <a href="/teachers/">teacher page</a> has the activities, answer keys, a 10–15 minute lesson plan for each lab and the standards they connect to.</p>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .lab-list { display: grid; gap: 18px; }
+  .lab-card { display: grid; grid-template-columns: minmax(0, 300px) minmax(0, 1fr); gap: 22px; align-items: center; }
+  .lab-thumb { display: block; border-radius: 10px; overflow: hidden; background: var(--paper); border: 1px solid var(--line); }
+  .lab-thumb :global(svg) { display: block; width: 100%; height: auto; }
+  .lab-body h2 { margin: 6px 0 8px; font-size: 1.45rem; }
+  .lab-body h2 a { color: inherit; text-decoration: none; }
+  .lab-body h2 a:hover { text-decoration: underline; }
+  .lab-body p { margin: 0 0 8px; }
+  .lab-meta { font-size: .92rem; }
+  .lab-body .page-actions { margin: 14px 0 0; }
+  @media (max-width: 720px) {
+    .lab-card { grid-template-columns: 1fr; gap: 14px; }
+  }
+</style>
