@@ -1,0 +1,49 @@
+---
+import { learningApps, currentApp, learningTheme } from '../lib/learning-apps.mjs';
+const apps = learningApps.filter(app => app.id !== currentApp && app.url);
+---
+<section id="learning-apps" class="learning-collection" data-theme={learningTheme} aria-labelledby="learning-apps-heading">
+  <div class="collection-heading">
+    <span class="collection-kicker">Keep your curiosity going</span>
+    <h2 id="learning-apps-heading">Explore our learning apps</h2>
+    <p>One good question leads to another. Discover more free, interactive learning tools from the same maker.</p>
+  </div>
+  <div class="collection-grid">
+    {apps.map(app => (
+      <a class="collection-card" href={app.url + '/'} style={`--app-color:${app.color};--app-tint:${app.tint}`}>
+        <div class="collection-art" aria-hidden="true">
+          <svg viewBox="0 0 80 68" width="80" height="68" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d={app.path}/></svg>
+          <span class="collection-mark">{app.mark}<small>{app.caption}</small></span>
+        </div>
+        <div class="collection-copy"><span class="collection-subject">{app.subject}</span><h3>{app.name}</h3><p>{app.description}</p><span class="collection-action">Explore {app.subject.toLowerCase()} <span aria-hidden="true">↗</span></span></div>
+      </a>
+    ))}
+  </div>
+</section>
+<style>
+  .learning-collection{--collection-ink:#213e37;--collection-muted:#50675e;--collection-surface:#fffdf8;--collection-line:#dddcd1;--collection-accent:#236556;margin:64px auto;max-width:1280px;color:var(--collection-ink);scroll-margin-top:28px}
+  .learning-collection[data-theme="space"]{--collection-ink:#eef3f9;--collection-muted:#a6b6cb;--collection-surface:#0d1728;--collection-line:#2c3e53;--collection-accent:#a2e3f5}
+  .learning-collection[data-theme="playful"]{--collection-surface:#fffef8;--collection-line:#d5ded1;--collection-accent:#315b44}
+  .learning-collection[data-theme="clay"]{--collection-ink:#37312d;--collection-muted:#6d6359;--collection-surface:#fcfaf5;--collection-line:#ded6c9;--collection-accent:#985039}
+  .collection-heading{max-width:700px;margin-bottom:26px}
+  .collection-kicker{display:block;color:var(--collection-accent);font-size:.75rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;margin-bottom:12px}
+  .collection-heading h2{font-size:clamp(1.8rem,3vw,2.5rem);color:var(--collection-ink);line-height:1.15;margin:0 0 14px;letter-spacing:-.035em}
+  .collection-heading p{font-size:1rem;line-height:1.65;color:var(--collection-muted);margin:0}
+  .collection-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:18px}
+  .collection-card{min-width:0;display:flex;flex-direction:column;border:1px solid var(--collection-line);border-radius:20px;background:var(--collection-surface);overflow:hidden;color:var(--collection-ink);text-decoration:none;transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .collection-card:hover{transform:translateY(-4px);border-color:var(--collection-accent);box-shadow:0 8px 20px #0000000b}
+  .collection-card:focus-visible{outline:3px solid var(--collection-accent);outline-offset:5px}
+  .collection-art{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:116px;padding:18px 20px;background:var(--app-tint);color:var(--app-color)}
+  .collection-art svg{width:80px;height:68px;flex-shrink:0}
+  .collection-mark{text-align:right;font-size:1.8rem;font-weight:700;letter-spacing:-.04em;line-height:1.2}
+  .collection-mark small{display:block;max-width:145px;margin-top:5px;font-size:.68rem;letter-spacing:0;font-weight:500;line-height:1.4}
+  .collection-copy{display:flex;flex-direction:column;flex:1;padding:23px}
+  .collection-subject{font-size:.68rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--collection-muted)}
+  .collection-copy h3{font-size:1.3rem;line-height:1.25;letter-spacing:-.025em;color:var(--collection-ink);margin:9px 0 12px;overflow-wrap:anywhere}
+  .collection-copy p{font-size:.92rem;line-height:1.7;color:var(--collection-muted);margin:0 0 24px}
+  .collection-action{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:auto;font-size:.84rem;font-weight:700;color:var(--collection-accent)}
+  .collection-action span{font-size:1.25rem}
+  @media(max-width:520px){.learning-collection{margin-block:44px}.collection-grid{gap:14px}.collection-art{min-height:96px;padding-block:12px}.collection-copy{padding:20px}}
+  @media(prefers-reduced-motion:reduce){.collection-card{transition:none}.collection-card:hover{transform:none}}
+  @media print{.learning-collection{display:none}}
+</style>

@@ -1,0 +1,47 @@
+---
+// Small, non-blocking cookie banner with equally weighted Accept and Reject buttons.
+// Shown while <html> has consent-pending (see ConsentDefaults.astro), or when any
+// [data-cookie-settings] control is clicked. Saving a choice updates Google Consent Mode,
+// swaps the <html> class and fires a `consentchange` event that the ad loader listens for.
+// ads: whether this site shows ads (changes the wording only).
+const { ads = true } = Astro.props;
+---
+<div class="cookie-banner" role="region" aria-label="Cookie choices" hidden>
+  <p>{ads ? 'We use cookies for anonymous usage statistics and for the ads that keep this site free.' : 'We use cookies for anonymous usage statistics.'} <a href="/privacy/">Privacy policy</a></p>
+  <div class="cookie-actions"><button type="button" data-consent="denied">Reject</button><button type="button" data-consent="granted">Accept</button></div>
+</div>
+<script is:inline>
+  (function () {
+    var banner = document.querySelector('.cookie-banner');
+    if (!banner) return;
+    var html = document.documentElement;
+    var all = function (value) { return { ad_storage: value, ad_user_data: value, ad_personalization: value, analytics_storage: value }; };
+    if (html.classList.contains('consent-pending')) banner.hidden = false;
+    banner.addEventListener('click', function (event) {
+      var button = event.target.closest('[data-consent]');
+      if (!button) return;
+      var value = button.getAttribute('data-consent');
+      try { localStorage.setItem('cookieConsent', JSON.stringify({ v: value, t: Date.now() })); } catch (e) {}
+      if (window.gtag) window.gtag('consent', 'update', all(value));
+      html.classList.remove('consent-pending', 'consent-granted', 'consent-denied');
+      html.classList.add('consent-' + value);
+      banner.hidden = true;
+      window.dispatchEvent(new CustomEvent('consentchange', { detail: value }));
+    });
+    document.addEventListener('click', function (event) {
+      if (!event.target.closest('[data-cookie-settings]')) return;
+      event.preventDefault();
+      banner.hidden = false;
+      banner.querySelector('[data-consent="granted"]').focus();
+    });
+  })();
+</script>
+<style>
+  .cookie-banner { position:fixed; left:16px; right:16px; bottom:16px; z-index:60; max-width:640px; margin:0 auto; display:flex; align-items:center; gap:14px 20px; flex-wrap:wrap; padding:14px 18px; border:1px solid var(--consent-line, #d8d8d0); border-radius:12px; background:var(--consent-bg, #fffdf8); color:var(--consent-fg, #1f2a2a); box-shadow:0 8px 30px rgba(0,0,0,.18); font-size:14px; line-height:1.45; }
+  .cookie-banner[hidden] { display:none; }
+  .cookie-banner p { margin:0; flex:1 1 280px; color:inherit; }
+  .cookie-banner a { color:inherit; text-decoration:underline; }
+  .cookie-actions { display:flex; gap:10px; }
+  .cookie-actions button { min-height:40px; min-width:92px; padding:8px 16px; border-radius:8px; border:1px solid var(--consent-accent, #23574a); background:var(--consent-accent, #23574a); color:var(--consent-accent-fg, #fff); font:inherit; font-weight:600; cursor:pointer; }
+  @media print { .cookie-banner { display:none !important; } }
+</style>
