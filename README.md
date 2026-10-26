@@ -15,6 +15,11 @@ The second lab is the **Plate Tectonics Explorer** (`/tools/plate-tectonics/`): 
 all six plate-boundary types with earthquake depths, volcanoes and landforms, a rate × time calculator and a
 challenge mode, plus its own worksheet and answer key.
 
+The third lab is the **Contour Map Playground** (`/tools/contour-map/`): sculpt a landscape beside its live
+contour map and a shaded relief or 3D view, switch the contour interval and sea level, overlay index lines,
+steep slopes and the V-rule, draw cross-sections and try map-reading challenges. Sculpted landscapes are kept in
+the browser (`contourSculpt` in local storage); everything else travels in the share link.
+
 Static site: Astro 5, `@astrojs/sitemap`, vanilla TypeScript islands, no framework runtime.
 
 ## Local development
@@ -46,6 +51,14 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 | `src/lib/plates.mjs` | Plate tectonics model: boundary facts, rate × time and seafloor-age math, deterministic cross-section geometry |
 | `src/lib/activities/plate-tectonics.mjs` | The plate boundaries worksheet and answer key (imported by `activities.mjs`) |
 | `src/components/plates/` | The explorer's cross-section, map inset, styles and interactive code (`explorer.ts`) |
+| `src/lib/terrain.mjs` | Contour map model: preset landscapes as height grids, sculpting brushes, sampling, river paths and cross-section profiles |
+| `src/lib/contours.mjs` | Marching-squares contour lines for any interval and sea level |
+| `src/lib/relief.mjs` | Landscape colors: a color-by-height tint times hillshade, with water below sea level |
+| `src/lib/contour-svg.mjs` | Map SVG (contours, index lines, steep-slope and V-rule overlays, marks), shared by the server and the browser |
+| `src/lib/contour-share.mjs` | Contour share-link parsing and serializing (`?preset=river&ci=20&ov=index,vrule`, `?mode=challenge`) |
+| `src/lib/contour-challenges.mjs` | The eight Match & Read challenge questions, each answer worked out from the model |
+| `src/lib/activities/contour-map.mjs` | The contour map worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/contour/`, `src/scripts/contour.ts`, `src/styles/contour.css` | The playground's markup, interactive code and styles |
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
@@ -86,6 +99,9 @@ Events sent with `track()` (`src/lib/analytics.ts`, a no-op without a Google tag
 | `epicenter_challenge_complete` | Third quake of a challenge revealed | `score` (0–300), `seed` |
 | `plates_explore` | Change boundary type or plates in the explorer (debounced) | `type`, `plates` |
 | `plates_challenge_complete` | Last plate-boundary challenge answered | `score`, `total` |
+| `contour_edit` | Sculpting the landscape (debounced) | `preset` |
+| `contour_profile_drawn` | A cross-section line is drawn | `preset`, `how` |
+| `contour_challenge_complete` | Last contour challenge answered | `score` |
 | `worksheet_print` | Print button on a worksheet or answer key | `page` |
 | `share_classroom` | A Share to Google Classroom link is clicked | `page` |
 

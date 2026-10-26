@@ -33,17 +33,18 @@ const consentNeeded = analytics || anyAds;
     )}
 
     <h2>What is stored in your browser</h2>
-    <p>The site may keep two small values in your browser’s local storage. They stay on your device and are never sent to us.</p>
+    <p>The site may keep up to three small values in your browser’s local storage. They stay on your device and are never sent to us.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th scope="col">Key</th><th scope="col">What it is for</th><th scope="col">How long</th></tr></thead>
         <tbody>
           <tr><td><code>cookieConsent</code></td><td>Your Accept or Reject choice from the cookie banner (only saved if the banner is shown and you choose).</td><td>180 days</td></tr>
           <tr><td><code>adFreeUntil</code></td><td>Set when you arrive from Google Classroom, Canvas or Schoology, or through a Share to Google Classroom link, so school visits stay ad-free.</td><td>30 days</td></tr>
+          <tr><td><code>contourSculpt</code></td><td>Landscapes you sculpt in the Contour Map Playground, one per starting landscape, so your work is still there when you come back. Only the heights are saved.</td><td>Until you press Reset landscape or clear your browser data</td></tr>
         </tbody>
       </table>
     </div>
-    <p>The Epicenter Finder itself stores nothing: refreshing the page starts it fresh, and its settings travel only inside a share link’s address.</p>
+    <p>The Epicenter Finder and the Plate Tectonics Explorer store nothing: refreshing the page starts them fresh, and their settings travel only inside a share link’s address.</p>
 
     <h2>Ads</h2>
     {anyAds ? (

@@ -4,6 +4,7 @@
 // prints a number that is neither checked here nor one of the formula's own constants.
 import * as s from './seismology.mjs';
 import { activity as plates, standards as plateStandards } from './activities/plate-tectonics.mjs';
+import { contourMapActivity } from './activities/contour-map.mjs';
 
 // NGSS performance expectations referenced below, paraphrased.
 export const standards = {
@@ -81,4 +82,5 @@ export const activities = [
     ],
   },
   plates,
+  contourMapActivity,
 ];
