@@ -3,9 +3,11 @@
 // tests/activities.test.mjs fails if a printed number drifts from seismology.mjs, or if an answer
 // prints a number that is neither checked here nor one of the formula's own constants.
 import * as s from './seismology.mjs';
+import { activity as plates, standards as plateStandards } from './activities/plate-tectonics.mjs';
 
 // NGSS performance expectations referenced below, paraphrased.
 export const standards = {
+  ...plateStandards,
   'MS-ESS3-2': 'Analyze and interpret data on natural hazards to forecast future catastrophic events and inform technologies to mitigate their effects.',
 };
 
@@ -78,4 +80,5 @@ export const activities = [
       },
     ],
   },
+  plates,
 ];

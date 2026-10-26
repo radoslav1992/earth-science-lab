@@ -11,6 +11,10 @@ seismograms, measure each S–P lag, turn it into a distance (lag × 8.4 km) and
 It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, a printable worksheet
 and a teacher answer key.
 
+The second lab is the **Plate Tectonics Explorer** (`/tools/plate-tectonics/`): animated cross-sections of
+all six plate-boundary types with earthquake depths, volcanoes and landforms, a rate × time calculator and a
+challenge mode, plus its own worksheet and answer key.
+
 Static site: Astro 5, `@astrojs/sitemap`, vanilla TypeScript islands, no framework runtime.
 
 ## Local development
@@ -39,6 +43,9 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 | `src/lib/share-state.mjs` | Share-link parsing and serializing (`?mode=challenge&seed=4821&snap=0`, `?mode=explore&x=320&y=150&m=5.2`) |
 | `src/lib/activities.mjs` | Worksheet and answer-key content; every printed number is computed from the model and checked by tests |
 | `src/scripts/epicenter.ts` | The finder's interactive code |
+| `src/lib/plates.mjs` | Plate tectonics model: boundary facts, rate × time and seafloor-age math, deterministic cross-section geometry |
+| `src/lib/activities/plate-tectonics.mjs` | The plate boundaries worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/plates/` | The explorer's cross-section, map inset, styles and interactive code (`explorer.ts`) |
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
@@ -77,6 +84,8 @@ Events sent with `track()` (`src/lib/analytics.ts`, a no-op without a Google tag
 | --- | --- | --- |
 | `epicenter_solved` | Reveal the epicenter (Guided or Challenge) | `mode`, `error_km` |
 | `epicenter_challenge_complete` | Third quake of a challenge revealed | `score` (0–300), `seed` |
+| `plates_explore` | Change boundary type or plates in the explorer (debounced) | `type`, `plates` |
+| `plates_challenge_complete` | Last plate-boundary challenge answered | `score`, `total` |
 | `worksheet_print` | Print button on a worksheet or answer key | `page` |
 | `share_classroom` | A Share to Google Classroom link is clicked | `page` |
 
