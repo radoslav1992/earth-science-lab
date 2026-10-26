@@ -2,7 +2,7 @@
 // original procedural rock textures (seeded, so every visit draws the same picture), the crust
 // cross-section with the rock's journey, the rock cycle diagram, and the card, conditions and journey HTML.
 import {
-  MATERIALS, FAMILY_NAMES, COMP_NAMES, MELT_C, PLACES, GRADES, NODE_NAMES, nodeOf, magmaOf,
+  MATERIALS, FAMILY_NAMES, COMP_NAMES, MELT_C, PLACES, NODE_NAMES, nodeOf, magmaOf,
   OPTION_BY_CODE, conditions, startConditions, stepName, fmtRange,
 } from './rock-cycle.mjs';
 
@@ -305,8 +305,12 @@ const TEXTURE_WORDS = {
   greenschist: 'green rock in flaky, wavy layers',
 };
 
-/** A rock card drawing: a complete <svg>. label overrides the accessible name (used to hide the answer in challenges). */
-export function swatchSvg(id, { comp, label, className = 'rk-swatch' } = {}) {
+/**
+ * A rock card drawing: a complete <svg>. label overrides the accessible name (used to hide the answer in challenges).
+ * @param {string} id
+ * @param {{ comp?: string | null, label?: string, className?: string }} [options]
+ */
+export function swatchSvg(id, { comp = undefined, label = undefined, className = 'rk-swatch' } = {}) {
   const m = MATERIALS[id];
   const { w, h } = SWATCH;
   const rand = rng(hash(`${m.texture}:${id}:${comp ?? m.comp ?? ''}`));
@@ -636,4 +640,3 @@ export function guideCardHtml(id, { headingLevel = 4 } = {}) {
   return `<article class="rk-guide-card">${swatchSvg(id)}<${h}>${esc(m.name)}</${h}>`
     + `<p class="rk-guide-look">${esc(m.look)}.</p><p>${esc(m.forms)}</p><p class="rk-guide-example">${esc(m.example)}</p></article>`;
 }
-export { GRADES };

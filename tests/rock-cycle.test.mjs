@@ -167,6 +167,10 @@ test('every refusal explains itself, and every allowed step lands somewhere real
     } else assert.ok(/^[A-Z“]/.test(x.reason) && x.reason.endsWith('.') && !/undefined|null/.test(x.reason), `${id}@${place} ${code}: ${x.reason}`);
   }
   assert.equal(r.apply(r.startState('granite'), 'zz').ok, false);
+  for (const id of ['sediment', 'gravel', 'mud']) for (const code of r.CODES) {
+    const x = r.apply(stateAt(id, id === 'sediment' ? 'stream' : 'river'), code);
+    if (!x.ok) assert.ok(!/is already solid/.test(x.reason), `${id} ${code}: ${x.reason}`);
+  }
 });
 
 test('the cycle has no dead ends, and shortcuts exist', () => {

@@ -14,7 +14,7 @@
 // - The grade temperature bands (about 200–300, 300–400, 400–600 and 600–800 °C) are rounded classroom
 //   values in line with common textbook figures; real boundaries are gradual and depend on pressure.
 // - USGS Volcano Hazards Program glossary (obsidian, pumice, scoria) and USGS "Rocks and minerals" pages.
-// - Typical continental geothermal gradient about 25–30 °C per km (Earle ch. 9); average crust density
+// - Typical continental geothermal gradient about 25–30 °C per km (see Earle ch. 9); average crust density
 //   about 2,700 kg/m³; long-term uplift and erosion rates of roughly 0.1–10 mm per year in mountain belts.
 // - Pure quartz melts above about 1,700 °C; calcite needs far more heat than the crust reaches to melt.
 
@@ -105,21 +105,21 @@ export const MATERIALS = {
     look: 'Molten rock: thick and sticky, with dissolved gas and a few crystals',
     forms: 'Silica-rich rock deep in the crust melts, often helped by water. This sticky magma can make granite, rhyolite, obsidian or pumice.',
     example: 'Fed the giant explosive eruptions that formed Yellowstone’s calderas.',
-    madeOf: 'Melted minerals, about 70% silica',
+    madeOf: `Melted minerals, about ${SILICA_PERCENT.felsic}% silica`,
   },
   'intermediate-magma': {
     name: 'Andesitic magma', family: 'magma', comp: 'intermediate', formedBy: 'me', texture: 'magma',
     look: 'Molten rock: fairly thick, with dissolved gas and some crystals',
     forms: 'Rock melts deep under volcanoes where one plate sinks under another. This magma can make diorite, andesite or pumice.',
     example: 'Feeds the steep volcanoes of the Andes and the Cascades.',
-    madeOf: 'Melted minerals, about 60% silica',
+    madeOf: `Melted minerals, about ${SILICA_PERCENT.intermediate}% silica`,
   },
   'mafic-magma': {
     name: 'Basaltic magma', family: 'magma', comp: 'mafic', formedBy: 'me', texture: 'magma',
     look: 'Molten rock: very hot and runny',
     forms: 'Rock in the upper mantle partly melts, for example under mid-ocean ridges and hot spots. This runny magma can make gabbro, basalt or scoria.',
     example: 'Feeds the lava flows of Hawaii and Iceland, and new ocean crust at mid-ocean ridges.',
-    madeOf: 'Melted minerals, about 50% silica',
+    madeOf: `Melted minerals, about ${SILICA_PERCENT.mafic}% silica`,
   },
   granite: {
     name: 'Granite', family: 'intrusive', comp: 'felsic', formedBy: 'cs', texture: 'granite',
@@ -168,7 +168,7 @@ export const MATERIALS = {
     look: 'Glassy: smooth and shiny, with no crystals at all',
     forms: 'Thick, silica-rich lava cools before crystals can grow, so it sets as natural glass.',
     example: 'Ancient people chipped it into razor-sharp arrowheads and blades.',
-    madeOf: 'Volcanic glass, about 70% silica',
+    madeOf: `Volcanic glass, about ${SILICA_PERCENT.felsic}% silica`,
   },
   pumice: {
     name: 'Pumice', family: 'extrusive', comp: 'felsic', formedBy: 'cv', texture: 'pumice',
@@ -415,6 +415,7 @@ export function apply(state, code) {
 
   switch (o.process) {
     case 'cool': {
+      if (fam === 'sediment') return fail(`${notRockYet} Only magma can cool and crystallize.`);
       if (fam !== 'magma') return fail(`${The(id)} is already solid. Only magma can cool and crystallize.`);
       const product = COOLING[code][comp];
       if (!product) {
