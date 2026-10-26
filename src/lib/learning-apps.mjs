@@ -81,7 +81,7 @@ export const learningApps = [
     "name": "Earth Science Lab",
     "subject": "Earth science",
     "url": "https://earthsciencelab.org",
-    "description": "Read seismograms, find an earthquake’s epicenter, and see how Earth responds to change.",
+    "description": "Find an earthquake, move plates, carve a river, and follow water and rock through Earth’s cycles.",
     "mark": "8.4",
     "caption": "km per second of S–P lag",
     "color": "#9a4424",
