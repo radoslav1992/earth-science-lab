@@ -1,0 +1,182 @@
+---
+// The interactive Water Cycle Explorer. The server draws the scene with the droplet in the ocean, the ways out,
+// the "where is Earth's water?" bars and table, all with the controls disabled; ./explorer.ts switches them on
+// and runs the journey, the conditions, the zoom bars and Challenge mode.
+import './water.css';
+import {
+  DEFAULT_STATE, DEFAULT_CONDITIONS, STOPS, PROCESSES, RESERVOIRS, CLIMATES, CLIMATE_NAMES, UNITS, UNIT_NAMES, SEED_RANGE, VIEW, CHALLENGE,
+  RESIDENCE_TEXT, sceneBaseSvg, sceneDynamicSvg, describeScene, exits, formatChance, driverOf, placeName, stayText, whereHtml, grouped, formatPct,
+  pctOfAll, pctOfFresh, TOTAL_KM3, FRESH_KM3,
+} from '../../lib/water-cycle.mjs';
+
+const st = DEFAULT_STATE;
+const at = st.path.at(-1);
+const options = exits(at, DEFAULT_CONDITIONS);
+const icon = (driver: string | null) => driver === 'sun'
+  ? '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><circle cx="8" cy="8" r="3.4" fill="currentColor"/><path d="M8 .8v2.4M8 12.8v2.4M.8 8h2.4M12.8 8h2.4M2.9 2.9l1.7 1.7M11.4 11.4l1.7 1.7M2.9 13.1l1.7-1.7M11.4 4.6l1.7-1.7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>'
+  : '<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M8 1.5v10M3.8 8 8 12.4 12.2 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 15h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+---
+<section class="wc-explorer" id="explorer" data-water data-mode="explore" data-view="journey" aria-label="Water Cycle Explorer">
+  <div class="wc-top">
+    <div class="mode-switch" role="group" aria-label="Mode">
+      <button type="button" data-mode-btn="explore" aria-pressed="true" disabled>Explore</button>
+      <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+    </div>
+    <div class="mode-switch wc-views" role="group" aria-label="View">
+      <button type="button" data-view-btn="journey" aria-pressed="true" disabled>Droplet journey</button>
+      <button type="button" data-view-btn="where" aria-pressed="false" disabled>Where is Earth’s water?</button>
+    </div>
+    <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+  </div>
+  <div class="note wc-note" data-note hidden></div>
+  <noscript><p class="note wc-note">The explorer needs JavaScript to move the droplet. Below are the water cycle diagram, how much water each reservoir holds, and a table of every path a droplet can take in this model.</p></noscript>
+
+  <div class="wc-grid" data-stage-grid>
+    <div class="wc-stage">
+      <svg class="wc-scene" viewBox={`0 0 ${VIEW.width} ${VIEW.height}`} role="img" aria-label={describeScene(st.path)} data-scene>
+        <g data-base set:html={sceneBaseSvg()} />
+        <g data-dynamic set:html={sceneDynamicSvg({ path: st.path })} />
+      </svg>
+      <div class="wc-legend" aria-hidden="true">
+        <span class="wc-key-sun"><svg width="26" height="10"><path d="M1 5h18" stroke="currentColor" stroke-width="3"/><path d="M18 1l7 4-7 4z" fill="currentColor"/></svg>Powered by the sun’s energy</span>
+        <span class="wc-key-gravity"><svg width="26" height="10"><path d="M1 5h18" stroke="currentColor" stroke-width="3"/><path d="M18 1l7 4-7 4z" fill="currentColor"/></svg>Pulled by gravity</span>
+        <span><svg width="14" height="18" viewBox="-11 -16 22 31"><path d="M0 -15C5 -8 10 -2 10 4A10 10 0 0 1 -10 4C-10 -2 -5 -8 0 -15Z" fill="#2f86c9" stroke="#fff" stroke-width="2"/></svg>The droplet</span>
+      </div>
+      <label class="toggle wc-labels-toggle"><input type="checkbox" data-toggle-labels checked disabled /> Name the processes</label>
+    </div>
+
+    <div class="wc-side" data-explore-side>
+      <div class="wc-panel wc-now" aria-labelledby="wc-now-title">
+        <h3 id="wc-now-title">Where next?</h3>
+        <p class="wc-here-text" data-here>The droplet is in <b>{placeName(at)}</b>. Water typically stays there <b>{stayText(at)}</b>.</p>
+        <p class="wc-hint" data-hint>Choose a way out for the droplet, or press <b>Let chance decide</b>. The time adds up as it travels.</p>
+        <div class="wc-exit-list" data-exits role="group" aria-label="Ways out">
+          {options.map(e => (
+            <button type="button" class={`wc-exit-btn wc-${driverOf(e)}`} data-go={e.to} disabled>
+              <span class="wc-exit-chance">{formatChance(e.chance)}</span>
+              <span class="wc-exit-main"><b>{PROCESSES[e.process].name}</b> to {placeName(e.to)}<small>{e.text}</small></span>
+              <span class="wc-chip" set:html={icon(driverOf(e)) + (driverOf(e) === 'sun' ? 'Sun' : 'Gravity')} />
+            </button>
+          ))}
+        </div>
+        <div class="wc-chance-row">
+          <button type="button" class="btn primary" data-roll disabled>Let chance decide</button>
+          <button type="button" class="btn" data-play disabled>Play</button>
+        </div>
+        <div class="wc-code">
+          <label class="field"><span>Chance code</span><input type="number" inputmode="numeric" min={SEED_RANGE[0]} max={SEED_RANGE[1]} step="1" value={st.seed} data-seed disabled /></label>
+          <button type="button" class="btn small" data-new-seed disabled>New code</button>
+          <p class="wc-code-help">The same code makes the same chance moves, so a class can follow one journey.</p>
+        </div>
+      </div>
+
+      <div class="wc-panel wc-conditions" aria-labelledby="wc-cond-title">
+        <h3 id="wc-cond-title">Change the conditions</h3>
+        <div class="wc-group" role="group" aria-labelledby="wc-climate-label">
+          <span class="wc-group-label" id="wc-climate-label">Climate</span>
+          <div class="mode-switch">
+            {CLIMATES.map(c => <button type="button" data-climate={c} aria-pressed={String(c === st.climate)} disabled>{CLIMATE_NAMES[c]}</button>)}
+          </div>
+        </div>
+        <fieldset class="wc-whatif">
+          <legend>What if…? <small>(a thought experiment)</small></legend>
+          <label class="toggle"><input type="checkbox" data-switch="sun" checked disabled /> The sun’s energy</label>
+          <label class="toggle"><input type="checkbox" data-switch="gravity" checked disabled /> Gravity</label>
+        </fieldset>
+        <p class="wc-cond-note" data-cond-note>Today’s climate. The chances are rounded classroom values that follow real patterns.</p>
+      </div>
+    </div>
+
+    <div class="wc-side" data-challenge hidden>
+      <div class="challenge-bar">
+        <span>Question <strong data-q-num>1</strong> of {CHALLENGE.length}</span>
+        <span>Score <strong data-q-score>0</strong></span>
+      </div>
+      <div class="wc-panel wc-q" data-q tabindex="-1">
+        <p class="wc-q-prompt" data-q-prompt></p>
+        <p class="wc-q-status" data-q-status hidden></p>
+        <div class="wc-choices" role="group" aria-label="Answer choices" data-q-choices></div>
+        <div class="wc-feedback" data-q-feedback hidden tabindex="-1"></div>
+        <div class="page-actions wc-q-actions">
+          <button type="button" class="btn primary" data-q-next hidden>Next question</button>
+        </div>
+      </div>
+      <div class="wc-panel wc-done" data-q-done hidden tabindex="-1">
+        <p class="wc-done-score" data-q-final></p>
+        <p data-q-message></p>
+        <div class="page-actions">
+          <button type="button" class="btn primary" data-q-restart>Try again</button>
+          <button type="button" class="btn" data-q-explore>Back to Explore</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wc-panel wc-log-panel" data-log-panel>
+      <div class="wc-log-head">
+        <h3>Journey log</h3>
+        <label class="wc-start"><span>Start in</span>
+          <select data-start disabled>
+            {STOPS.map(s => <option value={s.id} selected={s.id === at}>{s.name}</option>)}
+          </select>
+        </label>
+        <div class="wc-log-actions">
+          <button type="button" class="btn small" data-undo disabled>Undo move</button>
+          <button type="button" class="btn small" data-restart disabled>Start again</button>
+        </div>
+      </div>
+      <p class="wc-total" data-total>Moves: <b>0</b> · Total time: <b>0 years</b></p>
+      <table class="wc-log">
+        <thead><tr><th scope="col">Move</th><th scope="col">Place it left</th><th scope="col">How it moved</th><th scope="col">Typical time there</th><th scope="col">Total so far</th></tr></thead>
+        <tbody data-log><tr class="wc-log-empty"><td colspan="5">No moves yet. The droplet is waiting in {placeName(at)}.</td></tr></tbody>
+      </table>
+      <p class="wc-log-note">Each stop adds the typical (average) time water stays there. A real droplet could stay much shorter or longer.</p>
+    </div>
+  </div>
+
+  <div class="wc-where" data-where-view>
+    <div class="wc-where-head">
+      <h3>Where is Earth’s water?</h3>
+      <div class="wc-where-controls">
+        <div class="wc-group" role="group" aria-labelledby="wc-water-label">
+          <span class="wc-group-label" id="wc-water-label">Show</span>
+          <div class="mode-switch">
+            <button type="button" data-water-kind="all" aria-pressed="true" disabled>All water</button>
+            <button type="button" data-water-kind="fresh" aria-pressed="false" disabled>Fresh water only</button>
+          </div>
+        </div>
+        <div class="wc-group" role="group" aria-labelledby="wc-unit-label">
+          <span class="wc-group-label" id="wc-unit-label">Units</span>
+          <div class="mode-switch">
+            {UNITS.map(u => <button type="button" data-unit={u} aria-pressed={String(u === st.unit)} disabled>{UNIT_NAMES[u]}</button>)}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="wc-bars" data-where set:html={whereHtml(st.water, st.unit)} />
+    <div class="table-wrap wc-table">
+      <table>
+        <thead><tr><th scope="col">Reservoir</th><th scope="col">Volume (km³)</th><th scope="col">Share of all water</th><th scope="col">Share of fresh water</th><th scope="col">Typical time there</th></tr></thead>
+        <tbody>
+          {RESERVOIRS.map(r => (
+            <tr>
+              <th scope="row">{r.name}</th>
+              <td>{grouped(r.km3)}</td>
+              <td>{formatPct(pctOfAll(r.id))}%</td>
+              <td>{r.fresh ? `${formatPct(pctOfFresh(r.id))}%` : '0% (salty)'}</td>
+              <td>{RESIDENCE_TEXT[r.id] ?? 'Not part of the journey'}</td>
+            </tr>
+          ))}
+        </tbody>
+        <tfoot><tr><th scope="row">Total</th><td>{grouped(TOTAL_KM3)}</td><td>100%</td><td>{grouped(FRESH_KM3)} km³ fresh</td><td></td></tr></tfoot>
+      </table>
+    </div>
+    <p class="wc-table-source">Volumes: USGS Water Science School, “Where is Earth’s water?”, after Shiklomanov (1993). Typical times: Pidwirny, <em>Fundamentals of Physical Geography</em> (2006); living things: OpenStax <em>Biology 2e</em>. Typical times are averages and approximate.</p>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initWater } from './explorer';
+  const root = document.querySelector<HTMLElement>('[data-water]');
+  if (root) initWater(root);
+</script>

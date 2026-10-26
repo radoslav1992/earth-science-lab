@@ -1,0 +1,181 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import WaterExplorer from '../../../components/water/WaterExplorer.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import {
+  STOPS, STOP, PROCESSES, EDGES, DRIVERS, exits, formatChance, placeName, stayText, stayYears, journeyLog, journeyYears, pathChance,
+  formatDuration, formatPct, pctOfAll, pctOfFresh, FRESH_PCT, grouped, fmt, moveName, driverOf, RESERVOIR, CHALLENGE,
+} from '../../../lib/water-cycle.mjs';
+import { waterCycleActivity as act } from '../../../lib/activities/water-cycle.mjs';
+
+const title = 'Water Cycle Explorer – Interactive Water Cycle Simulation';
+const description = 'Follow a water droplet between the ocean, clouds, ice, soil and groundwater, see where Earth’s water is stored and change the climate. Free, with a worksheet.';
+const url = new URL('/tools/water-cycle/', Astro.site).href;
+
+// Worked example: one round trip, computed by the model.
+const ex = ['ocean', 'atmosphere', 'soil', 'groundwater', 'river', 'ocean'];
+const exLog = journeyLog(ex);
+const exTotal = journeyYears(ex);
+const exShort = ex.slice(0, -1).filter(id => stayYears(id) < 1).reduce((sum, id) => sum + stayYears(id), 0);
+const exChances = ex.slice(1).map((to, i) => exits(ex[i]).find(e => e.to === to)!.chance);
+const exChance = pathChance(ex);
+const exSun = exLog.filter(r => driverOf(r.edge) === 'sun').map(r => PROCESSES[r.edge.process].name.toLowerCase());
+
+const processOrder = ['evaporation', 'transpiration', 'sublimation', 'condensation', 'precipitation', 'accumulation', 'melting', 'runoff', 'infiltration', 'groundwater', 'uptake'];
+const driverText = (id: string) => (PROCESSES[id].driver === 'sun' ? 'Sun’s energy' : PROCESSES[id].driver === 'gravity' ? 'Gravity' : 'Cooling');
+
+const faq: [string, string][] = [
+  ['What is the water cycle?', 'The water cycle is the nonstop movement of water between the ocean, the air, the land, ice, living things and the ground. Water changes between liquid, gas (water vapor) and solid (ice) as it moves, but the total amount of water on Earth stays about the same.'],
+  ['What drives the water cycle?', 'Two things. Energy from the sun warms water so it evaporates, melts ice and powers plants as they transpire: that lifts water up into the air. Gravity pulls it back down as rain and snow, and makes it flow downhill in rivers and soak down into the ground. In the explorer you can switch either one off as a thought experiment and watch the cycle stop.'],
+  ['How long does water stay in the ocean, or in the air?', `On average a water molecule stays in the ocean about ${grouped(stayYears('ocean'))} years but in the atmosphere only about ${fmt(stayYears('atmosphere') * 365.25, 0)} days. Ice sheets can hold water for about ${grouped(stayYears('icesheet'))} years and deep groundwater for about ${grouped(stayYears('deep'))} years. These are averages: a real droplet can leave much sooner or stay much longer.`],
+  ['How much of Earth’s water is fresh water?', `Only about ${fmt(FRESH_PCT)}%. About ${formatPct(pctOfAll('oceans'))}% of Earth’s water is salty ocean water. Most fresh water is frozen in ice caps and glaciers (about ${formatPct(pctOfFresh('ice'))}% of it) or underground (about ${formatPct(pctOfFresh('groundwater'))}%), so the lakes and rivers we use hold only a tiny part.`],
+  ['What is the difference between evaporation, transpiration and sublimation?', 'All three turn water into water vapor using energy, mostly from the sun. Evaporation is liquid water turning into vapor, from the ocean, lakes, rivers or wet soil. Transpiration is water vapor escaping from plant leaves. Sublimation is ice or snow turning straight into vapor without melting first.'],
+  ['Can I use the Water Cycle Explorer in class?', `Yes. It is free with no sign-up and runs on school Chromebooks and tablets. Give the class a chance code so everyone follows the same droplet, or let each student pick their own and compare journeys. The printable ${act.minutes}-minute activity has an answer key on the For teachers page, and Challenge mode has ${CHALLENGE.length} quick questions.`],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Water Cycle Explorer',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Water Cycle" crumbs={[['Water Cycle Explorer']]}>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Water cycle</span>
+      <h1>Water Cycle Explorer</h1>
+      <p class="lede">Follow one water droplet through the ocean, the air, ice, rivers, soil, plants and groundwater. Choose its path or let chance decide, watch the years add up, and change the climate to see how Earth’s water responds.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/water-cycle/activity/">Printable activity</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <WaterExplorer />
+
+    <section class="section" aria-labelledby="how">
+      <div class="prose">
+      <h2 id="how">How the water cycle works</h2>
+      <p>Earth’s water is always on the move. It does not get used up or made new; the same water travels again and again between <strong>reservoirs</strong>, the places where water is stored: the ocean, the air, ice, lakes and rivers, the soil, the ground beneath it, and living things.</p>
+      <p>Two things keep it moving. <strong>The sun’s energy lifts water up.</strong> Sunlight warms the ocean and the land, so water evaporates, ice melts or turns straight to vapor, and plants pull water up from their roots and give it off from their leaves. <strong>Gravity brings water down.</strong> When rising vapor cools it condenses into clouds, and gravity pulls the drops down as rain and snow, then pulls the water downhill in rivers and down into the ground. In the explorer, arrows powered by the sun are <span class="wc-driver-sun"><strong>orange</strong></span> and arrows pulled by gravity are <span class="wc-driver-gravity"><strong>blue</strong></span>.</p>
+      </div>
+      <ol class="steps-list wc-process-list">
+        {processOrder.map(id => <li><strong>{PROCESSES[id].name}</strong> <span class={`wc-driver-${PROCESSES[id].driver ?? 'cooling'}`}>({driverText(id).toLowerCase()})</span>. {PROCESSES[id].what}</li>)}
+      </ol>
+    </section>
+
+    <section class="section prose" aria-labelledby="where" style="padding-top:0">
+      <h2 id="where">Where is Earth’s water?</h2>
+      <p>Almost all of it, about <strong>{formatPct(pctOfAll('oceans'))}%</strong>, is salty ocean water. Only about <strong>{fmt(FRESH_PCT)}%</strong> is fresh, and most of that is out of easy reach: about {formatPct(pctOfFresh('ice'))}% is frozen in ice caps and glaciers and {formatPct(pctOfFresh('groundwater'))}% is underground. All the world’s rivers hold only about {grouped(RESERVOIR.rivers.km3)} km³, about {formatPct(pctOfAll('rivers'))}% of Earth’s water. The atmosphere holds about {fmt(RESERVOIR.atmosphere.km3 / RESERVOIR.rivers.km3, 0)} times as much as the rivers, yet still only about {formatPct(pctOfAll('atmosphere'))}%.</p>
+      <p>Numbers that small don’t show up on an ordinary chart, so the explorer’s <em>Where is Earth’s water?</em> view uses zoom bars: each bar zooms in on the slivers of the one above, and says how many times bigger it is drawn. Try the <em>1-liter bottle</em> units: if all of Earth’s water filled a 1-liter bottle, the rivers would be about {formatPct(pctOfAll('rivers') * 10)} mL, far less than a single drop.</p>
+    </section>
+
+    <section class="section" aria-labelledby="time" style="padding-top:0">
+      <div class="prose">
+        <h2 id="time">How long does water stay in each place?</h2>
+        <p>The average time water spends in a reservoir is its <strong>residence time</strong>. It depends on how big the reservoir is compared with how fast water flows in and out. The air holds little water and swaps it quickly, so a molecule stays only days. The ocean is enormous, so even though a lot evaporates every year, an average molecule waits thousands of years for its turn.</p>
+      </div>
+      <div class="table-wrap wc-paths">
+        <table>
+          <thead><tr><th scope="col">Place</th><th scope="col">Typical time</th><th scope="col">Ways out (today’s climate)</th></tr></thead>
+          <tbody>
+            {[...STOPS].sort((a, b) => stayYears(b.id) - stayYears(a.id)).map(s => (
+              <tr>
+                <th scope="row">{s.name}</th>
+                <td>{stayText(s.id)}{s.range !== stayText(s.id) && <small class="wc-range">source: {s.range}</small>}</td>
+                <td>{exits(s.id).map(e => `${PROCESSES[e.process].name.toLowerCase()} to ${placeName(e.to)} (${formatChance(e.chance)})`).join('; ')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:10px">Typical times from Pidwirny, <em>Fundamentals of Physical Geography</em> (2006), and, for living things, OpenStax <em>Biology 2e</em>. Where the source gives a range, the explorer uses the middle of it. The chances are rounded classroom values; the 77% chance of rain or snow landing on the ocean matches the global water budget of Trenberth and others (2007).</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="worked" style="padding-top:0">
+      <h2 id="worked">Worked example: one round trip</h2>
+      <p>A droplet evaporates from the ocean, falls as rain on land, soaks down into the groundwater, seeps into a river and flows back to the sea. How long does the trip take, and how likely is it?</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Move</th><th scope="col">Leaves</th><th scope="col">How</th><th scope="col">Time there</th><th scope="col">Total so far</th></tr></thead>
+          <tbody>
+            {exLog.map((r, i) => <tr><td>{r.step}</td><td>{STOP[r.from].name}</td><td>{moveName(r.edge)} ({formatChance(exChances[i])})</td><td>{stayText(r.from)}</td><td>{formatDuration(r.total)}</td></tr>)}
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:1em"><strong>How long?</strong> Add up the time at each place it leaves. The ocean ({grouped(stayYears('ocean'))} years) and the groundwater ({grouped(stayYears('groundwater'))} years) take almost all of it; the air, the soil and the river together add only about {formatDuration(exShort)}. The whole trip takes about <strong>{formatDuration(exTotal)}</strong>.</p>
+      <p class="formula">chance of the whole route = {exChances.map(formatChance).join(' × ')} ≈ {formatChance(exChance)}</p>
+      <p><strong>How likely?</strong> Multiply the chance of each move: about {Math.round(exChance * 100)} droplets in 100 that leave the ocean would follow exactly this route. Most go straight back to the sea as rain. Only {exSun.length === 1 ? 'one move' : `${exSun.length} moves`} on this route, {exSun.join(' and ')}, needed the sun’s energy; gravity did the rest. But without that first lift, the droplet could never have left the ocean.</p>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common misconceptions</h2>
+      <ul>
+        <li><strong>“Clouds are made of water vapor.”</strong> Water vapor is an invisible gas. Clouds are made of tiny liquid droplets or ice crystals that formed when vapor cooled and condensed.</li>
+        <li><strong>“The water cycle is one circle: ocean, cloud, rain, river, ocean.”</strong> Water takes many paths. Most of it simply goes from the ocean to the air and back to the ocean; some detours through ice, soil, plants or rock.</li>
+        <li><strong>“Water goes around the cycle quickly.”</strong> Some does, in days. But water can stay in the ocean for thousands of years, and in ice sheets or deep groundwater for tens of thousands.</li>
+        <li><strong>“Water only evaporates when it’s hot.”</strong> Evaporation happens at any temperature, from puddles, lakes, wet soil and leaves. Even ice and snow can turn straight into vapor (sublimation).</li>
+        <li><strong>“Groundwater is an underground lake or river.”</strong> Most groundwater fills the tiny spaces between grains of sand and gravel and the cracks in rock, and creeps along very slowly.</li>
+        <li><strong>“We are using up Earth’s water.”</strong> The total amount stays about the same. But fresh water we can use is scarce, and people can pump groundwater out much faster than it refills, or pollute it.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>The diagram is a sketch, not a map: it is not to scale, and it puts a mountain glacier and a polar ice sheet side by side. Each place has one typical time, the middle of a published range, and every droplet is given exactly that average; real water molecules can leave a reservoir within minutes or stay for millions of years. Only the split of rain and snow between the ocean and the land is based on measurements; the other chances are rounded classroom values that follow the real pattern, and real chances change with place, season and weather. The climate buttons only show the direction of each change (for example, more melting when warmer) with made-up amounts, and they do not change the times. The model leaves out people (pumping groundwater, dams, farms and drinking water), animals, sea ice, permafrost and swamps in the journey, the difference between fresh and salty groundwater, wind carrying vapor from place to place, and the small amounts of water that enter and leave Earth’s interior at volcanoes and subduction zones. Switching off the sun or gravity is a thought experiment: it shows what each one does, not something that could happen. The reservoir volumes are one well-known estimate (Shiklomanov, 1993, published by the USGS); other estimates differ a little.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Water cycle journey activity</h2>
+          <p>A one-page printable worksheet for {act.grade.toLowerCase()}, about {act.minutes} minutes: students follow one droplet with a shared chance code, record each place, process and typical time, then answer six questions about what drives each move, how long water stays, and where Earth’s water is.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/water-cycle/activity/">Open the activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the explorer with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="paths" style="padding-bottom:0">
+      <details class="wc-all-paths">
+        <summary><h2 id="paths">Every path in this model</h2></summary>
+        <div class="table-wrap wc-paths">
+          <table>
+            <thead><tr><th scope="col">From</th><th scope="col">Process</th><th scope="col">To</th><th scope="col">Chance today</th><th scope="col">Driven by</th></tr></thead>
+            <tbody>
+              {EDGES.map(e => (
+                <tr>
+                  <th scope="row">{STOP[e.from].name}</th>
+                  <td>{moveName(e)}: {e.text.toLowerCase()}</td>
+                  <td>{STOP[e.to].name}</td>
+                  <td>{formatChance(exits(e.from).find(x => x.to === e.to)!.chance)}</td>
+                  <td class={`wc-driver-${driverOf(e)}`}>{DRIVERS[driverOf(e) as 'sun' | 'gravity'].name}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    </section>
+
+    <Faq items={faq} title="Water cycle questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>
