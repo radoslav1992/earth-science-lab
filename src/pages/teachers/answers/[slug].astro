@@ -1,0 +1,51 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import RecordTable from '../../../components/RecordTable.astro';
+import Seismogram from '../../../components/Seismogram.astro';
+import { activities, standards } from '../../../lib/activities.mjs';
+import { GUIDED, readings, picked } from '../../../lib/seismology.mjs';
+import { traceSeed } from '../../../lib/seismogram.mjs';
+
+export function getStaticPaths() {
+  return activities.map(act => ({ params: { slug: act.tool }, props: { act } }));
+}
+const { act } = Astro.props;
+const traces = act.tool === 'earthquake-epicenter' ? readings(GUIDED) : [];
+---
+<Layout title={`Answer Key: ${act.title}`} description={`Teacher answer key for the ${act.title.toLowerCase()}: the completed results table and worked answers, calculated with the same model as the ${act.toolName}.`} section="For teachers" ads={false} noindex crumbs={[['For teachers', '/teachers/'], [`Answer key: ${act.toolName}`]]}>
+  <article class="worksheet answer-key">
+    <div class="breadcrumb no-print"><a href="/teachers/">For teachers</a> / Answer key</div>
+    <header class="worksheet-head">
+      <div>
+        <span class="eyebrow">Teacher answer key · {act.grade} · about {act.minutes} minutes</span>
+        <h1>Answer key: {act.title}</h1>
+      </div>
+    </header>
+    <p class="key-note no-print">For teachers. This page is hidden from search engines and not linked from student pages, but it is not password-protected, so please don’t share the link with students. Student worksheet: <a href={`/tools/${act.tool}/activity/`}>{act.title}</a>.</p>
+    <p class="worksheet-goal"><strong>Goal:</strong> {act.goal}</p>
+    <p class="worksheet-meta">Connects to NGSS {act.standards.map(code => `${code} (${standards[code]})`).join('; ')}</p>
+    <h2>Completed results table</h2>
+    <p class="worksheet-meta">Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.</p>
+    <RecordTable act={act} answers />
+    <h2 class="no-print">The seismograms, marked</h2>
+    <div class="worksheet-traces no-print">
+      {traces.map((r, i) => {
+        const read = picked(r);
+        return (
+          <figure>
+            <figcaption>{r.station.name}: P {read.p.toFixed(1)} s, S {read.s.toFixed(1)} s</figcaption>
+            <Seismogram p={r.p} s={r.s} seed={traceSeed(1, i)} picks={{ p: read.p, s: read.s }} label={`${r.station.name} seismogram with P marked at ${read.p.toFixed(1)} seconds and S at ${read.s.toFixed(1)} seconds`} />
+          </figure>
+        );
+      })}
+    </div>
+    <h2>Answers</h2>
+    <ol class="questions key-answers">
+      {act.questions.map(q => <li><p class="key-question">{q.q}</p><p>{q.a}</p></li>)}
+    </ol>
+    <div class="page-actions no-print">
+      <button class="btn primary" type="button" data-print>Print answer key</button>
+      <a class="btn" href="/teachers/">All activities</a>
+    </div>
+  </article>
+</Layout>
