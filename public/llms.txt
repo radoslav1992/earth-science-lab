@@ -1,0 +1,24 @@
+# Earth Science Lab
+
+> Free interactive earth science simulations for students aged about 10–16 and their teachers. Each lab is a working model with a short explanation, a printable one-page classroom activity and a teacher answer key. No accounts or sign-up. From the makers of Interactive Periodic Table.
+
+The first lab is the Earthquake Epicenter Finder. Students read three synthetic seismograms, mark the P and S wave arrivals, convert each S–P lag to a distance (P waves 6.0 km/s, S waves 3.5 km/s, so distance in km ≈ lag in seconds × 8.4) and triangulate the epicenter on a fictional 600 × 400 km map. It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, plus an optional local-magnitude estimate (M ≈ log10(A) + 3·log10(8·Δt) − 2.92, a classroom approximation).
+
+## Tools
+
+- [Earthquake Epicenter Finder](https://earthsciencelab.org/tools/earthquake-epicenter/): Triangulation virtual lab with a five-step guide, a worked example, P vs S waves, epicenter vs focus, common mistakes and an FAQ.
+
+## Classroom
+
+- [For teachers](https://earthsciencelab.org/teachers/): Activities, how to run them in 10–15 minutes, NGSS MS-ESS3-2 connection, Chromebook and privacy notes.
+- [Earthquake Epicenter Activity](https://earthsciencelab.org/tools/earthquake-epicenter/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes.
+
+## About
+
+- [About Earth Science Lab](https://earthsciencelab.org/about/): What the site is, how the models work and who makes it.
+- [Privacy policy](https://earthsciencelab.org/privacy/): No accounts; optional anonymous analytics with a cookie choice; what is stored in the browser.
+
+## Optional
+
+- [Interactive Periodic Table](https://interactiveperiodictable.net/): The flagship app from the same makers.
+- [Physics Lab](https://thephysicslab.org/), [Biology Lab](https://thebiologylab.org/), [Astronomy Lab](https://theastronomylab.com/), [Geometry Lab](https://geometrylab.net/), [KidsCode](https://kidscode.dev/): Sister learning apps.
