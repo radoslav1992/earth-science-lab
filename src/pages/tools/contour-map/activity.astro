@@ -1,0 +1,74 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import RecordTable from '../../../components/RecordTable.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import { contourMapActivity as act, WORKSHEET_MAP, WORKSHEET_POINTS, WORKSHEET_LINE, worksheetProfile } from '../../../lib/activities/contour-map.mjs';
+import { createTerrain, profileStats } from '../../../lib/terrain.mjs';
+import { mapSvg, sketchSvg } from '../../../lib/contour-svg.mjs';
+import '../../../styles/contour.css';
+
+const url = new URL('/tools/contour-map/activity/', Astro.site).href;
+const description = `Free printable contour map worksheet for ${act.grade.toLowerCase()}: find the contour interval, read elevations, use the V-rule and sketch a cross-section. About ${act.minutes} minutes.`;
+const marks = Object.entries(WORKSHEET_POINTS).map(([label, p]) => ({ ...p, label }));
+const map = mapSvg(createTerrain(WORKSHEET_MAP.preset), {
+  interval: WORKSHEET_MAP.interval, seaLevel: WORKSHEET_MAP.seaLevel, overlays: ['index'], marks, line: WORKSHEET_LINE,
+  label: `Contour map of a river valley at a ${WORKSHEET_MAP.interval} m interval, with points A, B and C and a line from X to Y`,
+});
+// The sketch grid spans the profile's heights in whole hundreds, so it never hints at the answer's shape.
+const { length, high, low } = profileStats(worksheetProfile);
+const sketch = sketchSvg({ length, min: Math.floor(low.h / 100) * 100, max: Math.ceil(high.h / 100) * 100, labels: WORKSHEET_LINE.labels });
+const resource = {
+  '@context': 'https://schema.org',
+  '@type': 'LearningResource',
+  name: act.title,
+  description: act.goal,
+  url,
+  learningResourceType: 'Worksheet',
+  educationalLevel: act.grade,
+  timeRequired: `PT${act.minutes}M`,
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+};
+---
+<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Contour Maps" crumbs={[['Contour Map Playground', '/tools/contour-map/'], ['Classroom activity']]}>
+  <article class="worksheet">
+    <div class="breadcrumb no-print"><a href="/tools/contour-map/">{act.toolName}</a> / Classroom activity</div>
+    <header class="worksheet-head">
+      <div>
+        <span class="eyebrow">Student activity · {act.grade} · about {act.minutes} minutes</span>
+        <h1>{act.title}</h1>
+      </div>
+      <div class="name-lines" aria-hidden="true"><span>Name</span><span>Class</span><span>Date</span></div>
+    </header>
+    <p class="worksheet-goal"><strong>Goal:</strong> {act.goal}</p>
+    <p class="worksheet-meta">Open the playground at <strong>earthsciencelab.org/tools/contour-map/</strong> and choose <strong>Ridge and valley</strong>.</p>
+    <div class="page-actions no-print">
+      <button class="btn primary" type="button" data-print>Print worksheet</button>
+      <a class="btn" href="/tools/contour-map/">Open the playground</a>
+      <ClassroomShare url={url} />
+    </div>
+    <div class="worksheet-map">
+      <figure class="cm-figure">
+        <Fragment set:html={map} />
+        <figcaption>North is up. Thick lines are labeled index contours.</figcaption>
+      </figure>
+      <div>
+        <h2>What to do</h2>
+        <ol class="steps">{act.steps.map(step => <li>{step}</li>)}</ol>
+        <h2>Record your results</h2>
+        <RecordTable act={act} />
+      </div>
+    </div>
+    <h2>Questions</h2>
+    <ol class="questions">
+      {act.questions.map(q => (
+        <li>
+          <p>{q.q}</p>
+          {q.lines ? <div class="write-lines" aria-hidden="true">{Array.from({ length: q.lines }, () => <span />)}</div> : <Fragment set:html={sketch} />}
+        </li>
+      ))}
+    </ol>
+    <p class="worksheet-foot">Free from Earth Science Lab · earthsciencelab.org<span class="no-print"> · {act.standardsNote}</span></p>
+  </article>
+  <script type="application/ld+json" set:html={JSON.stringify(resource)} />
+</Layout>
