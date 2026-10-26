@@ -1,0 +1,17 @@
+---
+// Answer-key figures for the erosion and deposition worksheet, drawn by the model: the Hjulström diagram read
+// at question 4’s speed, and setup D after 10 minutes from the side. On screen only, so the key prints on one page.
+import { simulate } from '../../lib/river.mjs';
+import { hjulstromSvg, profileInner, describeProfile, PROFILE } from '../../lib/river-svg.mjs';
+import { SETUPS, MINUTES, READ_SPEED } from '../../lib/activities/river-erosion.mjs';
+import './river.css';
+
+const diagram = hjulstromSvg({ speed: READ_SPEED, grain: 'fine-sand', label: `Hjulström diagram read at ${READ_SPEED} cm/s` });
+const D = SETUPS[3], run = simulate(D);
+const attr = (text: string) => text.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+const side = `<svg class="rv-profile" viewBox="0 0 ${PROFILE.width} ${PROFILE.height}" role="img" aria-label="${attr(describeProfile(run, MINUTES))}">${profileInner(run, MINUTES)}</svg>`;
+---
+<div class="rv-key-figures no-print">
+  <figure class="rv-figure"><Fragment set:html={diagram} /><figcaption>Question 4 at {READ_SPEED} cm/s: red dots are eroded, teal dots only transported.</figcaption></figure>
+  <figure class="rv-figure"><Fragment set:html={side} /><figcaption>Setup D after {MINUTES} minutes, from the side (heights stretched ×2): pink was cut away; gold was laid down near the sea and in the delta.</figcaption></figure>
+</div>
