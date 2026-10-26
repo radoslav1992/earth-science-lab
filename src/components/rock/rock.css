@@ -109,7 +109,7 @@
 .rk-start { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .rk-group-label { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 .rk-start select { min-height: 44px; min-width: 220px; max-width: 100%; padding: 8px 12px; border: 1.5px solid var(--ink); border-radius: 10px; background: #fff; font-weight: 700; }
-.rk[data-mode='challenge'] .rk-start { visibility: hidden; }
+.rk[data-mode='challenge'] .rk-start { display: none; }
 .rk-tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
 .rk .mode-switch { border-radius: 22px; }
 .rk-hint { margin: 12px 0 0; padding: 10px 14px; border-radius: 12px; background: var(--ocean-tint); font-size: .95rem; max-width: 80ch; }
@@ -207,7 +207,7 @@
 /* Below the tool: the field guide and the process table */
 .rk-guide { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); margin: 14px 0 28px; }
 .rk-guide-card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 10px 10px 12px; margin: 0; }
-.rk-guide-card h4 { font-size: 1.1rem; margin: 8px 0 2px; }
+.rk-guide-card h4 { font: 700 1.15rem/1.2 var(--font-display); margin: 8px 0 4px; }
 .rk-guide-card p { font-size: .9rem; margin: 0 0 4px; }
 .rk-guide-card .rk-guide-look { font-weight: 500; }
 .rk-guide-card .rk-guide-example { color: var(--muted); }
@@ -216,3 +216,9 @@
 .rk-table th, .rk-table td { font-size: .92rem; }
 .rk-table tbody th { text-transform: none; letter-spacing: 0; color: var(--ink); font-size: .95rem; }
 .rk-table .table-wrap table { min-width: 820px; }
+@media (max-width: 600px) {
+  .rk-guide { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .rk-guide-card { padding: 7px 7px 9px; }
+  .rk-guide-card h4 { font-size: 1rem; margin-top: 6px; }
+  .rk-guide-card p { font-size: .8rem; line-height: 1.4; }
+}

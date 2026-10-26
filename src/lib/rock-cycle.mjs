@@ -7,9 +7,12 @@
 // - Earle, S. (2019) Physical Geology, 2nd ed., BCcampus Open Education: ch. 3 (magma, intrusive and
 //   extrusive rocks), ch. 4 (magma and lava temperatures: roughly 650–800 °C felsic, 800–1,000 °C
 //   intermediate, 1,000–1,200 °C mafic), ch. 5–6 (weathering, sediments, lithification), ch. 7
-//   (metamorphism, about 200–800 °C; Table 7.1, the rock each parent becomes at each grade: mudrock →
-//   slate → phyllite → schist → gneiss; basalt → chlorite schist (greenschist) → amphibolite; granite
-//   unchanged until high grade, then granite gneiss; sandstone → quartzite; limestone → marble).
+//   (metamorphism; Table 7.1, the rock each parent becomes at each grade: mudrock → slate → phyllite →
+//   schist → gneiss; basalt → chlorite schist (greenschist), then amphibolite from medium grade; granite
+//   unchanged until high grade, then granite gneiss; sandstone little changed until medium grade, then
+//   quartzite; limestone little changed at very low grade, then marble).
+// - The grade temperature bands (about 200–300, 300–400, 400–600 and 600–800 °C) are rounded classroom
+//   values in line with common textbook figures; real boundaries are gradual and depend on pressure.
 // - USGS Volcano Hazards Program glossary (obsidian, pumice, scoria) and USGS "Rocks and minerals" pages.
 // - Typical continental geothermal gradient about 25–30 °C per km (Earle ch. 9); average crust density
 //   about 2,700 kg/m³; long-term uplift and erosion rates of roughly 0.1–10 mm per year in mountain belts.
@@ -156,7 +159,7 @@ export const MATERIALS = {
   basalt: {
     name: 'Basalt', family: 'extrusive', comp: 'mafic', formedBy: 'cf', texture: 'basalt',
     look: 'Fine-grained: dark, with crystals too small to see',
-    forms: 'Runny basaltic lava cools quickly at the surface. It is the most common rock on Earth’s surface, because the ocean floor is made of it.',
+    forms: 'Runny basaltic lava cools quickly at the surface. It is the most common volcanic rock on Earth, because the ocean crust is made of it.',
     example: 'Hawaii’s lava flows, the columns of the Giant’s Causeway, and the dark patches on the Moon.',
     madeOf: 'Plagioclase feldspar and pyroxene in tiny crystals',
   },
@@ -269,7 +272,7 @@ export const MATERIALS = {
     name: 'Gneiss', family: 'metamorphic', comp: 'felsic', formedBy: 'h4', texture: 'gneiss', foliated: true,
     look: 'Banded: light and dark stripes of minerals',
     forms: 'At high grade, minerals separate into light and dark bands. Shale, schist or granite can all become gneiss.',
-    example: 'Earth’s oldest known rocks, the Acasta Gneiss in Canada, are about 4 billion years old.',
+    example: 'Some of Earth’s oldest known rocks, the Acasta Gneiss in Canada, are about 4 billion years old.',
     madeOf: 'Light quartz and feldspar, dark mica and hornblende',
   },
   marble: {
@@ -318,8 +321,8 @@ export const PROCESSES = [
   { id: 'weather', name: 'Weathering and erosion', blurb: 'Rain, ice and wind break rock down and carry it away.' },
   { id: 'deposit', name: 'Deposition', blurb: 'Loose grains settle in layers where water or wind slows.' },
   { id: 'lithify', name: 'Compaction and cementation', blurb: 'Buried layers are squeezed and glued into rock.' },
-  { id: 'meta', name: 'Heat and pressure', blurb: 'Deep under mountains, solid rock changes without melting.' },
-  { id: 'melt', name: 'Melting', blurb: 'Rock gets hot enough to melt into magma.' },
+  { id: 'meta', name: 'Heat and pressure', blurb: 'Buried deep under mountains, solid rock changes without melting.' },
+  { id: 'melt', name: 'Melting', blurb: 'Carried deep, rock gets hot enough to melt into magma.' },
 ];
 export const PROCESS_BY_ID = Object.fromEntries(PROCESSES.map(p => [p.id, p]));
 // Every option a student can choose, with its short code for share links.
@@ -367,8 +370,14 @@ function metamorphose(state, g) {
     if (id === 'gneiss') return { reason: 'Gneiss is already high grade. Any hotter and it would start to melt: try Melting.' };
     return { reason: `${The(id)} has already been through ${GRADES[rank - 1].name.toLowerCase()} conditions. In this model, metamorphism only moves up in grade. Try a higher grade.` };
   }
-  if (id === 'sandstone') return { id: 'quartzite', comp: 'quartz' };
-  if (id === 'limestone') return { id: 'marble', comp: 'carbonate' };
+  if (id === 'sandstone') {
+    if (g >= 3) return { id: 'quartzite', comp: 'quartz' };
+    return { reason: 'Sandstone’s quartz grains barely change at this grade. It takes medium or high grade to fuse them into quartzite.' };
+  }
+  if (id === 'limestone') {
+    if (g >= 2) return { id: 'marble', comp: 'carbonate' };
+    return { reason: 'At very low grade, limestone changes only a little. From low grade up, its calcite grows into the interlocking crystals of marble.' };
+  }
   if (id === 'quartzite') return { reason: 'Quartzite is almost pure quartz. More heat and pressure only make it quartzite again.' };
   if (id === 'marble') return { reason: 'Marble is calcite. More heat and pressure only make it marble again.' };
   if (id === 'conglomerate') return { reason: 'Heat and pressure would squash conglomerate’s pebbles into metaconglomerate, a rock this model leaves out. Try weathering it, or melting it.' };
@@ -534,7 +543,7 @@ export function conditions(code, to, from = null) {
         c.time = 'Thousands to millions of years, so big crystals have time to grow';
         c.energy = 'Heat flows out of the magma into the cooler rock around it';
       } else {
-        c.where = { cf: 'At the surface, as a lava flow', cg: 'At the surface, as a thick, sticky lava flow', cv: 'At the surface, in an explosive eruption' }[code];
+        c.where = { cf: 'At the surface, as a lava flow', cg: 'At the surface, as a thick, sticky lava flow', cv: 'At the surface, in a gas-rich eruption' }[code];
         c.tempText = `Lava at about ${fmtRange(c.temp, ' °C')} cools to air temperature`;
         c.time = { cf: 'Hours to a few years: too fast for big crystals', cg: 'Faster than crystals can grow', cv: 'Seconds to minutes, as gas froths the lava' }[code];
         c.energy = 'Heat escapes from the lava into the air, water and ground';

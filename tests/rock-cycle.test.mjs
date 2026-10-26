@@ -70,8 +70,8 @@ test('metamorphism follows Earle Table 7.1: the right product at each grade, nev
     phyllite: [null, null, 'schist', 'gneiss'],
     schist: [null, null, null, 'gneiss'],
     gneiss: [null, null, null, null],
-    sandstone: ['quartzite', 'quartzite', 'quartzite', 'quartzite'],
-    limestone: ['marble', 'marble', 'marble', 'marble'],
+    sandstone: [null, null, 'quartzite', 'quartzite'],
+    limestone: [null, 'marble', 'marble', 'marble'],
     quartzite: [null, null, null, null],
     marble: [null, null, null, null],
     conglomerate: [null, null, null, null],
@@ -250,7 +250,7 @@ test('replays are deterministic, and the drawings are finite and repeatable', ()
 });
 
 test('the rock cycle diagram counts the arrows a journey uses', () => {
-  const run = r.replay('mafic-magma', ['cf', 'we', 'dc', 'cc', 'h1', 'up', 'we', 'dm', 'cc', 'me']);
+  const run = r.replay('mafic-magma', ['cf', 'we', 'dc', 'cc', 'h2', 'up', 'we', 'dm', 'cc', 'me']);
   assert.deepEqual(v.cycleUse(run.states), {
     'magma>igneous': 1, 'igneous>sediment': 1, 'sediment>sedimentary': 2, 'sedimentary>metamorphic': 1, 'metamorphic>sediment': 1, 'sedimentary>magma': 1,
   });
@@ -268,7 +268,7 @@ test('share links round-trip and explain bad values', () => {
     { mode: 'explore', start: 'granite', steps: [] },
     { mode: 'explore', start: 'granite', steps: ['up', 'we', 'dm', 'cc', 'h1'] },
     { mode: 'explore', start: 'mafic-magma', steps: ['cf', 'we', 'dc', 'cc', 'h3'] },
-    { mode: 'explore', start: 'limestone', steps: ['h4', 'up', 'we', 'ds', 'cc', 'h2'] },
+    { mode: 'explore', start: 'limestone', steps: ['h4', 'up', 'we', 'ds', 'cc', 'h3'] },
   ];
   for (const state of journeys) {
     const query = serializeRockState(state);

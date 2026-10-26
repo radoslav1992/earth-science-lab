@@ -91,7 +91,7 @@ export function initRock(root: HTMLElement) {
     const frame = (time: number) => {
       const t = Math.min(1, (time - t0) / MOVE_MS), e = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
       const x = from[0] + (to[0] - from[0]) * e, y = from[1] + (to[1] - from[1]) * e - Math.sin(Math.PI * e) * lift;
-      marker.setAttribute('transform', `translate(${x.toFixed(1)} ${y.toFixed(1)})`);
+      marker.setAttribute('transform', t < 1 ? `translate(${x.toFixed(1)} ${y.toFixed(1)})` : `translate(${to[0]} ${to[1]})`);
       if (t < 1) raf = requestAnimationFrame(frame);
     };
     raf = requestAnimationFrame(frame);

@@ -69,19 +69,19 @@ export const activity = {
       checks: [[String(ccStep), ccStep]],
     },
     {
-      q: 'Which steps happened at Earth’s surface, and which happened deep underground? What energy source drives each group?',
-      lines: 3,
+      q: 'Which steps happened at the surface, and which deep underground? What energy drives each group?',
+      lines: 2,
       a: 'At the surface: weathering and erosion, and deposition. Energy from the Sun drives the weather and moving water, and gravity moves the grains downhill. Underground: compaction and cementation, heat and pressure, and melting, driven by Earth’s internal heat and the weight of the rock above. Uplift links the two: Earth’s heat drives the plate motions that lift mountains, and erosion uncovers the rock.',
     },
     {
-      q: `Temperature in the crust rises about ${r.GRADIENT_C_PER_KM} °C for every kilometer down. Your shale became schist at about ${schistTemp} °C. About how deep was it?`,
+      q: `The crust gets about ${r.GRADIENT_C_PER_KM} °C hotter per km down. Your shale became schist at about ${schistTemp} °C. How deep was it?`,
       lines: 2,
       a: `${schistTemp} ÷ ${r.GRADIENT_C_PER_KM} = ${r.fmtNum(schistKm)} km down. That fits the builder’s range for medium grade, ${dLow}–${dHigh} km.`,
       checks: [[String(schistTemp), schistTemp], [String(r.GRADIENT_C_PER_KM), r.GRADIENT_C_PER_KM], [r.fmtNum(schistKm), schistKm], [String(dLow), dLow], [String(dHigh), dHigh]],
       schistFrom: schistStep.from.id,
     },
     {
-      q: `Uplift and erosion can bring rock up about ${r.UPLIFT_MM_PER_YR} mm per year. How long would the schist take to reach the surface from that depth? (${r.UPLIFT_MM_PER_YR} mm per year for 1 million years is 1 km.)`,
+      q: `At ${r.UPLIFT_MM_PER_YR} mm per year of uplift (1 km per million years), how long would the schist take to reach the surface?`,
       lines: 2,
       a: `${r.fmtNum(schistKm)} km at ${r.UPLIFT_MM_PER_YR} km per million years takes ${r.fmtNum(schistKm)} ÷ ${r.UPLIFT_MM_PER_YR} = ${r.fmtNum(riseMyr)} million years.`,
       checks: [[r.fmtNum(schistKm), schistKm], [String(r.UPLIFT_MM_PER_YR), r.UPLIFT_MM_PER_YR], [r.fmtNum(riseMyr), riseMyr]],
@@ -92,7 +92,7 @@ export const activity = {
       a: `Cooling slowly underground makes ${cooled.cs.toLowerCase()}, with big crystals. Cooling quickly as lava makes ${cooled.cf.toLowerCase()}, with tiny crystals. Cooling very quickly makes ${cooled.cg.toLowerCase()} (glass), and lava full of gas makes ${cooled.cv.toLowerCase()}.`,
     },
     {
-      q: 'A classmate says rocks always go around the cycle in the same order: igneous, then sedimentary, then metamorphic. Use the builder to find a shortcut and describe it.',
+      q: 'A classmate says rocks always go igneous → sedimentary → metamorphic. Find a shortcut in the builder and describe it.',
       lines: 2,
       a: 'There is no fixed order. For example, granite can go straight to gneiss with high-grade heat and pressure (igneous to metamorphic), sandstone can be uplifted and weathered into new sediment (sedimentary back to sediment), and basalt can melt again without ever becoming sedimentary.',
     },

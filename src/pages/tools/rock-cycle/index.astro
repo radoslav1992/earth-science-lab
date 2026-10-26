@@ -73,6 +73,7 @@ const app = {
 };
 ---
 <Layout title={title} description={description} section="Rock Cycle" crumbs={[['Rock Cycle Builder']]}>
+  <noscript slot="head"><style is:inline>.rk-hint { display: none; }</style></noscript>
   <div class="wrap">
     <div class="page-intro">
       <span class="eyebrow">Virtual lab · Rocks and the rock cycle</span>
@@ -147,7 +148,7 @@ const app = {
       <p><strong>How squeezed?</strong> Each kilometer of rock above presses down with about {fmtNum(twoSig(perKm))} times the air pressure at sea level. So {fmtNum(exKm)} km of rock presses with about {fmtNum(exKm)} × {fmtNum(twoSig(perKm))} ≈ <strong>{exAtm.toLocaleString('en-US')} times</strong> the air pressure we feel.</p>
       <p><strong>How long to come back up?</strong> Mountains rise, and erosion wears the rock above away, at roughly {UPLIFT_MM_PER_YR} mm per year. One millimeter a year for a million years is 1,000,000 mm, which is 1 km. So:</p>
       <p class="formula">time = {fmtNum(exKm)} km ÷ {UPLIFT_MM_PER_YR} km per million years = {fmtNum(exMyr)} million years</p>
-      <p>In a human lifetime of about {lifetime} years, the gneiss would rise only {fmtNum(lifetimeCm)} cm. That is why we see gneiss at the surface only in very old mountain belts, where tens of millions of years of erosion have stripped the rock above away.</p>
+      <p>In a human lifetime of about {lifetime} years, the gneiss would rise only {fmtNum(lifetimeCm)} cm. That is why gneiss reaches the surface only where mountains have been rising and wearing away for tens of millions of years.</p>
       <p>Try it in the builder: start from shale, choose <em>{stepName('h4')}</em>, then <em>{stepName('up')}</em>, and read the depth and time in the Conditions panel.</p>
     </section>
 
