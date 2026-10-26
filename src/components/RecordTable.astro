@@ -6,7 +6,7 @@ const rows: [string, Record<string, string>][] = act.rows;
 ---
 <div class="table-wrap">
   <table class="record-table">
-    <thead><tr><th scope="col">Station</th>{record.map(col => <th scope="col">{col}</th>)}</tr></thead>
+    <thead><tr><th scope="col">{act.rowHeader ?? 'Station'}</th>{record.map(col => <th scope="col">{col}</th>)}</tr></thead>
     <tbody>
       {rows.map(([station, values]) => (
         <tr><th scope="row">{station}</th>{record.map(col => answers ? <td>{values[col]}</td> : <td class="blank" />)}</tr>

@@ -25,9 +25,9 @@ const traces = act.tool === 'earthquake-epicenter' ? readings(GUIDED) : [];
     <p class="worksheet-goal"><strong>Goal:</strong> {act.goal}</p>
     <p class="worksheet-meta">Connects to NGSS {act.standards.map(code => `${code} (${standards[code]})`).join('; ')}</p>
     <h2>Completed results table</h2>
-    <p class="worksheet-meta">Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.</p>
+    <p class="worksheet-meta">{act.keyNote ?? 'Arrival times read to the nearest 0.1 s, as the finder’s snap places them. Readings within about 1 s are fine; each second of lag is 8.4 km.'}</p>
     <RecordTable act={act} answers />
-    <h2 class="no-print">The seismograms, marked</h2>
+    {traces.length > 0 && <h2 class="no-print">The seismograms, marked</h2>}
     <div class="worksheet-traces no-print">
       {traces.map((r, i) => {
         const read = picked(r);
