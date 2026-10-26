@@ -6,7 +6,9 @@ import { labs } from '../../lib/labs.mjs';
 import { activities } from '../../lib/activities.mjs';
 import { createTerrain } from '../../lib/terrain.mjs';
 import { mapSvg } from '../../lib/contour-svg.mjs';
+import { VIEW as WATER_VIEW, sceneBaseSvg } from '../../lib/water-cycle.mjs';
 import '../../styles/contour.css';
+import '../../components/water/water.css';
 
 const title = 'Free Earth Science Simulations and Virtual Labs';
 const description = 'Free interactive earth science simulations for ages 10–16: earthquakes, plate tectonics and contour maps, each with a printable worksheet and an answer key.';
@@ -39,6 +41,7 @@ const itemList = {
               {lab.slug === 'earthquake-epicenter' && <EpicenterDiagram />}
               {lab.slug === 'plate-tectonics' && <CrossSection boundary="convergent-oc" />}
               {lab.slug === 'contour-map' && <Fragment set:html={volcano} />}
+              {lab.slug === 'water-cycle' && <svg class="wc-scene" viewBox={`0 0 ${WATER_VIEW.width} ${WATER_VIEW.height}`} role="img" aria-label="Water cycle diagram: ocean, atmosphere, glacier, ice sheet, soil, plants, river, lake and groundwater" set:html={sceneBaseSvg()} />}
             </a>
             <div class="lab-body">
               <span class="eyebrow">{lab.topic}</span>

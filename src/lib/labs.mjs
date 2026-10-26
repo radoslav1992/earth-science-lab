@@ -22,6 +22,13 @@ export const labs = [
     topic: 'Maps and landforms',
     blurb: 'Sculpt hills, valleys and volcanoes and watch the topographic map redraw, then read slopes, rivers and cross-sections.',
   },
+  {
+    slug: 'water-cycle',
+    name: 'Water Cycle Explorer',
+    section: 'Water Cycle',
+    topic: 'Water cycle',
+    blurb: 'Follow a water droplet through oceans, clouds, ice, soil and groundwater, see where Earth’s water is stored, and switch off the sun or gravity to see what drives the cycle.',
+  },
 ];
 
 export const labBySection = section => labs.find(lab => lab.section === section);
