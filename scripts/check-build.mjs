@@ -59,7 +59,7 @@ assert.match(read('404.html'), /<meta name="robots" content="noindex"/, '404: no
 const sitemap = fs.readFileSync(path.join(root, 'sitemap-0.xml'), 'utf8');
 assert.ok(!sitemap.includes('/teachers/answers/'), 'answer keys must stay out of the sitemap');
 assert.ok(!sitemap.includes('/404'), '404 must stay out of the sitemap');
-for (const page of ['/', '/tools/earthquake-epicenter/', '/tools/earthquake-epicenter/activity/', '/tools/plate-tectonics/', '/tools/plate-tectonics/activity/', '/tools/contour-map/', '/tools/contour-map/activity/', '/teachers/', '/about/', '/privacy/']) {
+for (const page of ['/', '/tools/', '/tools/earthquake-epicenter/', '/tools/earthquake-epicenter/activity/', '/tools/plate-tectonics/', '/tools/plate-tectonics/activity/', '/tools/contour-map/', '/tools/contour-map/activity/', '/teachers/', '/about/', '/privacy/']) {
   assert.ok(sitemap.includes(`<loc>https://earthsciencelab.org${page}</loc>`), `sitemap lists ${page}`);
 }
 for (const file of ['robots.txt', 'llms.txt', 'favicon.svg', 'og-image.png', '_headers']) assert.ok(fs.existsSync(path.join(root, file)), `dist/${file}`);

@@ -7,6 +7,7 @@ import ConsentBanner from '../components/ConsentBanner.astro';
 import { site } from '../lib/site.mjs';
 import { anyAds } from '../lib/ads.mjs';
 import { learningApps, currentApp, flagship } from '../lib/learning-apps.mjs';
+import { labBySection } from '../lib/labs.mjs';
 
 interface Props {
   title?: string;
@@ -25,6 +26,10 @@ const fullTitle = title.includes(site.name) || title.length + suffix.length > 65
 const canonical = new URL(Astro.url.pathname, Astro.site);
 const ogImage = new URL('/og-image.png', Astro.site).href;
 const isHome = Astro.url.pathname === '/';
+// Lab pages sit under the Labs hub, both in the menu and in the breadcrumb trail.
+const lab = labBySection(section);
+const activeNav = lab ? 'Labs' : section;
+const trail: [string, string?][] = lab ? [['Labs', '/tools/'], ...crumbs] : crumbs;
 // Cookies only exist once Google Analytics or ads are switched on, so until then there is nothing to ask about.
 const consentNeeded = Boolean(site.analyticsId) || anyAds;
 
@@ -33,15 +38,15 @@ if (isHome) {
   structured.push({ '@context': 'https://schema.org', '@type': 'WebSite', name: site.name, url: site.url + '/', description, inLanguage: 'en' });
   structured.push({ '@context': 'https://schema.org', '@type': 'Organization', name: site.name, url: site.url + '/', logo: `${site.url}/favicon.svg`, email: site.contactEmail });
 }
-if (crumbs.length) {
+if (trail.length) {
   structured.push({
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
-    itemListElement: [['Home', '/'], ...crumbs].map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: path ? new URL(path, Astro.site).href : canonical.href })),
+    itemListElement: [['Home', '/'], ...trail].map(([name, path], i) => ({ '@type': 'ListItem', position: i + 1, name, item: path ? new URL(path, Astro.site).href : canonical.href })),
   });
 }
 
-const nav = [['Explore', '/'], ['Epicenter Finder', '/tools/earthquake-epicenter/'], ['Plate Tectonics', '/tools/plate-tectonics/'], ['Contour Maps', '/tools/contour-map/'], ['For teachers', '/teachers/'], ['About', '/about/']];
+const nav = [['Explore', '/'], ['Labs', '/tools/'], ['For teachers', '/teachers/'], ['About', '/about/']];
 const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
 ---
 <!doctype html>
@@ -93,7 +98,7 @@ const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
         <span>Earth Science <span class="brand-accent">Lab</span></span>
       </a>
       <nav class="main-nav" aria-label="Main navigation">
-        {nav.map(([name, url]) => <a href={url} aria-current={section === name ? 'page' : undefined}>{name}</a>)}
+        {nav.map(([name, url]) => <a href={url} aria-current={activeNav === name ? 'page' : undefined}>{name}</a>)}
       </nav>
     </header>
     <main id="main"><slot /></main>
@@ -107,7 +112,7 @@ const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
         <p class="footer-maker">From the makers of <a href={flagship.url + '/'}>{flagship.name}</a></p>
       </div>
       <div class="footer-links">
-        <a href="/tools/earthquake-epicenter/">Epicenter Finder</a>
+        <a href="/tools/">All labs</a>
         <a href="/teachers/">For teachers</a>
         <a href="/about/">About</a>
         <a href="/privacy/">Privacy policy</a>
