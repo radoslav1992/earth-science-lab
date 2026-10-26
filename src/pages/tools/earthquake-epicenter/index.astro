@@ -1,0 +1,190 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import EpicenterFinder from '../../../components/EpicenterFinder.astro';
+import EpicenterDiagram from '../../../components/EpicenterDiagram.astro';
+import Seismogram from '../../../components/Seismogram.astro';
+import TravelTimeGraph from '../../../components/TravelTimeGraph.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import { GUIDED, VP, VS, LAG_PER_KM, readings, picked, trilaterate, distance, localMagnitude, round } from '../../../lib/seismology.mjs';
+import { traceSeed } from '../../../lib/seismogram.mjs';
+
+const title = 'Earthquake Epicenter Finder – Triangulation Virtual Lab';
+const description = 'Find an earthquake’s epicenter from three seismograms: read the S–P lag, turn it into a distance and triangulate on a map. Free virtual lab with a worksheet.';
+const url = new URL('/tools/earthquake-epicenter/', Astro.site).href;
+
+// Worked example: the Guided quake, read to 0.1 s.
+const rows = readings(GUIDED).map((r, i) => ({ r, i, read: picked(r) }));
+const cdr = rows[2];
+const fit = trilaterate(rows.map(({ r, read }) => ({ x: r.station.x, y: r.station.y, r: read.km })));
+const fitMiss = distance(fit, GUIDED.quake);
+const cdrAmplitude = round(cdr.r.amplitude, 1);
+const cdrMagnitude = localMagnitude(cdrAmplitude, cdr.read.lag);
+
+const faq: [string, string][] = [
+  ['What is an earthquake’s epicenter?', 'The epicenter is the point on Earth’s surface directly above the focus, the place underground where the rock first slipped. News reports and maps give the epicenter because it is where the shaking is usually strongest at the surface.'],
+  ['Why do you need three seismograph stations?', 'One station tells you only how far away the earthquake was, so it could be anywhere on a circle around that station. Two circles usually cross at two points. A third circle passes through just one of those points, which is the epicenter. Real networks use many more stations to also work out the depth and the exact time the quake began.'],
+  ['How do you turn the S–P lag into a distance?', `P waves travel faster than S waves, so the S wave falls further behind the farther it goes. In this lab P waves travel ${VP.toFixed(1)} km/s and S waves ${VS.toFixed(1)} km/s, so the S wave falls 1 second behind every 8.4 km. Multiply the lag in seconds by 8.4 to get the distance in kilometers, or read it off a travel-time graph.`],
+  ['Why don’t my three circles meet at exactly one point?', 'Small reading errors move each circle. A pick that is 1 second off changes a distance by 8.4 km, so the circles usually leave a small “error triangle”. The epicenter is in the middle of it. Real data adds more error, because rocks vary and waves travel deep below the surface.'],
+  ['How realistic is this simulation?', 'The method is the real one, and the wave speeds are typical of the upper crust, but the model is simplified: the speeds never change, the waves travel straight along the surface, and the focus is treated as if it were at the surface. Seismologists use travel-time tables built from real Earth structure instead. The magnitude formula is a classroom approximation, not an official magnitude.'],
+  ['Can I use the Epicenter Finder in class?', 'Yes. It is free with no sign-up and runs on school Chromebooks. Use Guided mode with the printable activity sheet, then let students try a three-quake Challenge. Teachers can find the answer key on the For teachers page.'],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Earthquake Epicenter Finder',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Epicenter Finder" crumbs={[['Earthquake Epicenter Finder']]}>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Seismology</span>
+      <h1>Earthquake Epicenter Finder</h1>
+      <p class="lede">Three seismograph stations recorded the same earthquake. Read when the P and S waves arrived, turn each lag into a distance, and draw circles to triangulate where the quake began.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/earthquake-epicenter/activity/">Printable activity</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <EpicenterFinder />
+
+    <section class="section prose" aria-labelledby="how-to">
+      <h2 id="how-to">How to find an earthquake’s epicenter</h2>
+      <p>Seismologists locate earthquakes by comparing two kinds of waves. Both leave the focus at the same moment, but P waves are faster, so the gap between their arrivals grows with distance.</p>
+      <ol class="steps-list">
+        <li><strong>Find the arrivals.</strong> On each seismogram, mark where the first small wiggles start (the P wave) and where the larger wiggles suddenly begin (the S wave).</li>
+        <li><strong>Measure the S–P lag.</strong> Subtract the P arrival time from the S arrival time.</li>
+        <li><strong>Convert the lag to distance.</strong> Multiply the lag in seconds by 8.4 to get kilometers, or read the distance off a travel-time graph.</li>
+        <li><strong>Draw a circle around each station.</strong> Its radius is that station’s distance. The quake happened somewhere on that circle.</li>
+        <li><strong>Find where the circles meet.</strong> Three circles cross at one point, the epicenter. If they leave a small triangle, the epicenter is in its middle.</li>
+      </ol>
+      <h3>Where does 8.4 come from?</h3>
+      <p>After traveling <em>d</em> km, the S wave is behind the P wave by <em>d</em> ÷ {VS.toFixed(1)} − <em>d</em> ÷ {VP.toFixed(1)} seconds, about {LAG_PER_KM.toFixed(3)} s for every kilometer. Flip that around:</p>
+      <p class="formula">distance (km) = S–P lag (s) × 8.4</p>
+      <TravelTimeGraph />
+    </section>
+
+    <section class="section" aria-labelledby="worked">
+      <h2 id="worked">Worked example</h2>
+      <p class="prose">This is the earthquake in Guided mode. Reading each arrival to the nearest 0.1 second gives these numbers:</p>
+      <div class="worked">
+        <div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th scope="col">Station</th><th scope="col">P (s)</th><th scope="col">S (s)</th><th scope="col">S–P lag (s)</th><th scope="col">× 8.4 = distance</th></tr></thead>
+              <tbody>
+                {rows.map(({ r, read }) => <tr><th scope="row">{r.station.name}</th><td>{read.p.toFixed(1)}</td><td>{read.s.toFixed(1)}</td><td>{read.lag.toFixed(1)}</td><td>{Math.round(read.km)} km</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <p style="margin-top:14px">Cedar Ridge has the shortest lag, so it is the closest station. Its seismogram, with both arrivals marked:</p>
+          <Seismogram p={cdr.r.p} s={cdr.r.s} seed={traceSeed(1, cdr.i)} picks={{ p: cdr.read.p, s: cdr.read.s }} label={`Cedar Ridge seismogram with the P wave marked at ${cdr.read.p.toFixed(1)} seconds and the S wave at ${cdr.read.s.toFixed(1)} seconds.`} />
+          <p style="margin-top:14px">Drawing the three circles puts the epicenter {GUIDED.quake.x} km east and {GUIDED.quake.y} km south of the map’s north-west corner. Because the readings were rounded, the circles meet within about {fitMiss.toFixed(1)} km of that point rather than exactly on it.</p>
+          <p><strong>Bonus, magnitude:</strong> Cedar Ridge’s largest S-wave swing was {cdrAmplitude.toFixed(1)} mm. M ≈ log₁₀({cdrAmplitude.toFixed(1)}) + 3 × log₁₀(8 × {cdr.read.lag.toFixed(1)}) − 2.92 ≈ {cdrMagnitude.toFixed(1)}, a light quake that people nearby would feel. This formula is a classroom approximation of the Richter scale.</p>
+        </div>
+        <figure class="hero-art" style="margin:0">
+          <EpicenterDiagram />
+          <figcaption>The three circles from the table meet at the epicenter (star).</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section" aria-labelledby="waves">
+      <h2 id="waves">P waves vs S waves</h2>
+      <div class="compare">
+        <div class="card">
+          <h3><span class="dot" style="background:#1f5f66" aria-hidden="true"></span>P waves (primary)</h3>
+          <ul>
+            <li>Push and pull the rock in the direction they travel, like a slinky.</li>
+            <li>Fastest seismic waves: about {VP.toFixed(1)} km/s in the upper crust in this lab.</li>
+            <li>Travel through solids, liquids and gases.</li>
+            <li>Arrive first, usually as small wiggles.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3><span class="dot" style="background:#b4502b" aria-hidden="true"></span>S waves (secondary)</h3>
+          <ul>
+            <li>Shake the rock side to side, across the direction they travel.</li>
+            <li>Slower: about {VS.toFixed(1)} km/s in this lab.</li>
+            <li>Travel only through solids, which is how we know Earth’s outer core is liquid.</li>
+            <li>Arrive second, usually with much bigger swings.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" aria-labelledby="focus">
+      <h2 id="focus">Epicenter vs focus</h2>
+      <div class="worked">
+        <div class="prose">
+          <p>The <strong>focus</strong> (or hypocenter) is the point underground where the rock first broke. The <strong>epicenter</strong> is the point on the surface directly above it. Most earthquakes start within a few tens of kilometers of the surface.</p>
+          <p>Triangulating with three stations, as in this lab, finds the epicenter. Working out the depth of the focus needs more stations and more careful timing.</p>
+        </div>
+        <svg class="hero-art" viewBox="0 0 420 220" role="img" aria-label="Cross-section: the focus is underground and the epicenter is the point on the surface directly above it. Seismic waves spread out from the focus in all directions.">
+          <rect x="0" y="0" width="420" height="70" fill="#dcebe8" />
+          <rect x="0" y="70" width="420" height="150" fill="#e2c9a4" />
+          <path d="M0 120 C120 112 260 130 420 118" stroke="#cdb08a" stroke-width="2" fill="none" />
+          <path d="M0 170 C140 162 270 182 420 168" stroke="#cdb08a" stroke-width="2" fill="none" />
+          <line x1="0" y1="70" x2="420" y2="70" stroke="#2a2724" stroke-width="2" />
+          <g fill="none" stroke="#b4502b" stroke-width="2" opacity=".8"><circle cx="210" cy="165" r="28" /><circle cx="210" cy="165" r="56" stroke-dasharray="5 5" /></g>
+          <line x1="210" y1="70" x2="210" y2="165" stroke="#2a2724" stroke-width="1.5" stroke-dasharray="4 4" />
+          <path d="M210 52 l4.5 9.5 10.5 1.5 -7.6 7.4 1.8 10.4 -9.2 -4.9 -9.2 4.9 1.8 -10.4 -7.6 -7.4 10.5 -1.5z" fill="#b4502b" stroke="#fff" stroke-width="1.5" />
+          <circle cx="210" cy="165" r="7" fill="#2a2724" />
+          <text x="232" y="44" font-size="15" font-weight="700" fill="#2a2724">Epicenter</text>
+          <text x="232" y="61" font-size="13" fill="#2a2724">on the surface</text>
+          <text x="276" y="160" font-size="15" font-weight="700" fill="#2a2724">Focus</text>
+          <text x="276" y="178" font-size="13" fill="#2a2724">where the rock broke</text>
+          <text x="10" y="94" font-size="13" fill="#5f584f">Ground</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common mistakes</h2>
+      <ul>
+        <li><strong>Marking the biggest wiggle as the S wave.</strong> The S wave starts where the swings suddenly get bigger, before they reach their largest size.</li>
+        <li><strong>Using an arrival time instead of the lag.</strong> The distance comes from the gap between S and P, not from either time on its own.</li>
+        <li><strong>Dividing instead of multiplying.</strong> A longer lag means a farther station, so the distance must grow: lag × 8.4.</li>
+        <li><strong>Using the distance as a diameter.</strong> The distance is the circle’s radius, measured from the station outward.</li>
+        <li><strong>Expecting a perfect point.</strong> Small reading errors leave a small triangle; the epicenter is in its middle.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>The finder keeps the physics the method depends on and leaves out the rest. Wave speeds are constant ({VP.toFixed(1)} and {VS.toFixed(1)} km/s), waves travel in straight lines along a flat surface, and the focus is treated as if it were at the surface. In the real Earth, speeds change with rock type and depth, waves bend as they travel, and quakes start kilometers down, so seismologists use travel-time tables and many stations. The seismograms are synthetic: drawn from the model, not recorded. The magnitude formula, M ≈ log₁₀(A) + 3 × log₁₀(8 × Δt) − 2.92, is a classroom fit to the Richter scale, not an official magnitude.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Earthquake epicenter activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes with Guided mode: a results table and six questions, from reading the lag to estimating the magnitude.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/earthquake-epicenter/activity/">Open the activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the lab with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <Faq items={faq} title="Epicenter questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>

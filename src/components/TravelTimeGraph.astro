@@ -1,0 +1,35 @@
+---
+// Travel-time graph for the model's P and S waves. The S–P lag at any distance is the vertical gap
+// between the two lines, so a measured lag can be turned into a distance by finding where the gap fits.
+// The finder adds one bar per measured station inside [data-graph-marks].
+import { VP, VS } from '../lib/seismology.mjs';
+import { GRAPH as g, graphX as x, graphY as y } from '../lib/seismogram.mjs';
+
+const kms = [0, 100, 200, 300, 400, 500, 600];
+const secs = [0, 30, 60, 90, 120, 150, 180];
+const example = 300;
+const { interactive = false } = Astro.props;
+---
+<svg class="travel-graph" viewBox={`0 0 ${g.width} ${g.height}`} role="img" aria-label={`Travel-time graph: P waves take 1 second per ${VP} km and S waves 1 second per ${VS} km, so the gap between them, the S–P lag, grows by 1 second every 8.4 km. At ${example} km the lag is about ${Math.round(example / VS - example / VP)} seconds.`} data-graph={interactive ? '' : undefined}>
+  {kms.map(km => <line class="gridline" x1={x(km)} y1={g.top} x2={x(km)} y2={g.bottom} />)}
+  {secs.map(s => <line class="gridline" x1={g.left} y1={y(s)} x2={g.right} y2={y(s)} />)}
+  <line class="axis" x1={g.left} y1={g.bottom} x2={g.right} y2={g.bottom} />
+  <line class="axis" x1={g.left} y1={g.top} x2={g.left} y2={g.bottom} />
+  {kms.map(km => <text x={x(km)} y={g.bottom + 16} text-anchor="middle">{km}</text>)}
+  {secs.map(s => <text x={g.left - 6} y={y(s) + 4} text-anchor="end">{s}</text>)}
+  <text x={(g.left + g.right) / 2} y={g.height - 4} text-anchor="middle">Distance from the epicenter (km)</text>
+  <text transform={`translate(13 ${(g.top + g.bottom) / 2}) rotate(-90)`} text-anchor="middle">Travel time (s)</text>
+  <line class="curve-s" x1={x(0)} y1={y(0)} x2={x(g.maxKm)} y2={y(g.maxKm / VS)} />
+  <line class="curve-p" x1={x(0)} y1={y(0)} x2={x(g.maxKm)} y2={y(g.maxKm / VP)} />
+  <text class="curve-label" x={x(400)} y={y(400 / VS + 10)} text-anchor="end" style="fill:#a34722">S wave</text>
+  <text class="curve-label" x={x(520)} y={y(520 / VP - 14)} style="fill:#1f5f66">P wave</text>
+  <g data-graph-marks>
+    {!interactive && (
+      <g>
+        <line x1={x(example)} y1={y(example / VP)} x2={x(example)} y2={y(example / VS)} stroke="#2a2724" stroke-width="2.5" />
+        <text x={x(example) + 6} y={y(example / VP - 12)} style="fill:#2a2724;font-weight:700">S–P lag {Math.round(example / VS - example / VP)} s</text>
+        <text x={x(example) + 6} y={y(example / VP - 22)} style="fill:#2a2724">at {example} km</text>
+      </g>
+    )}
+  </g>
+</svg>

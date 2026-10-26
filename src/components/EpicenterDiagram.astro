@@ -1,0 +1,28 @@
+---
+// Static three-circle diagram of the Guided quake: each station's circle uses the distance a careful
+// student gets (lag read to 0.1 s × 8.4), and the star marks the true epicenter. Works without JavaScript.
+import QuakeMap from './QuakeMap.astro';
+import { GUIDED, readings, picked } from '../lib/seismology.mjs';
+
+const { label = 'Worked example map: circles around Ashford, Bayview and Cedar Ridge meet at the epicenter.' } = Astro.props;
+const circles = readings(GUIDED).map(r => ({ ...r.station, r: picked(r).km }));
+const q = GUIDED.quake;
+let star = '';
+for (let i = 0; i < 10; i++) {
+  const a = -Math.PI / 2 + (i * Math.PI) / 5, rr = i % 2 ? 6 : 13;
+  star += `${i ? 'L' : 'M'}${(q.x + rr * Math.cos(a)).toFixed(1)} ${(q.y + rr * Math.sin(a)).toFixed(1)}`;
+}
+// Radius labels sit on each circle, partway around from its station.
+const labelAngle: Record<string, number> = { ashford: 0.1, bayview: 2.6, 'cedar-ridge': -2.1 };
+---
+<QuakeMap label={label}>
+  <Fragment slot="under">
+    {circles.map(c => <circle class="circle-fill" cx={c.x} cy={c.y} r={c.r} fill={c.color} />)}
+    {circles.map(c => <circle class="circle" cx={c.x} cy={c.y} r={c.r} stroke={c.color} />)}
+    {circles.map(c => {
+      const a = labelAngle[c.id] ?? 0;
+      return <text x={(c.x + c.r * Math.cos(a)).toFixed(1)} y={(c.y + c.r * Math.sin(a)).toFixed(1)} fill={c.color} font-size="14" font-weight="700" paint-order="stroke" stroke="#efe3cc" stroke-width="4" text-anchor="middle" dy="-6">{Math.round(c.r)} km</text>;
+    })}
+  </Fragment>
+  <g class="epicenter"><path d={star + 'Z'} /><text x={q.x + 16} y={q.y - 10}>Epicenter</text></g>
+</QuakeMap>
