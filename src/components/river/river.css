@@ -242,14 +242,14 @@
 }
 
 @media print {
-  .rv-worksheet-top { grid-template-columns: .74fr 1.26fr; gap: 5mm; }
-  .rv-worksheet-top .hj { max-height: 50mm; width: auto; max-width: 100%; border: 1px solid #999; }
+  .rv-worksheet-top { grid-template-columns: .82fr 1.18fr; gap: 5mm; }
+  .rv-worksheet-top .hj { max-height: 58mm; width: auto; max-width: 100%; border: 1px solid #999; }
   .rv-worksheet-top h2 { margin-top: 0; }
   .rv-figure figcaption { font-size: 7.5pt; padding-top: 1px; color: #333; }
   .hj .hj-erode { fill: #f9ece2; }
   .hj .hj-transport { fill: #eaf3f1; }
   .hj .hj-deposit { fill: #f5eee0; }
-  .rv-worksheet-top .hj-axis { font-size: 19px; fill: #222; }
+  .rv-worksheet-top .hj-axis { font-size: 21px; fill: #222; }
   .rv-worksheet-top .hj-axis-title, .rv-worksheet-top .hj-class-name { font-size: 18px; }
   .rv-worksheet-top .hj-zone-name { font-size: 24px; fill: rgba(0, 0, 0, .55); }
   .rv-worksheet-top .hj-curve-name { display: none; }
