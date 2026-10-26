@@ -8,5 +8,5 @@ export const site = {
   // no analytics cookies are set and the cookie banner stays hidden.
   analyticsId: 'G-JE3DTV9N7R',
   defaultTitle: 'Earth Science Lab: Free Interactive Earth Science Simulations',
-  defaultDescription: 'Free interactive earth science labs for students aged 10–16. Find an earthquake’s epicenter from seismograms, with printable classroom activities. No sign-up.',
+  defaultDescription: 'Free earth science simulations for ages 10–16: earthquakes, plate tectonics, contour maps, rivers, the water cycle and the rock cycle. Printable activities.',
 };

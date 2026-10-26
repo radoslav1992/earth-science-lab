@@ -31,6 +31,21 @@ const lessonNotes: Record<string, { hook: string; debrief: string; tip: string }
     debrief: 'Where are the lines closest together, and what does that look like on the landscape? Which way does the river flow, and how can you tell?',
     tip: 'Give students two minutes to sculpt their own hill first. Their landscape stays in that browser until they press Reset landscape.',
   },
+  'river-erosion': {
+    hook: '“Why does a river cut a deep valley in the mountains but build new land where it meets the sea?”',
+    debrief: 'Where did the river erode, and where did it drop sediment? Why does clay need faster water than sand to be picked up?',
+    tip: 'Have pairs change one thing at a time (slope or flow) and compare the four setups on the board before trying gravel.',
+  },
+  'water-cycle': {
+    hook: '“A drop of water in your glass may once have been in a glacier or deep underground. How could it get from the ocean to your tap, and how long might that take?”',
+    debrief: 'Which moves needed the sun’s energy and which needed gravity? Why did the ocean take up almost all of the time?',
+    tip: 'Give everyone chance code 10 for the worksheet, then let students pick their own codes and compare whose droplet traveled longest.',
+  },
+  'rock-cycle': {
+    hook: '“The granite in a kitchen countertop could one day become a roof tile. How?”',
+    debrief: 'Which steps needed energy from the sun, and which needed Earth’s internal heat? Where did your rock take a shortcut?',
+    tip: 'Fill in the first row of the worksheet together, and show students that a dashed option explains why it can’t happen yet.',
+  },
 };
 
 const standardCodes = [...new Set(activities.flatMap(act => act.standards))];
@@ -42,11 +57,11 @@ const faq: [string, string][] = [
   ['Do students need accounts or logins?', 'No. Students open a link and start. Nothing is saved to an account, and worksheets are completed on paper or in your own Classroom assignment.'],
   ['Does it work on Chromebooks and tablets?', 'Yes. The labs run in any modern browser, including Chrome on school Chromebooks and Safari on iPads, with nothing to install. JavaScript must be enabled. Every control works with a keyboard and on a touch screen.'],
   ['Will my students see ads?', adsLine],
-  ['Which standards do the activities support?', `The Epicenter Finder connects to NGSS MS-ESS3-2 and the Plate Tectonics Explorer to MS-ESS2-3 and HS-ESS2-1. The Contour Map Playground teaches the map-reading skills used in MS-ESS2-2 investigations. Each activity is a supplement to your curriculum, not a full unit.`],
+  ['Which standards do the activities support?', 'The Epicenter Finder connects to NGSS MS-ESS3-2, the Plate Tectonics Explorer to MS-ESS2-3 and HS-ESS2-1, the River Erosion Sandbox to MS-ESS2-2 and HS-ESS2-5, the Water Cycle Explorer to MS-ESS2-4 and 5-ESS2-2, and the Rock Cycle Builder to MS-ESS2-1. The Contour Map Playground teaches the map-reading skills used in MS-ESS2-2 investigations. Each activity is a supplement to your curriculum, not a full unit.'],
   ['Can the whole class open the same setup?', 'Yes. Set a lab up the way you want and press Copy share link: everyone who opens that link sees the same settings. In the Epicenter Finder’s Challenge mode everyone gets the same three quakes, so scores can be compared fairly.'],
 ];
 ---
-<Layout title="Earth Science Lab for Teachers: Free Activities & Answer Keys" description="Free earth science virtual labs with printable worksheets and answer keys: earthquake epicenters, plate boundaries and contour maps. No logins; Chromebook-ready." section="For teachers" ads={false} crumbs={[['For teachers']]}>
+<Layout title="Earth Science Lab for Teachers: Free Activities & Answer Keys" description="Six free earth science virtual labs with printable worksheets and answer keys: earthquakes, plates, contour maps, rivers, water and rock cycles. No logins." section="For teachers" ads={false} crumbs={[['For teachers']]}>
   <div class="wrap">
     <div class="page-intro">
       <span class="eyebrow">For teachers</span>

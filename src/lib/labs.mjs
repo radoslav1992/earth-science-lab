@@ -23,11 +23,25 @@ export const labs = [
     blurb: 'Sculpt hills, valleys and volcanoes and watch the topographic map redraw, then read slopes, rivers and cross-sections.',
   },
   {
+    slug: 'river-erosion',
+    name: 'River Erosion Sandbox',
+    section: 'River Erosion',
+    topic: 'Rivers and erosion',
+    blurb: 'Tilt a stream table, choose the sediment and turn up the water, then watch a river cut its channel, build point bars and a delta, and read why on the Hjulström diagram.',
+  },
+  {
     slug: 'water-cycle',
     name: 'Water Cycle Explorer',
     section: 'Water Cycle',
     topic: 'Water cycle',
     blurb: 'Follow a water droplet through oceans, clouds, ice, soil and groundwater, see where Earth’s water is stored, and switch off the sun or gravity to see what drives the cycle.',
+  },
+  {
+    slug: 'rock-cycle',
+    name: 'Rock Cycle Builder',
+    section: 'Rock Cycle',
+    topic: 'Rocks and minerals',
+    blurb: 'Melt, cool, weather, bury and squeeze rocks to see how granite becomes slate or magma becomes marble, and where inside Earth each change happens.',
   },
 ];
 

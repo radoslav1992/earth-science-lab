@@ -6,9 +6,11 @@ import LearningApps from '../components/LearningApps.astro';
 import Faq from '../components/Faq.astro';
 import { site } from '../lib/site.mjs';
 import { flagship } from '../lib/learning-apps.mjs';
+import { labs } from '../lib/labs.mjs';
 import { GUIDED, readings, picked } from '../lib/seismology.mjs';
 import { traceSeed } from '../lib/seismogram.mjs';
 
+const moreLabs = labs.filter(lab => lab.slug !== 'earthquake-epicenter');
 const cdrIndex = 2;
 const cdr = readings(GUIDED)[cdrIndex];
 const cdrRead = picked(cdr);
@@ -16,9 +18,9 @@ const cdrRead = picked(cdr);
 const faq: [string, string][] = [
   ['What is Earth Science Lab?', 'A growing set of free, interactive earth science simulations for students aged about 10 to 16. Each lab is a working model: change the conditions and see how Earth responds, then check your thinking against the numbers.'],
   ['Is it free? Do students need to sign up?', 'Everything is free, with no accounts, logins or downloads. Labs run in the browser on Chromebooks, tablets, laptops and phones.'],
-  ['What can I do here today?', 'Three labs are live. The Earthquake Epicenter Finder has you read seismograms and triangulate where a quake began. The Plate Tectonics Explorer animates all six kinds of plate boundary. The Contour Map Playground lets you sculpt a landscape and watch its topographic map redraw. Each has a printable classroom activity and an answer key.'],
+  ['What can I do here today?', 'Six labs are live. Find an earthquake’s epicenter from seismograms, compare plate boundaries, sculpt a landscape beside its contour map, erode a river in a stream table, follow a water droplet through the water cycle, and turn one rock into another in the rock cycle. Each has a printable classroom activity and an answer key.'],
   ['How accurate are the simulations?', 'They use the same methods scientists use, with simplified models that are honest about what they leave out. Each lab explains its simplifications, and every number on the worksheets and answer keys comes from the same model the lab runs.'],
-  ['Which labs are coming next?', 'A River Erosion Sandbox, a Water Cycle Explorer and a Rock Cycle Builder are on the drawing board.'],
+  ['Which lab should I start with?', 'Any lab works on its own. The Water Cycle Explorer is pitched at grades 5–8 and the others at grades 6–10. The Epicenter Finder, the Contour Map Playground and the River Erosion Sandbox ask students to measure and do simple math, and the Plate Tectonics Explorer ties earthquakes, volcanoes and mountains together.'],
 ];
 ---
 <Layout title={site.defaultTitle} description={site.defaultDescription} section="Explore">
@@ -68,40 +70,20 @@ const faq: [string, string][] = [
       </div>
     </section>
 
-    <section class="section" aria-labelledby="new-labs">
-      <span class="eyebrow">New labs</span>
-      <h2 id="new-labs">More labs to explore</h2>
+    <section class="section" aria-labelledby="more-labs">
+      <span class="eyebrow">Six labs</span>
+      <h2 id="more-labs">More labs to explore</h2>
       <div class="grid-3 new-labs">
-        <div class="card">
-          <h3>Plate Tectonics Explorer</h3>
-          <p>Watch plates pull apart, collide or slide past each other, and see where trenches, mountains, volcanoes and earthquakes form. Scrub through millions of years, compare all six boundary types and test yourself in Challenge mode.</p>
-          <p class="page-actions"><a class="btn primary" href="/tools/plate-tectonics/">Open the Plate Tectonics Explorer</a> <a class="btn" href="/tools/plate-tectonics/activity/">Classroom activity</a></p>
-        </div>
-        <div class="card">
-          <h3>Contour Map Playground</h3>
-          <p>Sculpt hills, valleys and volcanoes and watch the topographic map redraw. Read contour intervals, slopes, the V-rule and cross-sections, then try the map-reading challenges.</p>
-          <p class="page-actions"><a class="btn primary" href="/tools/contour-map/">Open the Contour Map Playground</a> <a class="btn" href="/tools/contour-map/activity/">Classroom activity</a></p>
-        </div>
+        {moreLabs.map(lab => (
+          <div class="card">
+            <span class="eyebrow">{lab.topic}</span>
+            <h3>{lab.name}</h3>
+            <p>{lab.blurb}</p>
+            <p class="page-actions"><a class="btn primary" href={`/tools/${lab.slug}/`}>Open the lab<span class="visually-hidden">: {lab.name}</span></a> <a class="btn" href={`/tools/${lab.slug}/activity/`}>Classroom activity<span class="visually-hidden">: {lab.name}</span></a></p>
+          </div>
+        ))}
       </div>
-    </section>
-
-    <section class="section" aria-labelledby="coming">
-      <span class="eyebrow">Coming next</span>
-      <h2 id="coming">On the drawing board</h2>
-      <div class="coming">
-        <div class="card">
-          <h3>River Erosion Sandbox</h3>
-          <p class="muted">Change the slope, the flow and the sediment, and watch a river carve its valley and build a delta.</p>
-        </div>
-        <div class="card">
-          <h3>Water Cycle Explorer</h3>
-          <p class="muted">Follow water between oceans, clouds, soil and groundwater, and see how long it stays in each.</p>
-        </div>
-        <div class="card">
-          <h3>Rock Cycle Builder</h3>
-          <p class="muted">Apply heat, pressure, melting or weathering and turn one kind of rock into another.</p>
-        </div>
-      </div>
+      <p style="margin-top:18px"><a href="/tools/">See all six labs side by side →</a></p>
     </section>
 
     <section class="section" aria-labelledby="why">

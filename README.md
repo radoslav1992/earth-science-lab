@@ -20,6 +20,20 @@ contour map and a shaded relief or 3D view, switch the contour interval and sea 
 steep slopes and the V-rule, draw cross-sections and try map-reading challenges. Sculpted landscapes are kept in
 the browser (`contourSculpt` in local storage); everything else travels in the share link.
 
+The fourth lab is the **River Erosion Sandbox** (`/tools/river-erosion/`): a virtual stream table where students set
+the slope, water flow, sediment size and supply, then watch the channel erode, point bars grow and a delta build,
+with an interactive Hjulström diagram explaining which grains are eroded, carried or dropped.
+
+The fifth lab is the **Water Cycle Explorer** (`/tools/water-cycle/`): students follow one droplet between ten
+reservoirs by choice or by seeded chance, adding up typical residence times, see USGS reservoir volumes as zoom
+bars, and try colder or warmer climates or switch off the sun or gravity.
+
+The sixth lab is the **Rock Cycle Builder** (`/tools/rock-cycle/`): students melt, cool, weather, deposit, cement,
+metamorphose and uplift material through 21 real rocks, with only geologically sound changes allowed and the depth,
+temperature, time and energy source shown for each step.
+
+`/tools/` lists every lab (from `src/lib/labs.mjs`), and lab pages sit under **Labs** in the menu and breadcrumbs.
+
 Static site: Astro 5, `@astrojs/sitemap`, vanilla TypeScript islands, no framework runtime.
 
 ## Local development
@@ -59,6 +73,19 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 | `src/lib/contour-challenges.mjs` | The eight Match & Read challenge questions, each answer worked out from the model |
 | `src/lib/activities/contour-map.mjs` | The contour map worksheet and answer key (imported by `activities.mjs`) |
 | `src/components/contour/`, `src/scripts/contour.ts`, `src/styles/contour.css` | The playground's markup, interactive code and styles |
+| `src/lib/river.mjs` | River model: Hjulström-style erosion and settling thresholds, Manning water speed, a sediment budget with slumping banks, share links and the Challenge questions |
+| `src/lib/river-svg.mjs` | Stream table plan view, side view and Hjulström diagram SVG, shared by the server and the browser |
+| `src/lib/activities/river-erosion.mjs` | The erosion and deposition worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/river/` | The sandbox's markup, interactive code (`sandbox.ts`), styles and answer-key figure |
+| `src/lib/water-cycle.mjs` | Water cycle model: USGS reservoir volumes, typical residence times, every move with its process, driver and chance, climate shifts, seeded chance, share links, scene geometry, zoom bars and the challenge questions |
+| `src/lib/activities/water-cycle.mjs` | The water cycle journey worksheet and answer key (chance code 10), imported by `activities.mjs` |
+| `src/components/water/` | The explorer's markup (`WaterExplorer.astro`), interactive code (`explorer.ts`) and styles (`water.css`) |
+| `src/lib/rock-cycle.mjs` | Rock cycle model: 21 rocks plus magma, sediment and layers, seven processes with only sound changes, conditions (temperature, depth, pressure, time, energy), shortest-route search and challenge questions |
+| `src/lib/rock-view.mjs` | Seeded original rock textures, the crust cross-section with the journey, the rock cycle diagram, and the card, conditions and journey HTML, shared by the server and the browser |
+| `src/lib/rock-share.mjs` | Rock cycle share links (`?start=granite&steps=up.we.dm.cc.h1`, `?mode=challenge`) with friendly fallback notes |
+| `src/lib/activities/rock-cycle.mjs` | The rock cycle journey worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/rock/` | The builder's markup (`RockBuilder.astro`), interactive code (`builder.ts`) and styles (`rock.css`) |
+| `src/lib/labs.mjs` | Every lab in menu order: name, menu section, topic and blurb for the Labs hub and the home page |
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
@@ -102,6 +129,14 @@ Events sent with `track()` (`src/lib/analytics.ts`, a no-op without a Google tag
 | `contour_edit` | Sculpting the landscape (debounced) | `preset` |
 | `contour_profile_drawn` | A cross-section line is drawn | `preset`, `how` |
 | `contour_challenge_complete` | Last contour challenge answered | `score` |
+| `river_explore` | Change the sandbox settings (debounced) | `slope`, `flow`, `grain`, `supply` |
+| `river_run_complete` | A run reaches 20 minutes | `slope`, `flow`, `grain`, `supply`, `delta_cm`, `eroded_cm3` |
+| `river_challenge_complete` | Last river challenge answered | `score`, `total` |
+| `water_explore` | Change the climate, switches or view (debounced) | `view`, `climate`, `sun`, `gravity` |
+| `water_journey` | A droplet journey reaches 5 moves | `start`, `how` |
+| `water_challenge_complete` | Last water cycle challenge answered | `score`, `total` |
+| `rock_explore` | Take a step or change the start (debounced) | `process`, `rock`, `steps` |
+| `rock_challenge_complete` | Last rock cycle challenge answered | `score`, `total` |
 | `worksheet_print` | Print button on a worksheet or answer key | `page` |
 | `share_classroom` | A Share to Google Classroom link is clicked | `page` |
 
