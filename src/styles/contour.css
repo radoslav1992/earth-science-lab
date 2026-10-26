@@ -1,0 +1,163 @@
+/* Contour Map Playground: the split-screen tool, the topographic map, cross-section charts and the
+   printed contour worksheet. Builds on the finder classes in global.css (.finder-bar, .mode-switch…). */
+
+/* The topographic map (shared by the tool, challenges, worksheet and answer key). 1 unit = 10 m. */
+.cmap { display: block; width: 100%; height: auto; border-radius: 12px; background: #f4ecdb; font-family: var(--font-body); }
+.cmap .cm-land { fill: #f4ecdb; }
+.cmap .cm-frame { fill: none; stroke: var(--line); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.cmap .cm-water { fill: #cfe2df; }
+.cmap .cm-line { fill: none; stroke: #9a6b3f; stroke-width: 1; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cmap .cm-index { stroke: #7d5230; stroke-width: 2.2; }
+.cmap .cm-hachure { fill: none; stroke: #9a6b3f; stroke-width: 1.1; vector-effect: non-scaling-stroke; }
+.cmap .cm-coast { fill: none; stroke: #3f7479; stroke-width: 2.4; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cmap .cm-river { fill: none; stroke: #2f7fa6; stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cmap .cm-flow { fill: none; stroke: #1f5f66; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cmap .cm-label { font-size: 11px; font-weight: 700; fill: #6e4526; text-anchor: middle; dominant-baseline: central; paint-order: stroke; stroke: #f4ecdb; stroke-width: 4px; stroke-linejoin: round; }
+.cmap .cm-steep { fill: none; stroke: rgba(222, 110, 38, .55); stroke-width: 7; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.cmap .cm-hill-fill { fill: rgba(163, 71, 34, .07); }
+.cmap .cm-hollow-fill { fill: rgba(31, 95, 102, .2); }
+.cmap .cm-summit path { fill: var(--ink); }
+.cmap .cm-pit path { fill: none; stroke: var(--ocean); stroke-width: 2.2; }
+.cmap .cm-summit text, .cmap .cm-pit text { font-size: 12px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: #f4ecdb; stroke-width: 4px; stroke-linejoin: round; }
+.cmap .cm-vtip { fill: rgba(255, 255, 255, .5); stroke: var(--lava-fill); stroke-width: 2.4; vector-effect: non-scaling-stroke; }
+.cmap .cm-furniture text { font-size: 11px; font-weight: 700; fill: var(--ink); }
+.cmap .cm-north { fill: var(--ink); }
+.cmap .cm-scale { fill: var(--ink); }
+.cmap .cm-scale.alt { fill: #fff; stroke: var(--ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.cmap .cm-scale-back { fill: rgba(244, 236, 219, .85); }
+.cmap .cm-section line { stroke: var(--ink); stroke-width: 2.4; stroke-dasharray: 7 4; vector-effect: non-scaling-stroke; }
+.cmap .cm-section circle, .cm-overlay .cm-section circle { fill: #fff; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.cmap .cm-section text, .cm-overlay .cm-section text { font-size: 14px; font-weight: 700; fill: var(--ink); text-anchor: middle; paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.cmap .cm-mark circle { fill: var(--lava-fill); stroke: #fff; stroke-width: 2; vector-effect: non-scaling-stroke; }
+.cmap .cm-mark text { font-size: 15px; font-weight: 700; fill: var(--lava-dark); paint-order: stroke; stroke: #fff; stroke-width: 4px; stroke-linejoin: round; }
+.cm-brush { fill: rgba(255, 255, 255, .18); stroke: var(--ink); stroke-width: 1.6; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; pointer-events: none; }
+.cm-brush-dot { fill: var(--ink); pointer-events: none; }
+.cm-crosshair { pointer-events: none; }
+.cm-crosshair circle { fill: none; stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.cm-crosshair path { stroke: var(--ink); stroke-width: 2; vector-effect: non-scaling-stroke; }
+@media (max-width: 600px) {
+  .cmap .cm-label { font-size: 16px; }
+  .cmap .cm-furniture text, .cmap .cm-summit text, .cmap .cm-pit text { font-size: 16px; }
+  .cmap .cm-mark text, .cmap .cm-section text { font-size: 20px; }
+}
+
+/* Cross-section chart */
+.cs-chart { display: block; width: 100%; height: auto; font-family: var(--font-body); }
+.cs-chart .cs-grid { stroke: #e6dac6; }
+.cs-chart .cs-axis { stroke: var(--ink); stroke-width: 1.2; }
+.cs-chart .cs-tick, .cs-chart .cs-title, .cs-chart .cs-ve { fill: var(--muted); font-size: 12px; }
+.cs-chart .cs-ve { font-weight: 700; fill: var(--lava-dark); }
+.cs-chart .cs-ground { fill: #e2c9a4; }
+.cs-chart .cs-sea { fill: #cfe2df; }
+.cs-chart .cs-line { fill: none; stroke: #6e4526; stroke-width: 2.4; stroke-linejoin: round; }
+.cs-chart .cs-end { font-size: 15px; font-weight: 700; fill: var(--ink); }
+.cs-chart .cs-high circle { fill: var(--lava-fill); stroke: #fff; stroke-width: 1.5; }
+.cs-chart .cs-low circle { fill: var(--ocean); stroke: #fff; stroke-width: 1.5; }
+.cs-chart .cs-high text, .cs-chart .cs-low text { font-size: 12.5px; font-weight: 700; fill: var(--ink); paint-order: stroke; stroke: #fffaf2; stroke-width: 4px; stroke-linejoin: round; }
+.cs-chart.cs-mini .cs-tick, .cs-chart.cs-mini .cs-title, .cs-chart.cs-mini .cs-ve, .cs-chart.cs-mini .cs-high, .cs-chart.cs-mini .cs-low { display: none; }
+@media (max-width: 600px) {
+  .cs-chart .cs-tick, .cs-chart .cs-title, .cs-chart .cs-ve, .cm-sketch text { font-size: 18px; }
+  .cs-chart .cs-high text, .cs-chart .cs-low text, .cs-chart .cs-end { font-size: 19px; }
+}
+
+/* The playground */
+.contour { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 16px; box-shadow: var(--shadow); scroll-margin-top: 12px; }
+.contour [hidden] { display: none !important; }
+.cm-share-note { margin: 10px 0 0; font-size: .86rem; color: var(--muted); max-width: 90ch; }
+.cm-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin-top: 12px; }
+.cm-group { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.cm-group-label { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.cm-chip { min-height: 38px; padding: 6px 13px; border: 1.5px solid var(--line); border-radius: 999px; background: #fff; font-weight: 700; font-size: .9rem; cursor: pointer; }
+.cm-chip:hover { border-color: var(--ink); }
+.cm-chip[aria-pressed='true'] { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+.cm-chip:disabled { opacity: .5; cursor: not-allowed; }
+.cm-brush-controls { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.cm-slider { display: grid; gap: 2px; min-width: 170px; font-size: .82rem; font-weight: 700; color: var(--muted); }
+.cm-slider output { color: var(--ink); font-variant-numeric: tabular-nums; }
+.cm-slider input { width: 100%; accent-color: var(--lava-fill); min-height: 28px; }
+.cm-sea { min-width: 240px; flex: 1 1 240px; max-width: 420px; }
+.cm-sea input { accent-color: var(--ocean); }
+.cm-split { display: grid; gap: 14px; margin-top: 14px; }
+@media (min-width: 860px) { .cm-split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; } }
+.cm-pane { margin: 0; min-width: 0; }
+.cm-pane-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-bottom: 6px; }
+.cm-pane-head h3 { font-size: 1.05rem; margin: 0; }
+.cm-interval-note { font-size: .85rem; color: var(--muted); }
+.cm-relief { position: relative; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #e8eff0; aspect-ratio: 3 / 2; }
+.cm-canvas, .cm-fallback, .cm-fallback svg { display: block; width: 100%; height: 100%; }
+.cm-overlay { position: absolute; inset: 0; width: 100%; height: 100%; touch-action: manipulation; }
+.cm-map-wrap .cmap { border: 1px solid var(--line); touch-action: manipulation; cursor: crosshair; }
+.cm-map-wrap .cmap:focus-visible { outline: 3px solid var(--lava-fill); outline-offset: 3px; }
+.contour[data-tool='raise'] .cmap, .contour[data-tool='lower'] .cmap, .contour[data-tool='smooth'] .cmap, .contour[data-tool='flatten'] .cmap, .contour[data-tool='section'] .cmap,
+.contour[data-tool='raise'] .cm-overlay, .contour[data-tool='lower'] .cm-overlay, .contour[data-tool='smooth'] .cm-overlay, .contour[data-tool='flatten'] .cm-overlay, .contour[data-tool='section'] .cm-overlay { touch-action: none; }
+.cm-legend { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; margin-top: 8px; font-size: .82rem; color: var(--muted); }
+.cm-key { display: inline-flex; align-items: center; gap: 6px; }
+.cm-swatch { width: 22px; height: 12px; border-radius: 3px; display: inline-block; }
+.cm-ramp { display: inline-grid; gap: 2px; min-width: 150px; }
+.cm-ramp-bar { display: block; height: 10px; border-radius: 3px; }
+.cm-ramp-labels { display: flex; justify-content: space-between; font-size: .72rem; }
+.cm-view-note { flex-basis: 100%; }
+.cm-readout { margin: 10px 0 0; padding: 8px 12px; border-radius: 10px; background: var(--paper); border: 1px solid var(--line); font-size: .9rem; font-variant-numeric: tabular-nums; min-height: 2.6em; }
+.cm-settings { padding-top: 4px; }
+.cm-overlays { border: 0; padding: 0; margin: 16px 0 0; display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.cm-overlays legend { font: 700 1.05rem var(--font-display); margin-bottom: 8px; padding: 0; }
+.cm-overlay-card { padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+.cm-overlay-card.on { border-color: var(--ocean); background: var(--ocean-tint); }
+.cm-overlay-card p { margin: 6px 0 0; font-size: .84rem; color: var(--muted); }
+.cm-overlay-card.on p { color: var(--ink); }
+.cm-section-panel { margin-top: 16px; padding: 14px 16px; border-radius: 14px; background: var(--paper); border: 1px solid var(--line); }
+.cm-section-body { display: grid; gap: 10px 20px; }
+@media (min-width: 860px) { .cm-section-body { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: center; } }
+.cm-profile { background: #fffdf8; border: 1px solid var(--line); border-radius: 10px; padding: 4px; }
+.cm-section-text { margin: 0; font-size: .95rem; }
+
+/* Match & Read */
+.cm-challenge .challenge-bar { margin-top: 12px; }
+.cm-challenge-grid { display: grid; gap: 16px; margin-top: 14px; }
+@media (min-width: 860px) { .cm-challenge-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: start; } }
+@media (max-width: 859px) { .cm-challenge-map { order: -1; } }
+.cm-challenge-question h3 { font-size: 1.2rem; }
+.cm-challenge-question:focus { outline: none; }
+.cm-choices { display: grid; gap: 8px; }
+.cm-choices.match, .cm-choices.profile { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); }
+.cm-choice { display: flex; flex-direction: column; align-items: stretch; gap: 6px; min-height: 44px; padding: 10px 14px; border: 1.5px solid var(--line); border-radius: 12px; background: #fff; font-weight: 700; text-align: left; cursor: pointer; }
+.cm-choices.match .cm-choice, .cm-choices.profile .cm-choice { padding: 8px; text-align: center; }
+.cm-choice canvas, .cm-choice svg { display: block; width: 100%; height: auto; border-radius: 8px; }
+.cm-choice:hover:not(:disabled) { border-color: var(--ink); }
+.cm-choice:disabled { cursor: default; color: inherit; }
+.cm-choice.right { border-color: var(--ocean); background: var(--ocean-tint); }
+.cm-choice.right::after { content: '✓ Correct answer'; color: var(--ocean); font-size: .85rem; }
+.cm-choice.wrong { border-color: var(--lava-fill); background: var(--lava-tint); }
+.cm-choice.wrong::after { content: '✗ Your answer'; color: var(--lava-dark); font-size: .85rem; }
+.cm-challenge .feedback { font-size: .98rem; margin-top: 12px; }
+.cm-challenge .reveal-row { margin-top: 12px; }
+
+@media (max-width: 480px) {
+  .contour { padding: 12px; border-radius: 16px; margin: 0 -4px; }
+  .cm-chip { padding: 5px 10px; font-size: .85rem; }
+  .cm-group-label { flex-basis: 100%; }
+}
+
+/* Static figures below the tool and on the worksheet */
+.cm-figure { margin: 0; }
+.cm-figures { margin-top: 22px; }
+.cm-figure figcaption { font-size: .88rem; color: var(--muted); padding: 8px 4px 0; }
+.cm-sketch { display: block; width: 100%; height: auto; }
+.cm-sketch .cs-grid { stroke: #cdbfa6; }
+.cm-sketch text { fill: var(--muted); font-size: 12px; font-family: var(--font-body); }
+.worksheet-map { display: grid; gap: 14px; align-items: start; }
+.worksheet-map > * { min-width: 0; }
+.worksheet-map h2:first-child { margin-top: 0; }
+.worksheet-map .table-wrap table { min-width: 0; }
+@media (min-width: 700px) { .worksheet-map { grid-template-columns: 1.2fr 1fr; } }
+
+@media print {
+  .worksheet-map { grid-template-columns: .92fr 1.08fr; gap: 5mm; }
+  .worksheet-map .cmap { border: 1px solid #999; }
+  .cmap .cm-label { stroke: #fff; }
+  .cmap, .cmap .cm-land { background: #fff; fill: #fff; }
+  .cm-sketch { max-height: 28mm; }
+  .cs-chart { max-height: 52mm; }
+  .cm-figure figcaption { font-size: 8pt; padding-top: 2px; color: #333; }
+  .worksheet-map h2 { margin-top: 0; }
+}
