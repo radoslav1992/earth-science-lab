@@ -8,5 +8,5 @@ export const site = {
   // no analytics cookies are set and the cookie banner stays hidden.
   analyticsId: 'G-JE3DTV9N7R',
   defaultTitle: 'Earth Science Lab: Free Virtual Labs and Simulations',
-  defaultDescription: 'Free earth science virtual labs and simulations for ages 10–16: earthquakes, plate tectonics, contour maps, rivers, the water cycle and the rock cycle.',
+  defaultDescription: 'Free earth science virtual labs and simulations for ages 10–16: earthquakes, plate tectonics, contour maps, rivers, rock layers, the water and rock cycles.',
 };

@@ -1,0 +1,216 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import LayersLab from '../../../components/layers/LayersLab.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import {
+  SECTIONS, EXAMPLE_SECTION, ISOTOPES, RULES, RULE_IDS, C14_ATOMS_PER_GRAM, EARTH_AGE_YEARS, isotope, sectionById, eventPhrase, eventById, constraints,
+  halfLivesElapsed, fractionLeft, ageFromFraction, sampleAge, bracketQuestion, fmtYears, fmtMyr, fmtPercent, fmtHalfLives,
+} from '../../../lib/rock-layers.mjs';
+import { ATOMS, sectionSize, sectionSvg, describeSection, storyHtml } from '../../../lib/rock-layers-view.mjs';
+import '../../../components/layers/layers.css';
+
+const title = 'Rock Layers: Relative Dating & Radiometric Dating Lab';
+const description = 'Free rock layers lab: put layers, faults and intrusions in order with relative dating, then use half-lives to work out radiometric ages.';
+const url = new URL('/tools/rock-layers/', Astro.site).href;
+
+// Worked example 1: the small cross-section that is not one of the puzzles.
+const exSize = sectionSize(EXAMPLE_SECTION);
+const exEvents = EXAMPLE_SECTION.events.length;
+const exRules = new Set(constraints(EXAMPLE_SECTION).map(c => c.rule)).size;
+
+// Worked example 2: whole half-lives, then the formula.
+const u235 = isotope('u235'), k40 = isotope('k40'), c14 = isotope('c14'), u238 = isotope('u238'), rb87 = isotope('rb87');
+const ex = { left: 25 };
+const exHalfLives = halfLivesElapsed(ageFromFraction(ex.left / 100, u235.halfLife), u235.halfLife);
+const exAge = ageFromFraction(ex.left / 100, u235.halfLife);
+const ex2 = { left: 80 };
+const ex2Age = ageFromFraction(ex2.left / 100, k40.halfLife);
+const ex2HalfLives = halfLivesElapsed(ex2Age, k40.halfLife);
+
+// Why carbon-14 runs out.
+const tenHalfLives = 10 * c14.halfLife;
+const leftAfterTen = 100 * fractionLeft(tenHalfLives, c14.halfLife);
+const million = 1e6;
+const millionHalfLives = halfLivesElapsed(million, c14.halfLife);
+const zeros = Math.floor(millionHalfLives * Math.log10(2));
+const lastAtomHalfLives = Math.ceil(Math.log2(C14_ATOMS_PER_GRAM));
+const lastAtomYears = lastAtomHalfLives * c14.halfLife;
+// How little of the long-lived parents has decayed since Earth formed.
+const earthLeft = (iso: { halfLife: number }) => 100 * fractionLeft(EARTH_AGE_YEARS, iso.halfLife);
+
+// Bracketing, with the first cross-section's numbers.
+const canyon = sectionById('canyon');
+const bq = bracketQuestion(canyon);
+const name = (id: string) => eventPhrase(eventById(canyon, id));
+const oldAge = sampleAge(canyon, bq.older), youngAge = sampleAge(canyon, bq.younger);
+
+const faq: [string, string][] = [
+  ['What is relative dating?', 'Relative dating puts rocks and events in order, from oldest to youngest, without giving ages in years. Geologists read the order from how the rocks sit: which layer lies on which, what a fault or an intrusion cuts through, and where an old erosion surface is buried.'],
+  ['What is the law of superposition?', `${RULES.superposition.text} So in a stack of flat layers, the bottom layer is the oldest and the top layer is the youngest. The rule fails only where layers have been overturned by folding or faulting.`],
+  ['What is radiometric dating?', `Radiometric dating, also called absolute dating, measures a rock’s age in years. Some atoms are radioactive: a parent isotope decays into a daughter isotope at a steady rate, and half of the parent atoms decay in one half-life. Measuring how much parent is left compared with daughter tells you how many half-lives have passed.`],
+  ['How do you calculate age from half-life?', `Use age = half-life × log₂(N₀ ÷ N), where N₀ is the starting amount of parent and N is the amount left. If ${ex.left}% of the uranium-235 in a zircon is left, then N₀ ÷ N = 4, log₂(4) = ${fmtHalfLives(exHalfLives)}, and the age is ${fmtHalfLives(exHalfLives)} × ${fmtMyr(u235.halfLife)} million = ${fmtMyr(exAge)} million years. For whole numbers of half-lives you can just count the halvings: 100% → 50% → 25%.`],
+  ['Why can’t carbon-14 be used to date dinosaur fossils or old rocks?', `Carbon-14 has a half-life of only ${fmtYears(c14.halfLife)}. After ten half-lives (${fmtYears(tenHalfLives)}) less than ${fmtPercent(Math.ceil(leftAfterTen * 10) / 10)}% is left, which is too little to measure well, so the method stops at roughly ${fmtYears(c14.range[1])}. A dinosaur fossil is at least 66 million years old: by then no carbon-14 is left at all. Carbon-14 also dates only things that were once alive, not the minerals in a rock.`],
+  ['How do geologists find the age of a sedimentary layer?', `Usually by bracketing. A sedimentary rock is made of grains from older rocks, so dating its grains gives the age of those older rocks, not the layer. Instead geologists date igneous rocks around it, such as an ash bed below and a lava flow or dike above. In the lab’s first cross-section, ${name(bq.target)} lies between ash beds dated at ${fmtMyr(oldAge)} and ${fmtMyr(youngAge)} million years, so its age is between the two.`],
+  ['What is an unconformity?', `${RULES.unconformity.text} If the layers below are tilted and the layers above are flat, it is called an angular unconformity.`],
+  ['Can I use the Rock Layers Lab in class?', `Yes. It is free with no sign-up and runs on school Chromebooks. Use the printable activity to fill in a half-life table and order two cross-sections, then let students work through all ${SECTIONS.length} cross-sections, which get harder. Teachers can find the answer key on the For teachers page.`],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Rock Layers Lab',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Rock Layers" crumbs={[['Rock Layers Lab']]}>
+  <noscript slot="head"><style is:inline>.rl-hint { display: none; }</style></noscript>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Virtual lab · Geologic time</span>
+      <h1>Rock Layers Lab: relative and radiometric dating</h1>
+      <p class="lede">In this rock layers lab you read a cross-section of rock layers and put its events in order, using relative dating. Then you use radiometric dating: choose an isotope, set the time or the amount of parent isotope left, and see the decay curve and the age.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/rock-layers/activity/">Printable relative and radiometric dating worksheet</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <LayersLab />
+
+    <section class="section prose" aria-labelledby="how">
+      <h2 id="how">How to use the lab</h2>
+      <ol>
+        <li><strong>Part 1, rock layers.</strong> Pick a cross-section. Tap its events from oldest to youngest, then press <em>Check my order</em>. If something is out of order, the lab points at the evidence to look at and names the rule.</li>
+        <li><strong>Put numbers on it.</strong> Under each cross-section, a lab has measured how much parent isotope is left in the igneous rocks. Work out each age, then say what the dated rocks tell you about a layer, a fault or an erosion surface that can’t be dated.</li>
+        <li><strong>Part 2, radiometric dating.</strong> Choose one of five isotope pairs. Drag the time slider, or type the percentage of parent isotope left, and read the decay curve, the box of atoms, the daughter-to-parent ratio and the age.</li>
+      </ol>
+      <p>The cross-sections get harder, from a simple stack of layers to one with tilting, an erosion surface, a fault and a dike. <em>Copy share link</em> gives a link that opens the same cross-section or the same decay settings.</p>
+    </section>
+
+    <section class="section" aria-labelledby="relative" style="padding-top:0">
+      <div class="prose">
+        <h2 id="relative">Relative dating: five rules for reading rock layers</h2>
+        <p>Relative dating tells you the order in which things happened, not how many years ago. Geologists use a few simple rules, most of them worked out in the 1600s and 1700s:</p>
+        <ul>
+          {RULE_IDS.map(id => <li><strong>{RULES[id].name}.</strong> {RULES[id].text}</li>)}
+        </ul>
+        <h3>Worked example: read a cross-section</h3>
+        <p>The cross-section below records {exEvents} events. Start at the bottom and work up, asking what each rock lies on, and what cuts what.</p>
+      </div>
+      <div class="rl-example">
+        <figure>
+          <svg class="rl-svg" viewBox={`0 0 ${exSize.width} ${exSize.height}`} role="img" aria-label={describeSection(EXAMPLE_SECTION)} set:html={sectionSvg(EXAMPLE_SECTION, { prefix: 'rl-ex' })} />
+          <figcaption>The wavy line is a buried erosion surface (an unconformity). The dark rock is a basalt dike: magma that cooled in a crack.</figcaption>
+        </figure>
+        <div class="prose">
+          <Fragment set:html={storyHtml(EXAMPLE_SECTION)} />
+          <p>That answer used {exRules} of the five rules. Notice that the dike stops at the erosion surface: its top was worn away, and pieces of it ended up as pebbles in the layer above.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose" aria-labelledby="radiometric" style="padding-top:0">
+      <h2 id="radiometric">Radiometric dating: half-life and age</h2>
+      <p>Some atoms are unstable. A <strong>parent isotope</strong> decays into a <strong>daughter isotope</strong> at a rate that heat, pressure and chemistry do not change. The <strong>half-life</strong> is the time it takes for half of the parent atoms to decay. After one half-life 50% of the parent is left, after two 25%, after three 12.5%, and so on.</p>
+      <p class="formula">fraction of parent left = (½)<sup>time ÷ half-life</sup></p>
+      <p>Turn that around and you can find the age from what is left, where N₀ is the amount of parent at the start and N is the amount left now:</p>
+      <p class="formula">age = half-life × log₂(N₀ ÷ N)</p>
+      <p>A lab usually measures the daughter-to-parent ratio, D ÷ P. If all of the daughter came from decay, then N₀ ÷ N = 1 + D ÷ P, which gives the same age.</p>
+      <h3>Worked example: counting half-lives</h3>
+      <p>A zircon crystal from a volcanic ash bed has {ex.left}% of its uranium-235 left. Uranium-235 has a half-life of {fmtYears(u235.halfLife)}.</p>
+      <p>Halve 100% until you reach {ex.left}%: 100% → 50% → 25%. That is {fmtHalfLives(exHalfLives)} half-lives, so:</p>
+      <p class="formula">age = {fmtHalfLives(exHalfLives)} × {fmtMyr(u235.halfLife)} million years = {fmtMyr(exAge)} million years</p>
+      <h3>Worked example: using the formula</h3>
+      <p>A basalt lava flow has {ex2.left}% of its potassium-40 left. Potassium-40 has a half-life of {fmtYears(k40.halfLife)}. Less than one half-life has passed, so use the formula:</p>
+      <p class="formula">age = {fmtMyr(k40.halfLife)} million × log₂(100 ÷ {ex2.left}) = {fmtMyr(k40.halfLife)} million × {Number(ex2HalfLives.toFixed(4))} = {fmtMyr(ex2Age)} million years</p>
+      <p>Try both in part 2 of the lab: choose the isotope pair and type the percentage of parent left.</p>
+    </section>
+
+    <section class="section rl-table" aria-labelledby="methods" style="padding-top:0">
+      <h2 id="methods">Which dating method suits which material?</h2>
+      <p class="prose">A method works only if the sample holds the parent isotope, and only for ages where both parent and daughter can be measured. If the sample is too young, too little daughter has formed. If it is too old, too little parent is left. The ranges are rough: they depend on the sample and the instruments, and textbooks give different limits.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Parent → daughter</th><th scope="col">Half-life</th><th scope="col">What it dates</th><th scope="col">Useful for ages of roughly</th></tr></thead>
+          <tbody>
+            {ISOTOPES.map(iso => (
+              <tr>
+                <th scope="row">{iso.parent} → {iso.daughter}</th>
+                <td>{fmtYears(iso.halfLife)}</td>
+                <td>{iso.dates}</td>
+                <td>{fmtYears(iso.range[0])} to {fmtYears(iso.range[1])}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section prose" aria-labelledby="carbon" style="padding-top:0">
+      <h2 id="carbon">Why carbon-14 cannot date rocks millions of years old</h2>
+      <p>Carbon-14 decays fast: its half-life is {fmtYears(c14.halfLife)}. After ten half-lives, which is {fmtYears(tenHalfLives)}, less than {fmtPercent(Math.ceil(leftAfterTen * 10) / 10)}% of it is left. That is about the limit of what a lab can measure, so radiocarbon dating works back to roughly {fmtYears(c14.range[1])}.</p>
+      <p>One million years is about {Math.round(millionHalfLives)} half-lives of carbon-14. The fraction left would be 1 divided by a number with {zeros} zeros. A gram of carbon from a living thing holds roughly {(C14_ATOMS_PER_GRAM / 1e9).toFixed(0)} billion carbon-14 atoms, and after {lastAtomHalfLives} half-lives (about {fmtYears(Math.round(lastAtomYears / 1000) * 1000)}) fewer than one of them would be left on average. So there is nothing to measure in anything millions of years old.</p>
+      <p>There is a second reason. Carbon-14 dates things that were once alive, because living things take it in from the air. Most rock was never alive. For old rocks geologists use parents that decay very slowly: since Earth formed, {fmtYears(EARTH_AGE_YEARS)} ago, about {fmtPercent(Math.round(earthLeft(u238)))}% of its uranium-238 and {fmtPercent(Math.round(earthLeft(rb87)))}% of its rubidium-87 are still left.</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="bracket" style="padding-top:0">
+      <h2 id="bracket">Putting the two together: bracketing an age</h2>
+      <p>Radiometric dating works best on igneous rocks, because their minerals form when the magma, lava or ash cools, and that starts the clock. A sedimentary rock is made of grains worn from older rocks, so its grains are older than the layer itself.</p>
+      <p>The answer is to combine the two kinds of dating. In the lab’s first cross-section, {name(bq.target)} lies above {name(bq.older)} and below {name(bq.younger)}. Zircon crystals date the lower ash bed at {fmtMyr(oldAge)} million years and the upper one at {fmtMyr(youngAge)} million years. By superposition, {name(bq.target)} is younger than the first and older than the second, so it was laid down between {fmtMyr(youngAge)} and {fmtMyr(oldAge)} million years ago.</p>
+      <p>The same idea dates faults and erosion surfaces: a fault is younger than the youngest dated rock it cuts, and older than a dated dike that crosses it. This is how the ages on the geologic time scale were worked out.</p>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common mistakes</h2>
+      <ul>
+        <li><strong>“After two half-lives, all of the parent is gone.”</strong> Each half-life removes half of what is left, not half of the starting amount: 100% → 50% → 25% → 12.5%.</li>
+        <li><strong>“Half of the parent left means half the rock’s age.”</strong> Decay is not a straight line. {ex.left}% left is {fmtHalfLives(exHalfLives)} half-lives, and 12.5% left is 3.</li>
+        <li><strong>“Carbon dating tells us how old rocks and dinosaurs are.”</strong> Carbon-14 reaches back only about {fmtYears(c14.range[1])} and works on once-living material. Old rocks are dated with uranium, potassium or rubidium.</li>
+        <li><strong>“The lowest rock is always the oldest.”</strong> True for undisturbed layers, but an intrusion can sit low in a cross-section and still be younger than every layer it cuts.</li>
+        <li><strong>“A fault is as old as the rocks it is in.”</strong> A fault is younger than every rock it offsets. It may be much younger.</li>
+        <li><strong>“Radiometric dating gives the age of a sedimentary layer directly.”</strong> It gives the age of the minerals. In sandstone those are grains from older rocks, so geologists bracket the layer with dated igneous rocks.</li>
+      </ul>
+      <h2>What this model simplifies</h2>
+      <p>The cross-sections are drawings, not real places, and they are not to scale. Each one is built from its own history, so the order has exactly one answer. Real outcrops are messier: evidence can be hidden, eroded or open to more than one reading, and geologists also use fossils, baked contacts and other clues that the lab leaves out. The lab treats each erosion surface as one event, although the gap it marks can span millions of years.</p>
+      <p>The decay model assumes that a rock starts with no daughter isotope, that nothing has leaked in or out since, and that each parent turns into one daughter in a single step. Real methods correct for all three. Uranium turns into lead through a chain of short-lived steps. Only about one in nine potassium-40 atoms decays to argon-40; the rest become calcium-40, and labs allow for that. The half-lives are standard rounded values (rubidium-87 is given as {fmtYears(rb87.halfLife)}; recent measurements put it slightly higher), and real dates come with an uncertainty, such as ±1%. The box shows {ATOMS.total} atoms and exact halves, but real decay is random: a real sample that small would not split so neatly. Sample measurements in the cross-sections are made up to give round numbers.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Relative and radiometric dating activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes: students fill in a half-life table with the decay model, put two cross-sections in order, and use two dated ash beds to bracket the age of a layer.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/rock-layers/activity/">Open the dating activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the lab with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose" aria-labelledby="related" style="padding-top:0">
+      <h2 id="related">Related labs</h2>
+      <p>See how sandstone, shale, granite and basalt form in the <a href="/tools/rock-cycle/">Rock Cycle Builder</a>. Faults and volcanoes happen where plates meet: explore them in the <a href="/tools/plate-tectonics/">Plate Tectonics Explorer</a>.</p>
+    </section>
+
+    <Faq items={faq} title="Rock layers and dating questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>

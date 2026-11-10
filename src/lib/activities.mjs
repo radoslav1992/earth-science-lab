@@ -8,6 +8,7 @@ import { contourMapActivity } from './activities/contour-map.mjs';
 import { riverActivity, standards as riverStandards } from './activities/river-erosion.mjs';
 import { waterCycleActivity, standards as waterStandards } from './activities/water-cycle.mjs';
 import { activity as rockCycle, standards as rockStandards } from './activities/rock-cycle.mjs';
+import { activity as rockLayers, standards as layerStandards } from './activities/rock-layers.mjs';
 
 // NGSS performance expectations referenced below, paraphrased.
 export const standards = {
@@ -15,6 +16,7 @@ export const standards = {
   ...riverStandards,
   ...waterStandards,
   ...rockStandards,
+  ...layerStandards,
   'MS-ESS3-2': 'Analyze and interpret data on natural hazards to forecast future catastrophic events and inform technologies to mitigate their effects.',
 };
 
@@ -92,4 +94,5 @@ export const activities = [
   riverActivity,
   waterCycleActivity,
   rockCycle,
+  rockLayers,
 ];

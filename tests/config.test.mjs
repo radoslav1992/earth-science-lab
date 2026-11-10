@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import { ads, adsEnabled, anyAds } from '../src/lib/ads.mjs';
 import { site } from '../src/lib/site.mjs';
 import { learningApps, currentApp } from '../src/lib/learning-apps.mjs';
-import { labs, labBySection } from '../src/lib/labs.mjs';
+import { labs, labBySection, labCount, LabCount } from '../src/lib/labs.mjs';
 import { activities } from '../src/lib/activities.mjs';
+import fs from 'node:fs';
 
 test('ad keys are empty or 32-character hex, and ads only run on this site', () => {
   for (const key of ['native', 'leaderboard', 'mobile', 'rectangle']) assert.match(ads[key], /^(|[0-9a-f]{32})$/, key);
@@ -28,8 +29,10 @@ test('learning apps: Interactive Periodic Table first, canonical https URLs, thi
   assert.ok(!learningApps.some(app => /football/i.test(app.name)));
 });
 
-test('labs: six complete entries, each with an activity and a search-friendly kind', () => {
-  assert.equal(labs.length, 6);
+test('labs: seven complete entries, each with an activity and a search-friendly kind', () => {
+  assert.equal(labs.length, 7);
+  assert.equal(labCount, 'seven');
+  assert.equal(LabCount, 'Seven');
   assert.deepEqual(labs.map(lab => lab.slug), activities.map(act => act.tool));
   for (const lab of labs) {
     for (const field of ['slug', 'name', 'section', 'topic', 'kind', 'blurb']) assert.ok(lab[field]?.length > 3, `${lab.slug}.${field}`);
@@ -46,4 +49,16 @@ test('home page title and description say what the site is', () => {
   assert.match(site.defaultTitle, /virtual labs/i);
   assert.match(site.defaultDescription, /earth science virtual labs and simulations/i);
   assert.ok(site.defaultDescription.length >= 120 && site.defaultDescription.length <= 155, `description is ${site.defaultDescription.length} characters`);
+});
+
+test('llms.txt lists every lab and activity, and counts the labs the same way the pages do', () => {
+  const llms = fs.readFileSync(new URL('../public/llms.txt', import.meta.url), 'utf8');
+  assert.ok(llms.includes(`There are ${labCount} labs, listed below.`));
+  assert.ok(llms.includes(`All ${labCount} labs side by side`));
+  assert.equal((llms.match(/\b(?:five|six|seven|eight|nine|ten) labs\b/gi) ?? []).filter(text => text.toLowerCase() !== `${labCount} labs`).length, 0, 'no stale count');
+  for (const lab of labs) assert.ok(llms.includes(`- [${lab.name}](${site.url}/tools/${lab.slug}/): `), lab.name);
+  for (const act of activities) {
+    assert.ok(llms.includes(`- [${act.title}](${site.url}/tools/${act.tool}/activity/): `), act.title);
+    for (const code of act.standards) assert.ok(llms.includes(code), `${code} is listed for teachers`);
+  }
 });
