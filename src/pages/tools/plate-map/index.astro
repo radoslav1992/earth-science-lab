@@ -1,0 +1,211 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import PlateMapLab from '../../../components/platemap/PlateMapLab.astro';
+import ClassroomShare from '../../../components/ClassroomShare.astro';
+import AdSlot from '../../../components/AdSlot.astro';
+import Faq from '../../../components/Faq.astro';
+import { site } from '../../../lib/site.mjs';
+import { CRUST_BUDGET, CASES } from '../../../lib/plates.mjs';
+import {
+  PLATES, BOUNDARIES, QUAKES, VOLCANOES, VOLCANOES_NEAR, KINDS, TYPE_LABELS, TYPE_MOTION, QUAKE_NEAR_KM, VOLCANO_NEAR_KM, CHALLENGE,
+  boundariesOfType, boundaryById, plateName, describePlate, describeFeature, evidence, regionById, serializeMapState,
+} from '../../../lib/plate-map.mjs';
+import '../../../components/platemap/platemap.css';
+
+const title = 'Plate Boundaries Map: Interactive Tectonic Plates Map';
+const description = 'Free interactive map of tectonic plates and plate boundaries: switch on earthquakes and volcanoes and see how they line up along the boundaries.';
+const url = new URL('/tools/plate-map/', Astro.site).href;
+
+const e = evidence();
+const hotspots = e.volcanoes.away;
+const strongest = [...QUAKES].sort((a, b) => b.magnitude - a.magnitude)[0];
+
+// One row per boundary type: what the plates do, what happens to crust (from the Plate Tectonics
+// Explorer's facts), examples from this map and the matching cross-sections.
+const exampleNames: Record<string, string[]> = {
+  divergent: ['mar-south', 'epr-south', 'ear-east'],
+  convergent: ['peru-chile', 'japan', 'himalaya'],
+  transform: ['san-andreas', 'alpine', 'dead-sea'],
+};
+const typeRows = CRUST_BUDGET.map(row => {
+  const kinds = Object.values(KINDS).filter(kind => kind.type === row.type);
+  const keys = [...new Set(kinds.map(kind => kind.explorer))] as string[];
+  return {
+    type: row.type,
+    crust: row.label,
+    count: boundariesOfType(row.type).length,
+    examples: exampleNames[row.type].map(id => boundaryById(id).name.replace(/ \(.*\)$/, '')),
+    links: keys.map(key => ({ name: CASES[key].name, href: `/tools/plate-tectonics/?type=${CASES[key].type}&plates=${CASES[key].plates}` })),
+  };
+});
+const viewLink = (region: string, layers: string[]) => `/tools/plate-map/?${serializeMapState({ mode: 'explore', region, layers })}`;
+const all = ['divergent', 'convergent', 'transform', 'quakes', 'volcanoes'];
+const patterns = ['pacific', 'atlantic', 'africa', 'himalaya'].map(id => regionById(id));
+
+// Worked example: the west coast of South America.
+const trench = boundaryById('peru-chile');
+const round10 = (km: number) => Math.round(km / 10) * 10;
+const andes = VOLCANOES_NEAR.filter(v => v.boundary === trench.id && !v.hotspot).map(v => v.km);
+const kilauea = VOLCANOES.find(v => v.name === 'Kīlauea')!;
+const kilaueaKm = round10(VOLCANOES_NEAR.find(v => v.id === kilauea.id)!.km);
+
+const faq: [string, string][] = [
+  ['What is a plate boundary?', 'Earth’s rigid outer shell is broken into pieces called tectonic plates, which move a few centimeters a year. A plate boundary is the zone where two plates meet. Because the plates are rigid, most earthquakes, volcanoes and mountain building happen at their edges, not in their middles.'],
+  ['What are the three types of plate boundaries?', `Divergent boundaries, where ${TYPE_MOTION.divergent}, such as the Mid-Atlantic Ridge. Convergent boundaries, where ${TYPE_MOTION.convergent}, such as the Peru–Chile Trench and the Himalaya. Transform boundaries, where ${TYPE_MOTION.transform}, such as the San Andreas Fault. On the map they are red, blue and green.`],
+  ['How many tectonic plates are there?', `It depends on how small a piece you count. There are seven or eight large plates and many smaller ones. This map names ${PLATES.length}. Detailed scientific models list more than 50, because they count many small plates that this map merges into their neighbors.`],
+  ['Why do earthquakes and volcanoes happen along plate boundaries?', 'Earthquakes happen where rock is under stress, and that is where plates pull apart, push together or grind past each other. Volcanoes need magma. It forms where plates pull apart and hot mantle rises, and where a sinking ocean plate carries water down into the hot mantle. Neither happens at a transform boundary, so those have earthquakes but no volcanoes.'],
+  ['What is the Ring of Fire?', regionById('pacific').text],
+  ['Why does Hawaii have volcanoes if it is not on a plate boundary?', `Hawaii sits over a hotspot: a plume of hot rock rising from deep in the mantle. Kīlauea is about ${kilaueaKm.toLocaleString('en-US')} km from the nearest plate boundary on this map. As the Pacific Plate moves over the hotspot it builds a chain of islands, each younger than the one before.`],
+  ['How accurate is this map?', 'The coastlines are real map data. The plate boundaries are a simplified sketch made for this lab: the lines are in the right places at world scale, but they can be 100 to 200 km off, small plates are merged, and each line is given a single type. The earthquakes and volcanoes are well-known examples with rounded positions, not a complete catalog. For precise boundaries, scientists use digital plate models and catalogs of many thousands of earthquakes.'],
+  ['Can I use the Plate Boundaries Map in class?', `Yes. It is free with no sign-up and runs on school Chromebooks. Use the printable activity to compare five boundaries, then let students try Challenge mode, ${CHALLENGE.length} questions that ask them to name a boundary’s type from the map and explain where volcanoes are missing. Teachers can find the answer key on the For teachers page.`],
+];
+
+const app = {
+  '@context': 'https://schema.org',
+  '@type': 'WebApplication',
+  name: 'Plate Boundaries Map',
+  url,
+  description,
+  applicationCategory: 'EducationalApplication',
+  operatingSystem: 'Any (web browser)',
+  isAccessibleForFree: true,
+  inLanguage: 'en',
+  educationalLevel: 'Middle school and early high school (ages 10–16)',
+  publisher: { '@type': 'Organization', name: site.name, url: site.url + '/' },
+};
+---
+<Layout title={title} description={description} section="Plate Map" crumbs={[['Plate Boundaries Map']]}>
+  <noscript slot="head"><style is:inline>.pm-hint { display: none; } .pm .pm-quakes, .pm .pm-volcanoes { display: inline !important; }</style></noscript>
+  <div class="wrap">
+    <div class="page-intro">
+      <span class="eyebrow">Interactive map · Plate tectonics</span>
+      <h1>Plate Boundaries Map: interactive map of tectonic plates</h1>
+      <p class="lede">This interactive map shows Earth’s major tectonic plates and the boundaries between them, colored by type: divergent, convergent and transform. Switch on earthquakes and volcanoes to see how closely both follow the plate boundaries, then zoom in to the Ring of Fire, the Mid-Atlantic Ridge, the East African Rift or the Himalaya.</p>
+      <div class="page-actions">
+        <a class="btn" href="/tools/plate-map/activity/">Printable plate boundaries map worksheet</a>
+        <ClassroomShare url={url} />
+      </div>
+    </div>
+
+    <PlateMapLab />
+
+    <section class="section prose" aria-labelledby="how">
+      <h2 id="how">How to use the map</h2>
+      <ol>
+        <li><strong>Read the colors.</strong> Red lines are divergent boundaries, blue lines are convergent boundaries and green lines are transform boundaries. Dotted gray lines are wide zones with no single clear boundary.</li>
+        <li><strong>Switch layers on and off.</strong> Tick <em>Earthquakes</em> and <em>Volcanoes</em>. Untick a boundary type to see what is left without it.</li>
+        <li><strong>Zoom to a region.</strong> Each close-up highlights its main boundaries and explains what the plates are doing there.</li>
+        <li><strong>Tap anything.</strong> A boundary line, a plate name, an earthquake dot or a volcano triangle opens its details. The same things are listed under <em>In this view</em>, so every one can be reached with a keyboard.</li>
+      </ol>
+      <p>For a slice down through each kind of boundary, with the plates moving, open the <a href="/tools/plate-tectonics/">Plate Tectonics Explorer</a>. Every boundary’s details link to its matching cross-section there.</p>
+    </section>
+
+    <section class="section pm-table" aria-labelledby="types" style="padding-top:0">
+      <h2 id="types">The three types of plate boundaries on the map</h2>
+      <p class="prose">Boundaries are named for how the two plates move. That motion decides what happens to the crust, and what the boundary looks like in a cross-section.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Boundary type</th><th scope="col">The plates</th><th scope="col">Crust</th><th scope="col">Examples on the map</th><th scope="col">See it in cross-section</th></tr></thead>
+          <tbody>
+            {typeRows.map(row => (
+              <tr>
+                <th scope="row"><span class:list={['pm-key', `pm-key-${row.type}`]} aria-hidden="true"></span> {TYPE_LABELS[row.type]}</th>
+                <td>{TYPE_MOTION[row.type][0].toUpperCase() + TYPE_MOTION[row.type].slice(1)}</td>
+                <td>{row.crust}</td>
+                <td>{row.examples.join('; ')}</td>
+                <td>{row.links.map((link, i) => <>{i > 0 && <br />}<a href={link.href}>{link.name}</a></>)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="muted" style="margin-top:10px">The map draws {BOUNDARIES.length} boundary lines between {PLATES.length} named plates: {typeRows.map(row => `${row.count} ${row.type}`).join(', ')}, and {boundariesOfType('zone').length} wide boundary zones.</p>
+    </section>
+
+    <section class="section prose" aria-labelledby="pattern" style="padding-top:0">
+      <h2 id="pattern">Earthquakes and volcanoes line up along plate boundaries</h2>
+      <p>If earthquakes and volcanoes could happen anywhere, they would be scattered evenly across the map. They are not. They form narrow belts, and the belts are the plate boundaries. This pattern was one of the main pieces of evidence for plate tectonics in the 1960s.</p>
+      <p>The map shows {QUAKES.length} large or well-known earthquakes and {VOLCANOES.length} well-known volcanoes. {e.quakes.near === e.quakes.total ? `All ${e.quakes.total} earthquakes` : `${e.quakes.near} of the ${e.quakes.total} earthquakes`} lie within {QUAKE_NEAR_KM} km of a boundary line. {e.volcanoes.near} of the {e.volcanoes.total} volcanoes lie within {VOLCANO_NEAR_KM} km of a boundary where plates move apart or together. None belongs to a transform boundary. The other {hotspots.length} are hotspot volcanoes: {hotspots.map(v => v.name).join(', ')}.</p>
+      <p>The strongest earthquake on the map, and the strongest ever recorded, is {strongest.name}, {strongest.year}, magnitude {strongest.magnitude.toFixed(1)}. Like the other giant earthquakes it happened at a convergent boundary: {describeFeature(strongest).where.replace(/^About/, 'about')}</p>
+      {patterns.map(region => (
+        <Fragment>
+          <h3>{region.name}</h3>
+          <p>{region.text} <a href={viewLink(region.id, all)}>Open the map at the {region.name} →</a></p>
+        </Fragment>
+      ))}
+    </section>
+
+    <section class="section prose" aria-labelledby="worked" style="padding-top:0">
+      <h2 id="worked">Worked example: read a boundary from the map</h2>
+      <p>What kind of plate boundary runs along the west coast of South America, and how can you tell from the map alone?</p>
+      <ol>
+        <li><strong>Find the line.</strong> A blue line follows the coast from Colombia to southern Chile, just offshore. Blue means convergent: the plates move together. Tapping it names it: the {trench.name}, between the {trench.plates.map(plateName).join(' and the ')}.</li>
+        <li><strong>Check the earthquakes.</strong> With earthquakes switched on, dots line the coast, including {strongest.name}, {strongest.year}, magnitude {strongest.magnitude.toFixed(1)}. Giant earthquakes are a sign of a subduction zone.</li>
+        <li><strong>Check the volcanoes.</strong> The volcano triangles are not on the line. They stand inland, in the Andes, about {round10(Math.min(...andes))} to {round10(Math.max(...andes))} km from the trench on this map. That gap shows which plate is sinking: the {plateName(trench.under)} goes down under the {plateName(trench.plates.find(id => id !== trench.under))}, and magma rises where it reaches about 100 km deep.</li>
+        <li><strong>Compare.</strong> Zoom to the San Andreas Fault: earthquakes but no volcanoes. Zoom to the Mid-Atlantic Ridge: the line runs down the middle of an ocean, not along a coast. Each type of boundary leaves its own pattern.</li>
+      </ol>
+    </section>
+
+    <section class="section pm-table" aria-labelledby="plates" style="padding-top:0">
+      <h2 id="plates">The plates on the map</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th scope="col">Plate</th><th scope="col">What it is</th><th scope="col">Neighbors on this map</th></tr></thead>
+          <tbody>
+            {PLATES.map(plate => (
+              <tr>
+                <th scope="row">{plate.name}</th>
+                <td>{plate.about}</td>
+                <td>{describePlate(plate).neighbors.replace('Neighbors on this map: ', '').replace(/\.$/, '').replace(/ Plate/g, '')}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <AdSlot type="native" />
+
+    <section class="section prose" aria-labelledby="mistakes">
+      <h2 id="mistakes">Common misconceptions</h2>
+      <ul>
+        <li><strong>“Plate boundaries are the edges of the continents.”</strong> Most are not. The Mid-Atlantic Ridge runs down the middle of an ocean, and the east coasts of the Americas are in the middle of their plates. Most plates carry both continent and ocean floor.</li>
+        <li><strong>“Every plate boundary has volcanoes.”</strong> Transform boundaries, such as the San Andreas Fault, have none. Collision zones, such as the Himalaya, have almost none.</li>
+        <li><strong>“All volcanoes are at plate boundaries.”</strong> Hotspot volcanoes, such as those of Hawaii and Yellowstone, are far from any boundary.</li>
+        <li><strong>“Earthquakes only happen at plate boundaries.”</strong> Most do, and nearly all of the largest. But earthquakes also strike inside plates, where old faults are put under stress.</li>
+        <li><strong>“The Ring of Fire is one long crack.”</strong> It is a chain of separate trenches, where different plates sink, joined in places by transform faults such as the San Andreas.</li>
+        <li><strong>“The plates fit together like a finished jigsaw.”</strong> They are moving. New sea floor forms at the red lines and old sea floor sinks at the blue ones, so the map changes over millions of years.</li>
+      </ul>
+      <h2>What this map simplifies</h2>
+      <p>The land outlines are real map data (Natural Earth). <strong>The plate boundaries are a simplified sketch drawn by hand for this lab, not a scientific plate model.</strong> Each line is a short chain of points placed from well-known geography, so it can lie 100 to 200 km from the true boundary. That does not matter at world scale, but do not use it to measure anything.</p>
+      <p>Real boundaries are messier than these lines. There are dozens of small plates, especially in Southeast Asia, the southwest Pacific and the Mediterranean, which the map merges into their larger neighbors. The Indo-Australian Plate is shown as one plate, although many geologists now split it in two, and Japan and far eastern Siberia are drawn on the North American Plate, although many maps give that corner its own Okhotsk Plate. Mid-ocean ridges are really short pieces of ridge offset by transform faults; the map draws them as smooth lines. Every line has one type, although real boundaries change along their length.</p>
+      <p>The earthquakes and volcanoes are examples chosen because they are large or well known, with positions rounded to about a tenth of a degree and magnitudes as listed by the U.S. Geological Survey. They are not a catalog. A real earthquake map has many thousands of dots, most of them small, and they trace every boundary, including the mid-ocean ridges, where this map has only a few examples. The map is a plain grid of latitude and longitude, which stretches everything near the poles.</p>
+    </section>
+
+    <section class="section" aria-labelledby="activity">
+      <div class="featured">
+        <div>
+          <span class="eyebrow">For the classroom</span>
+          <h2 id="activity">Plate boundaries map activity</h2>
+          <p>A one-page printable worksheet for grades 6–10, about 15 minutes: students zoom to five boundaries, record each one’s type, plates, largest earthquake and volcanoes, and explain why two of them have no volcanoes.</p>
+          <div class="page-actions">
+            <a class="btn primary" href="/tools/plate-map/activity/">Open the map activity</a>
+            <a class="btn" href="/teachers/">For teachers</a>
+          </div>
+        </div>
+        <div>
+          <p class="muted">Share the map with your class in one click. Students need no accounts or logins.</p>
+          <ClassroomShare url={url} />
+        </div>
+      </div>
+    </section>
+
+    <section class="section prose" aria-labelledby="related" style="padding-top:0">
+      <h2 id="related">Related labs</h2>
+      <p>The map shows where the boundaries are. The <a href="/tools/plate-tectonics/">Plate Tectonics Explorer</a> shows what happens at each one, in animated cross-sections with earthquake depths and volcanoes. To see how scientists locate an earthquake in the first place, try the <a href="/tools/earthquake-epicenter/">Earthquake Epicenter Finder</a>.</p>
+    </section>
+
+    <Faq items={faq} title="Plate boundary map questions" />
+  </div>
+  <script type="application/ld+json" set:html={JSON.stringify(app)} />
+</Layout>

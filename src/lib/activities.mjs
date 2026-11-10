@@ -9,6 +9,7 @@ import { riverActivity, standards as riverStandards } from './activities/river-e
 import { waterCycleActivity, standards as waterStandards } from './activities/water-cycle.mjs';
 import { activity as rockCycle, standards as rockStandards } from './activities/rock-cycle.mjs';
 import { activity as rockLayers, standards as layerStandards } from './activities/rock-layers.mjs';
+import { activity as plateMap } from './activities/plate-map.mjs';
 
 // NGSS performance expectations referenced below, paraphrased.
 export const standards = {
@@ -95,4 +96,5 @@ export const activities = [
   waterCycleActivity,
   rockCycle,
   rockLayers,
+  plateMap,
 ];

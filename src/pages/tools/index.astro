@@ -13,15 +13,17 @@ import { replay } from '../../lib/rock-cycle.mjs';
 import { SECTION, sectionSvg } from '../../lib/rock-view.mjs';
 import { sectionById } from '../../lib/rock-layers.mjs';
 import { sectionSize, sectionSvg as layersSvg } from '../../lib/rock-layers-view.mjs';
+import { VIEW as MAP_VIEW, mapSvg as plateMapSvg } from '../../lib/plate-map-view.mjs';
 import '../../styles/contour.css';
 import '../../components/water/water.css';
 import '../../components/river/river.css';
 import '../../components/rock/rock.css';
 import '../../components/layers/layers.css';
+import '../../components/platemap/platemap.css';
 
 // The count in the title and the text below comes from the lab list, so it can't fall out of step.
 const title = `Earth Science Labs: ${LabCount} Free Interactive Simulations`;
-const description = `${LabCount} free earth science labs and simulations: earthquakes, plate tectonics, contour maps, river erosion, the water cycle, the rock cycle and rock layers.`;
+const description = `${LabCount} free earth science labs and simulations: earthquakes, plate tectonics and a plate map, contour maps, rivers, rock layers, the water and rock cycles.`;
 const url = new URL('/tools/', Astro.site).href;
 const volcano = mapSvg(createTerrain('volcano'), { interval: 20, overlays: ['index'], className: 'lab-thumb-map', label: 'Contour map of a volcano with a crater at its summit' });
 const river = planInner(simulate(RIVER_START), RIVER_START.t);
@@ -60,6 +62,7 @@ const itemList = {
               {lab.slug === 'river-erosion' && <svg class="rv-plan" viewBox={`0 0 ${PLAN.width} ${PLAN.height}`} role="img" aria-label="Stream table seen from above: a river channel running into a sea and building a delta" set:html={river} />}
               {lab.slug === 'rock-cycle' && <svg class="rx" viewBox={`0 0 ${SECTION.width} ${SECTION.height}`} role="img" aria-label="Cross-section of the crust showing a rock's journey from granite to schist" set:html={sectionSvg(rockJourney)} />}
               {lab.slug === 'rock-layers' && <svg class="rl-svg" viewBox={`0 0 ${tiltedSize.width} ${tiltedSize.height}`} role="img" aria-label="Cross-section of rock layers: tilted layers cut by a buried erosion surface, with flat layers on top" set:html={layersSvg(tilted, { prefix: 'rl-hub', labels: false })} />}
+              {lab.slug === 'plate-map' && <svg class="pm-thumb" viewBox={`${MAP_VIEW.x} ${MAP_VIEW.y} ${MAP_VIEW.width} ${MAP_VIEW.height}`} role="img" aria-label="World map with plate boundaries drawn in red, blue and green" set:html={plateMapSvg({ prefix: 'pm-hub', markers: false })} />}
               {lab.slug === 'water-cycle' && <svg class="wc-scene" viewBox={`0 0 ${WATER_VIEW.width} ${WATER_VIEW.height}`} role="img" aria-label="Water cycle diagram: ocean, atmosphere, glacier, ice sheet, soil, plants, river, lake and groundwater" set:html={sceneBaseSvg()} />}
             </a>
             <div class="lab-body">

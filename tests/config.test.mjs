@@ -29,16 +29,16 @@ test('learning apps: Interactive Periodic Table first, canonical https URLs, thi
   assert.ok(!learningApps.some(app => /football/i.test(app.name)));
 });
 
-test('labs: seven complete entries, each with an activity and a search-friendly kind', () => {
-  assert.equal(labs.length, 7);
-  assert.equal(labCount, 'seven');
-  assert.equal(LabCount, 'Seven');
+test('labs: eight complete entries, each with an activity and a search-friendly kind', () => {
+  assert.equal(labs.length, 8);
+  assert.equal(labCount, 'eight');
+  assert.equal(LabCount, 'Eight');
   assert.deepEqual(labs.map(lab => lab.slug), activities.map(act => act.tool));
   for (const lab of labs) {
     for (const field of ['slug', 'name', 'section', 'topic', 'kind', 'blurb']) assert.ok(lab[field]?.length > 3, `${lab.slug}.${field}`);
     assert.equal(labBySection(lab.section), lab);
     assert.equal(activities.find(act => act.tool === lab.slug).toolName, lab.name);
-    assert.match(lab.kind, /lab|simulation|practice|stream table/i, lab.slug);
+    assert.match(lab.kind, /lab|simulation|practice|stream table|interactive .* map/i, lab.slug);
   }
   assert.equal(new Set(labs.map(lab => lab.kind)).size, labs.length, 'kinds are unique');
 });

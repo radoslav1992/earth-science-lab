@@ -1,0 +1,89 @@
+---
+// The interactive Plate Boundaries Map. The server draws the whole world with the boundaries and plate
+// names showing and the controls disabled; ./map.ts switches them on, zooms to regions, shows details
+// and runs Challenge mode.
+import './platemap.css';
+import { LAYERS, LAYER_NAMES, DEFAULT_LAYERS, REGIONS, CHALLENGE, regionById } from '../../lib/plate-map.mjs';
+import { VIEW, mapSvg, describeMap, regionHtml, listHtml, legendHtml } from '../../lib/plate-map-view.mjs';
+
+const world = regionById('world');
+const off = LAYERS.filter(layer => !DEFAULT_LAYERS.includes(layer)).map(layer => `pm-off-${layer}`);
+---
+<section class:list={['pm', ...off]} id="map" data-platemap data-mode="explore" data-view="world" aria-label="Plate Boundaries Map">
+  <div class="pm-bar">
+    <div class="mode-switch" role="group" aria-label="Mode">
+      <button type="button" data-mode-btn="explore" aria-pressed="true" disabled>Explore</button>
+      <button type="button" data-mode-btn="challenge" aria-pressed="false" disabled>Challenge</button>
+    </div>
+    <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+  </div>
+  <p class="pm-hint" data-hint><strong>New here?</strong> Switch on <em>Earthquakes</em> and <em>Volcanoes</em> and see where they fall. Then zoom to a region, and tap a line, a dot or a triangle to read about it.</p>
+  <div class="note pm-note" data-note hidden></div>
+  <noscript><p class="note pm-noscript">The map needs JavaScript to switch layers and zoom. It is drawn here with every layer showing, and the page below explains the boundary types and the patterns to look for.</p></noscript>
+
+  <div class="pm-challenge" data-challenge hidden>
+    <div class="challenge-bar">
+      <span>Question <strong data-q-num>1</strong> of <span>{CHALLENGE.length}</span></span>
+      <span>Score <strong data-q-score>0</strong></span>
+    </div>
+    <div class="pm-panel pm-question" data-q>
+      <p class="pm-q-prompt" data-q-prompt tabindex="-1"></p>
+      <div class="pm-choices" role="group" aria-label="Answer choices" data-q-choices></div>
+      <div class="pm-feedback" data-q-feedback hidden tabindex="-1"></div>
+      <div class="pm-q-actions"><button type="button" class="btn primary" data-q-next hidden>Next question</button></div>
+    </div>
+    <div class="pm-panel pm-done" data-q-done hidden tabindex="-1">
+      <p class="pm-done-score" data-q-final></p>
+      <p data-q-message></p>
+      <div class="page-actions">
+        <button type="button" class="btn primary" data-q-restart>Try again</button>
+        <button type="button" class="btn" data-q-explore>Back to Explore</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pm-controls" data-controls>
+    <fieldset class="pm-layers">
+      <legend class="pm-group-label">Show on the map</legend>
+      {LAYERS.map(layer => (
+        <label class:list={['pm-toggle', `pm-toggle-${layer}`]}>
+          <input type="checkbox" data-layer={layer} checked={DEFAULT_LAYERS.includes(layer)} autocomplete="off" disabled />
+          <span class:list={['pm-key', `pm-key-${layer === 'quakes' ? 'quake' : layer === 'volcanoes' ? 'volcano' : layer}`]} aria-hidden="true"></span>
+          {LAYER_NAMES[layer]}
+        </label>
+      ))}
+    </fieldset>
+    <div class="pm-regions" role="group" aria-label="Zoom to a region">
+      <span class="pm-group-label">Zoom to</span>
+      {REGIONS.map(region => <button type="button" class="pm-region" data-region={region.id} aria-pressed={String(region.id === 'world')} disabled>{region.name}</button>)}
+    </div>
+  </div>
+
+  <div class="pm-main">
+    <figure class="pm-panel pm-figure">
+      <div class="pm-scroll" data-scroll>
+        <svg class="pm-svg" viewBox={`${VIEW.x} ${VIEW.y} ${VIEW.width} ${VIEW.height}`} role="img" aria-label={describeMap()} data-map set:html={mapSvg()} />
+      </div>
+      <p class="pm-swipe">Swipe the map sideways to see the rest of the world, or zoom to a region.</p>
+      <ul class="pm-legend" set:html={legendHtml()} />
+      <p class="pm-fig-note">Boundaries are simplified and drawn by hand for this lab; they can be 100–200 km from the true position. Earthquakes and volcanoes are well-known examples, not a full catalog. Areas near the poles look stretched on this kind of map.</p>
+    </figure>
+    <div class="pm-panel pm-info" data-details>
+      <div data-info set:html={regionHtml(world)} />
+      <button type="button" class="btn small pm-back" data-back hidden>Back to the overview</button>
+    </div>
+  </div>
+
+  <div class="pm-panel pm-list" data-details>
+    <h3>In this view</h3>
+    <p class="pm-list-help">Everything on the map can also be opened from this list.</p>
+    <div data-list set:html={listHtml(world, DEFAULT_LAYERS, { disabled: true })} />
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initPlateMap } from './map';
+  const root = document.querySelector<HTMLElement>('[data-platemap]');
+  if (root) initPlateMap(root);
+</script>

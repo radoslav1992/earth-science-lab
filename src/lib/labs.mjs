@@ -58,6 +58,14 @@ export const labs = [
     kind: 'Relative and radiometric dating lab',
     blurb: 'Read a cross-section of rock layers and put its layers, faults and intrusions in order, then use half-lives to date the igneous rocks and bracket the ages of the layers around them.',
   },
+  {
+    slug: 'plate-map',
+    name: 'Plate Boundaries Map',
+    section: 'Plate Map',
+    topic: 'Plate tectonics',
+    kind: 'Interactive tectonic plates map',
+    blurb: 'Explore a world map of the tectonic plates and their divergent, convergent and transform boundaries, then switch on earthquakes and volcanoes and see how they line up along the plate edges.',
+  },
 ];
 
 const COUNT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
