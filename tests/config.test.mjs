@@ -24,7 +24,7 @@ test('site settings', () => {
 test('learning apps: Interactive Periodic Table first, canonical https URLs, this app current', () => {
   assert.equal(currentApp, 'earth');
   assert.equal(learningApps[0].name, 'Interactive Periodic Table');
-  assert.deepEqual(learningApps.map(app => app.id), ['chemistry', 'physics', 'biology', 'astronomy', 'geometry', 'kids', 'earth']);
+  assert.deepEqual(learningApps.map(app => app.id), ['chemistry', 'physics', 'biology', 'astronomy', 'geometry', 'kids', 'earth', 'spreadsheets']);
   for (const app of learningApps) assert.match(app.url, /^https:\/\/[a-z.]+$/, app.name);
   assert.ok(!learningApps.some(app => /football/i.test(app.name)));
 });
