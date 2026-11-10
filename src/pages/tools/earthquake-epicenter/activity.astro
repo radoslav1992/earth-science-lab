@@ -6,7 +6,7 @@ import { activities, standards } from '../../../lib/activities.mjs';
 
 const act = activities.find(a => a.tool === 'earthquake-epicenter')!;
 const url = new URL('/tools/earthquake-epicenter/activity/', Astro.site).href;
-const description = `Free printable earthquake epicenter worksheet for ${act.grade.toLowerCase()}: read three seismograms, find the S–P lag and triangulate the epicenter. About ${act.minutes} minutes.`;
+const description = `Free printable earthquake epicenter worksheet for ${act.grade.toLowerCase()}: students read three seismograms, find each S–P lag and locate the epicenter. ${act.minutes} minutes.`;
 const resource = {
   '@context': 'https://schema.org',
   '@type': 'LearningResource',
@@ -21,7 +21,7 @@ const resource = {
   educationalAlignment: act.standards.map(code => ({ '@type': 'AlignmentObject', alignmentType: 'educationalSubject', educationalFramework: 'Next Generation Science Standards', targetName: code })),
 };
 ---
-<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Epicenter Finder" crumbs={[['Earthquake Epicenter Finder', '/tools/earthquake-epicenter/'], ['Classroom activity']]}>
+<Layout title={`${act.title}: Free Worksheet for Students`} description={description} section="Epicenter Finder" crumbs={[['Earthquake Epicenter Finder', '/tools/earthquake-epicenter/'], ['Classroom activity']]}>
   <article class="worksheet">
     <div class="breadcrumb no-print"><a href="/tools/earthquake-epicenter/">{act.toolName}</a> / Classroom activity</div>
     <header class="worksheet-head">
@@ -35,7 +35,7 @@ const resource = {
     <p class="worksheet-meta">Open the finder at <strong>earthsciencelab.org/tools/earthquake-epicenter/</strong> and choose <strong>Guided</strong> mode · Connects to NGSS {act.standards.join(', ')}</p>
     <div class="page-actions no-print">
       <button class="btn primary" type="button" data-print>Print worksheet</button>
-      <a class="btn" href="/tools/earthquake-epicenter/">Open the finder</a>
+      <a class="btn" href="/tools/earthquake-epicenter/">Open the {act.toolName}</a>
       <ClassroomShare url={url} />
     </div>
     <h2>What to do</h2>

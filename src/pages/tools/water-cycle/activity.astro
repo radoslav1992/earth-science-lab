@@ -20,7 +20,7 @@ const resource = {
   educationalAlignment: act.standards.map(code => ({ '@type': 'AlignmentObject', alignmentType: 'educationalSubject', educationalFramework: 'Next Generation Science Standards', targetName: code })),
 };
 ---
-<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Water Cycle" crumbs={[['Water Cycle Explorer', '/tools/water-cycle/'], ['Classroom activity']]}>
+<Layout title={`${act.title}: Free Worksheet for Students`} description={description} section="Water Cycle" crumbs={[['Water Cycle Explorer', '/tools/water-cycle/'], ['Classroom activity']]}>
   <article class="worksheet">
     <div class="breadcrumb no-print"><a href="/tools/water-cycle/">{act.toolName}</a> / Classroom activity</div>
     <header class="worksheet-head">
@@ -34,7 +34,7 @@ const resource = {
     <p class="worksheet-meta">Open the explorer at <strong>earthsciencelab.org/tools/water-cycle/</strong> · Connects to NGSS {act.standards.join(', ')}</p>
     <div class="page-actions no-print">
       <button class="btn primary" type="button" data-print>Print worksheet</button>
-      <a class="btn" href="/tools/water-cycle/">Open the explorer</a>
+      <a class="btn" href="/tools/water-cycle/">Open the {act.toolName}</a>
       <ClassroomShare url={url} />
     </div>
     <h2>What to do</h2>

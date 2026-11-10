@@ -7,7 +7,7 @@ import Faq from '../../../components/Faq.astro';
 import { site } from '../../../lib/site.mjs';
 import { createTerrain, sample, summits } from '../../../lib/terrain.mjs';
 import { mapSvg, STEEP_DEGREES } from '../../../lib/contour-svg.mjs';
-import { pointOnContour } from '../../../lib/contour-challenges.mjs';
+import { pointOnContour, CHALLENGE_COUNT } from '../../../lib/contour-challenges.mjs';
 import '../../../styles/contour.css';
 
 const title = 'Contour Map Playground – Interactive Topographic Map Practice';
@@ -64,9 +64,9 @@ const app = {
     <div class="page-intro">
       <span class="eyebrow">Virtual lab · Maps and landforms</span>
       <h1>Contour Map Playground</h1>
-      <p class="lede">Shape a landscape and watch its topographic map draw itself alongside. Raise hills, carve valleys, flood the land with the sea, and slice a cross-section to see the shape the lines describe.</p>
+      <p class="lede">Shape a landscape and watch its topographic map draw itself alongside. Raise hills, carve valleys, flood the land with the sea, and slice a cross-section to see the shape the lines describe. Then get some contour map practice with {CHALLENGE_COUNT} Match &amp; Read questions.</p>
       <div class="page-actions">
-        <a class="btn" href="/tools/contour-map/activity/">Printable activity</a>
+        <a class="btn" href="/tools/contour-map/activity/">Printable contour map worksheet</a>
         <ClassroomShare url={url} />
       </div>
     </div>
@@ -135,7 +135,7 @@ const app = {
           <h2 id="activity">Contour map activity</h2>
           <p>A one-page printable worksheet for grades 6–10, about 15 minutes: a printed contour map of a river valley, a table of elevations and six questions, from the contour interval to sketching a cross-section.</p>
           <div class="page-actions">
-            <a class="btn primary" href="/tools/contour-map/activity/">Open the activity</a>
+            <a class="btn primary" href="/tools/contour-map/activity/">Open the contour map activity</a>
             <a class="btn" href="/teachers/">For teachers</a>
           </div>
         </div>

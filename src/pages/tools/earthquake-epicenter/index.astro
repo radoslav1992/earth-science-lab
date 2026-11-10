@@ -11,8 +11,8 @@ import { site } from '../../../lib/site.mjs';
 import { GUIDED, VP, VS, LAG_PER_KM, readings, picked, trilaterate, distance, localMagnitude, round } from '../../../lib/seismology.mjs';
 import { traceSeed } from '../../../lib/seismogram.mjs';
 
-const title = 'Earthquake Epicenter Finder – Triangulation Virtual Lab';
-const description = 'Find an earthquake’s epicenter from three seismograms: read the S–P lag, turn it into a distance and triangulate on a map. Free virtual lab with a worksheet.';
+const title = 'Virtual Earthquake Lab: Locate the Epicenter by Triangulation';
+const description = 'Free virtual earthquake lab: read three seismograms, measure each S–P lag, turn it into a distance and locate the epicenter by triangulation on a map.';
 const url = new URL('/tools/earthquake-epicenter/', Astro.site).href;
 
 // Worked example: the Guided quake, read to 0.1 s.
@@ -51,9 +51,9 @@ const app = {
     <div class="page-intro">
       <span class="eyebrow">Virtual lab · Seismology</span>
       <h1>Earthquake Epicenter Finder</h1>
-      <p class="lede">Three seismograph stations recorded the same earthquake. Read when the P and S waves arrived, turn each lag into a distance, and draw circles to triangulate where the quake began.</p>
+      <p class="lede">In this virtual earthquake lab, three seismograph stations recorded the same earthquake. Read when the P and S waves arrived, turn each S–P lag into a distance, and draw circles to locate the epicenter by triangulation.</p>
       <div class="page-actions">
-        <a class="btn" href="/tools/earthquake-epicenter/activity/">Printable activity</a>
+        <a class="btn" href="/tools/earthquake-epicenter/activity/">Printable epicenter worksheet</a>
         <ClassroomShare url={url} />
       </div>
     </div>
@@ -173,7 +173,7 @@ const app = {
           <h2 id="activity">Earthquake epicenter activity</h2>
           <p>A one-page printable worksheet for grades 6–10, about 15 minutes with Guided mode: a results table and six questions, from reading the lag to estimating the magnitude.</p>
           <div class="page-actions">
-            <a class="btn primary" href="/tools/earthquake-epicenter/activity/">Open the activity</a>
+            <a class="btn primary" href="/tools/earthquake-epicenter/activity/">Open the earthquake epicenter activity</a>
             <a class="btn" href="/teachers/">For teachers</a>
           </div>
         </div>

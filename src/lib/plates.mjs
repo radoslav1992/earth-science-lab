@@ -31,6 +31,23 @@ export const DEPTH_NAMES = { shallow: 'Shallow', intermediate: 'Intermediate', d
 const DEPTH_RANK = { shallow: 0, intermediate: 1, deep: 2 };
 export const MOTION_NAMES = { apart: 'Apart', together: 'Together', past: 'Past each other' };
 
+// What happens to crust at each boundary type, in the order of TYPES (constructive, destructive and
+// conservative boundaries in some textbooks). Shown on the explorer's page; tests/plates.test.mjs ties it to the cases.
+export const CRUST_BUDGET = [
+  {
+    type: 'divergent', effect: 'created', label: 'Crust is created',
+    text: 'At a mid-ocean ridge, magma rises into the gap between the plates and cools into new ocean crust. This is called seafloor spreading. A continental rift stretches and thins the crust first; new ocean crust forms once the rift opens into an ocean.',
+  },
+  {
+    type: 'convergent', effect: 'destroyed', label: 'Crust is destroyed',
+    text: 'At a subduction zone, old ocean plate sinks under another plate at a trench and is recycled into the mantle. Volcanic island arcs and mountain chains such as the Andes stand above subduction zones. Where two continents collide, neither sinks far, so the crust is crumpled and thickened instead.',
+  },
+  {
+    type: 'transform', effect: 'neither', label: 'Crust is neither created nor destroyed',
+    text: 'The plates slide sideways past each other, so no new crust forms and none sinks into the mantle. The San Andreas Fault is a transform boundary.',
+  },
+];
+
 // rate: the explorer's starting speed for the case, in cm per year (relative speed of the two plates).
 export const CASES = {
   'divergent-oo': {

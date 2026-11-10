@@ -6,10 +6,11 @@ import ClassroomShare from '../../../components/ClassroomShare.astro';
 import AdSlot from '../../../components/AdSlot.astro';
 import Faq from '../../../components/Faq.astro';
 import { site } from '../../../lib/site.mjs';
-import { CASES, MOTION_NAMES, DEPTH_NAMES, caseTitle, distanceKm, halfRate, kmPerMyr, seafloorAgeMyr, metersPerCentury, fmt } from '../../../lib/plates.mjs';
+import { CASES, CRUST_BUDGET, TYPE_NAMES, MOTION_NAMES, DEPTH_NAMES, caseTitle, distanceKm, halfRate, kmPerMyr, seafloorAgeMyr, metersPerCentury, fmt } from '../../../lib/plates.mjs';
 
-const title = 'Plate Tectonics Explorer – Interactive Plate Boundaries';
-const description = 'Animate divergent, convergent and transform plate boundaries in cross-section and see where earthquakes, volcanoes and mountains form. Free, with a worksheet.';
+// "tectonic plate explorer" already ranks third, so the tool's name stays in the title.
+const title = 'Plate Tectonics Explorer – Simulation & Virtual Lab';
+const description = 'Free plate tectonics simulation: animate divergent, convergent and transform plate boundaries and see where earthquakes, volcanoes and mountains form.';
 const url = new URL('/tools/plate-tectonics/', Astro.site).href;
 
 // Worked example: a ridge spreading 2.5 cm per year in total (the Mid-Atlantic Ridge spreads about 2–5).
@@ -27,6 +28,7 @@ const groups = [
 
 const faq: [string, string][] = [
   ['What are the three types of plate boundaries?', 'At divergent boundaries plates move apart, as along the Mid-Atlantic Ridge and the East African Rift. At convergent boundaries they move together: one plate sinks under another, as under the Andes and Japan, or two continents collide, as in the Himalaya. At transform boundaries they slide past each other, as along the San Andreas Fault.'],
+  ['At which plate boundary is crust neither created nor destroyed?', 'At a transform boundary. The two plates slide sideways past each other, so no new crust forms and none sinks into the mantle. Crust is created at divergent boundaries, such as mid-ocean ridges, and destroyed at convergent boundaries where an ocean plate subducts at a trench.'],
   ['How fast do tectonic plates move?', 'Most plates move between about 1 and 10 centimeters a year, roughly as fast as fingernails grow. The Mid-Atlantic Ridge spreads about 2–5 cm per year. That sounds slow, but 1 cm per year adds up to 10 km every million years, which is enough to open an ocean over tens of millions of years.'],
   ['Why do some earthquakes happen hundreds of kilometers deep?', 'Below a few tens of kilometers, rock is usually too hot to break suddenly; it bends and flows instead. At subduction zones, though, a cold slab of ocean plate sinks into the mantle, and rock inside it can still break. Its earthquakes get deeper and deeper away from the trench, down to about 700 km. Divergent and transform boundaries have only shallow earthquakes.'],
   ['Do tectonic plates float on liquid magma?', 'No. The mantle under the plates is almost all solid rock. It is so hot that over millions of years it can flow very slowly, a few centimeters a year, and the plates move along on top of it. Magma forms only in small places where rock partly melts, such as under mid-ocean ridges and above sinking slabs.'],
@@ -52,10 +54,10 @@ const app = {
   <div class="wrap">
     <div class="page-intro">
       <span class="eyebrow">Virtual lab · Plate tectonics</span>
-      <h1>Plate Tectonics Explorer</h1>
-      <p class="lede">Pick a plate boundary and run time forward. Watch plates pull apart, collide or grind past each other, and see where trenches, mountains, volcanoes and earthquakes appear.</p>
+      <h1>Plate Tectonics Explorer: interactive simulation</h1>
+      <p class="lede">In this interactive plate tectonics simulation, you pick a plate boundary and run time forward. Watch plates pull apart, collide or grind past each other, and see where trenches, mountains, volcanoes and earthquakes appear.</p>
       <div class="page-actions">
-        <a class="btn" href="/tools/plate-tectonics/activity/">Printable activity</a>
+        <a class="btn" href="/tools/plate-tectonics/activity/">Printable plate boundaries worksheet</a>
         <ClassroomShare url={url} />
       </div>
     </div>
@@ -85,6 +87,15 @@ const app = {
         </div>
       </section>
     ))}
+
+    <section class="section prose" aria-labelledby="crust" style="padding-top:0">
+      <h2 id="crust">Where is crust created, destroyed or neither?</h2>
+      <p>Crust is neither created nor destroyed at a <strong>transform boundary</strong>. It is created at divergent boundaries and destroyed at subduction zones, which are convergent boundaries. Run each boundary in the explorer to see why.</p>
+      <ul>
+        {CRUST_BUDGET.map(row => <li><strong>{TYPE_NAMES[row.type]} boundaries: {row.label.toLowerCase()}.</strong> {row.text}</li>)}
+      </ul>
+      <p>Over the whole planet, the new seafloor made at ridges is balanced by old seafloor sinking at trenches, so Earth stays the same size.</p>
+    </section>
 
     <section class="section" aria-labelledby="compare" style="padding-top:0">
       <h2 id="compare">Plate boundaries compared</h2>
@@ -153,7 +164,7 @@ const app = {
           <h2 id="activity">Plate boundaries activity</h2>
           <p>A one-page printable worksheet for grades 6–10, about 15 minutes: students compare six boundaries in the explorer, record landforms, earthquake depths and volcanoes, then answer six questions, including plate-speed and seafloor-age calculations.</p>
           <div class="page-actions">
-            <a class="btn primary" href="/tools/plate-tectonics/activity/">Open the activity</a>
+            <a class="btn primary" href="/tools/plate-tectonics/activity/">Open the plate boundaries activity</a>
             <a class="btn" href="/teachers/">For teachers</a>
           </div>
         </div>
