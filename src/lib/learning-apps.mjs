@@ -87,5 +87,17 @@ export const learningApps = [
     "color": "#9a4424",
     "tint": "#f5e4d6",
     "path": "M12 40h12l4-14 6 26 5-36 6 30 4-12 4 6h15"
+  },
+  {
+    "id": "spreadsheets",
+    "name": "Cell by Cell",
+    "subject": "Spreadsheets",
+    "url": "https://cellbycell.app",
+    "description": "Learn Excel by doing. Type real formulas in a live spreadsheet and have each step checked as you work.",
+    "mark": "=SUM",
+    "caption": "formulas you type yourself",
+    "color": "#0f7a49",
+    "tint": "#e4f3ea",
+    "path": "M20 16h40v36H20z M20 28h40 M20 40h40 M34 16v36"
   }
 ];

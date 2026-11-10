@@ -50,6 +50,28 @@ export const labs = [
     kind: 'Rock cycle simulation',
     blurb: 'Melt, cool, weather, bury and squeeze rocks to see how granite becomes slate or magma becomes marble, and where inside Earth each change happens.',
   },
+  {
+    slug: 'rock-layers',
+    name: 'Rock Layers Lab',
+    section: 'Rock Layers',
+    topic: 'Geologic time',
+    kind: 'Relative and radiometric dating lab',
+    blurb: 'Read a cross-section of rock layers and put its layers, faults and intrusions in order, then use half-lives to date the igneous rocks and bracket the ages of the layers around them.',
+  },
+  {
+    slug: 'plate-map',
+    name: 'Plate Boundaries Map',
+    section: 'Plate Map',
+    topic: 'Plate tectonics',
+    kind: 'Interactive tectonic plates map',
+    blurb: 'Explore a world map of the tectonic plates and their divergent, convergent and transform boundaries, then switch on earthquakes and volcanoes and see how they line up along the plate edges.',
+  },
 ];
+
+const COUNT_WORDS = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve'];
+/** How many labs there are, as a word ("seven"), so every page that counts them stays in step with this list. */
+export const labCount = COUNT_WORDS[labs.length] ?? String(labs.length);
+/** The same word with a capital, for the start of a sentence or a title ("Seven"). */
+export const LabCount = labCount[0].toUpperCase() + labCount.slice(1);
 
 export const labBySection = section => labs.find(lab => lab.section === section);

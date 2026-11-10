@@ -2,7 +2,7 @@
 
 > Free earth science virtual labs and simulations for students aged about 10–16 and their teachers. Each lab is a working model that runs in the browser, with a short explanation, a printable one-page classroom activity (student worksheet) and a teacher answer key. No accounts or sign-up. From the makers of Interactive Periodic Table.
 
-There are six labs, listed below. In the first, the Earthquake Epicenter Finder (a virtual earthquake lab), students read three synthetic seismograms, mark the P and S wave arrivals, convert each S–P lag to a distance (P waves 6.0 km/s, S waves 3.5 km/s, so distance in km ≈ lag in seconds × 8.4) and triangulate the epicenter on a fictional 600 × 400 km map. It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, plus an optional local-magnitude estimate (M ≈ log10(A) + 3·log10(8·Δt) − 2.92, a classroom approximation).
+There are eight labs, listed below. In the first, the Earthquake Epicenter Finder (a virtual earthquake lab), students read three synthetic seismograms, mark the P and S wave arrivals, convert each S–P lag to a distance (P waves 6.0 km/s, S waves 3.5 km/s, so distance in km ≈ lag in seconds × 8.4) and triangulate the epicenter on a fictional 600 × 400 km map. It has Guided, Challenge (three scored quakes, shareable by link) and Explore modes, plus an optional local-magnitude estimate (M ≈ log10(A) + 3·log10(8·Δt) − 2.92, a classroom approximation).
 
 ## Tools
 
@@ -12,17 +12,21 @@ There are six labs, listed below. In the first, the Earthquake Epicenter Finder 
 - [River Erosion Sandbox](https://earthsciencelab.org/tools/river-erosion/): Virtual stream table simulation. Set the slope, water flow, sediment size and supply, then watch erosion, transport and deposition (channel, point bars, delta) with an interactive Hjulström diagram, a challenge mode and an FAQ.
 - [Water Cycle Explorer](https://earthsciencelab.org/tools/water-cycle/): Interactive water cycle simulation. Follow a droplet between Earth's water reservoirs by choice or seeded chance, with typical residence times, climate and sun/gravity what-ifs, USGS "where is Earth's water" zoom bars, a challenge mode and an FAQ.
 - [Rock Cycle Builder](https://earthsciencelab.org/tools/rock-cycle/): Interactive rock cycle simulation. Apply melting, cooling, weathering, deposition, burial, heat and pressure, and uplift to turn 21 real rocks into one another, with the depth, temperature, time and energy source for each step, a challenge mode and an FAQ.
-- [All earth science labs and simulations](https://earthsciencelab.org/tools/): All six labs side by side, each with its classroom activity and standards.
+- [Rock Layers Lab](https://earthsciencelab.org/tools/rock-layers/): Relative and radiometric dating lab. Put the layers, faults, intrusions, tilting and erosion surfaces of five rock cross-sections in order using superposition, original horizontality, cross-cutting relationships, inclusions and unconformities, with the evidence explained for each step. Then use a radioactive decay model (carbon-14, potassium-40, uranium-238, uranium-235, rubidium-87; age = half-life × log2(N0 ÷ N)) with a decay curve, parent and daughter percentages and the useful range of each method, and date igneous rocks to bracket the ages of the layers around them. It also explains why carbon-14 cannot date rocks millions of years old, with worked examples and an FAQ.
+- [Plate Boundaries Map](https://earthsciencelab.org/tools/plate-map/): Interactive tectonic plates map. A world map of 15 major plates and the boundaries between them, colored by type (divergent, convergent, transform), with layers for example earthquakes and volcanoes that show how both line up along plate boundaries, close-ups of the Ring of Fire, the Mid-Atlantic Ridge, the East African Rift, the Himalaya and other regions, details for every boundary with a link to its cross-section in the Plate Tectonics Explorer, a challenge mode and an FAQ. The boundaries are a simplified hand-drawn sketch (not a plate model) on Natural Earth coastlines, and the earthquakes and volcanoes are well-known examples, not a catalog.
+- [All earth science labs and simulations](https://earthsciencelab.org/tools/): All eight labs side by side, each with its classroom activity and standards.
 
 ## Classroom
 
-- [For teachers](https://earthsciencelab.org/teachers/): Activities, how to run them in 10–15 minutes, NGSS connections (MS-ESS3-2, MS-ESS2-1, MS-ESS2-2, MS-ESS2-3, MS-ESS2-4, HS-ESS2-1, HS-ESS2-5, 5-ESS2-2), Chromebook and privacy notes.
+- [For teachers](https://earthsciencelab.org/teachers/): Activities, how to run them in 10–15 minutes, NGSS connections (MS-ESS3-2, MS-ESS2-1, MS-ESS2-2, MS-ESS2-3, MS-ESS2-4, MS-ESS1-4, HS-ESS1-6, HS-ESS2-1, HS-ESS2-5, 5-ESS2-2), Chromebook and privacy notes.
 - [Earthquake Epicenter Activity](https://earthsciencelab.org/tools/earthquake-epicenter/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: read three seismograms, find each S–P lag and locate the epicenter.
 - [Plate Boundaries Activity](https://earthsciencelab.org/tools/plate-tectonics/activity/): Printable one-page plate tectonics worksheet for grades 6–10, about 15 minutes: compare six plate boundaries by landforms, earthquake depths and volcanoes.
 - [Reading a Contour Map Activity](https://earthsciencelab.org/tools/contour-map/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: contour interval, elevations, slope, the V-rule and a cross-section.
 - [Erosion and Deposition Activity](https://earthsciencelab.org/tools/river-erosion/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: compare stream table setups and read the Hjulström diagram.
 - [Water Cycle Journey Activity](https://earthsciencelab.org/tools/water-cycle/activity/): Printable one-page student worksheet for grades 5–8, about 15 minutes: follow a droplet, name each process and compare residence times.
 - [Rock Cycle Journey Activity](https://earthsciencelab.org/tools/rock-cycle/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: follow one rock through the rock cycle and name the energy behind each change.
+- [Relative and Radiometric Dating Activity](https://earthsciencelab.org/tools/rock-layers/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: fill in a half-life table, put two rock cross-sections in order and bracket a layer's age with two dated ash beds.
+- [Plate Boundaries Map Activity](https://earthsciencelab.org/tools/plate-map/activity/): Printable one-page student worksheet for grades 6–10, about 15 minutes: compare five plate boundaries by type, plates, largest earthquake and volcanoes, and explain where volcanoes are missing.
 
 ## About
 
@@ -33,4 +37,4 @@ There are six labs, listed below. In the first, the Earthquake Epicenter Finder 
 ## Optional
 
 - [Interactive Periodic Table](https://interactiveperiodictable.net/): The flagship app from the same makers.
-- [Physics Lab](https://thephysicslab.org/), [Biology Lab](https://thebiologylab.org/), [Astronomy Lab](https://theastronomylab.com/), [Geometry Lab](https://geometrylab.net/), [KidsCode](https://kidscode.dev/): Sister learning apps.
+- [Physics Lab](https://thephysicslab.org/), [Biology Lab](https://thebiologylab.org/), [Astronomy Lab](https://theastronomylab.com/), [Geometry Lab](https://geometrylab.net/), [KidsCode](https://kidscode.dev/), [Cell by Cell](https://cellbycell.app/): Sister learning apps.

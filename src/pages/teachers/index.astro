@@ -5,6 +5,7 @@ import ClassroomShare from '../../components/ClassroomShare.astro';
 import { activities, standards } from '../../lib/activities.mjs';
 import { site } from '../../lib/site.mjs';
 import { anyAds } from '../../lib/ads.mjs';
+import { LabCount } from '../../lib/labs.mjs';
 
 const toolUrl = (act: { tool: string }) => new URL(`/tools/${act.tool}/`, Astro.site).href;
 const tracking = site.analyticsId
@@ -46,6 +47,16 @@ const lessonNotes: Record<string, { hook: string; debrief: string; tip: string }
     debrief: 'Which steps needed energy from the sun, and which needed Earth’s internal heat? Where did your rock take a shortcut?',
     tip: 'Fill in the first row of the worksheet together, and show students that a dashed option explains why it can’t happen yet.',
   },
+  'rock-layers': {
+    hook: '“The walls of the Grand Canyon are a stack of rock layers more than a kilometer high. How can we tell which layer is oldest, and how many years old it is?”',
+    debrief: 'Which rule told you the dike was younger than the fault? Why did we date the ash beds and not the shale between them?',
+    tip: 'Do cross-section 1 together on the board. The worksheet uses whole half-lives, so students can halve 100% in their heads; the log formula is for older students.',
+  },
+  'plate-map': {
+    hook: '“If you put a dot on a world map for every big earthquake and every volcano, would the dots be spread evenly? Where would you expect them?”',
+    debrief: 'Which boundaries had earthquakes but no volcanoes, and what is different about how the plates move there? Why is Hawaii the odd one out?',
+    tip: 'Ask for predictions first, then switch on the earthquake and volcano layers on the board. On phones, have students zoom to a region before tapping the dots.',
+  },
 };
 
 const standardCodes = [...new Set(activities.flatMap(act => act.standards))];
@@ -57,11 +68,11 @@ const faq: [string, string][] = [
   ['Do students need accounts or logins?', 'No. Students open a link and start. Nothing is saved to an account, and worksheets are completed on paper or in your own Classroom assignment.'],
   ['Does it work on Chromebooks and tablets?', 'Yes. The labs run in any modern browser, including Chrome on school Chromebooks and Safari on iPads, with nothing to install. JavaScript must be enabled. Every control works with a keyboard and on a touch screen.'],
   ['Will my students see ads?', adsLine],
-  ['Which standards do the activities support?', 'The Epicenter Finder connects to NGSS MS-ESS3-2, the Plate Tectonics Explorer to MS-ESS2-3 and HS-ESS2-1, the River Erosion Sandbox to MS-ESS2-2 and HS-ESS2-5, the Water Cycle Explorer to MS-ESS2-4 and 5-ESS2-2, and the Rock Cycle Builder to MS-ESS2-1. The Contour Map Playground teaches the map-reading skills used in MS-ESS2-2 investigations. Each activity is a supplement to your curriculum, not a full unit.'],
+  ['Which standards do the activities support?', 'The Epicenter Finder connects to NGSS MS-ESS3-2, the Plate Tectonics Explorer to MS-ESS2-3 and HS-ESS2-1, the Plate Boundaries Map to MS-ESS2-3 and MS-ESS3-2, the River Erosion Sandbox to MS-ESS2-2 and HS-ESS2-5, the Water Cycle Explorer to MS-ESS2-4 and 5-ESS2-2, the Rock Cycle Builder to MS-ESS2-1, and the Rock Layers Lab to MS-ESS1-4 and HS-ESS1-6. The Contour Map Playground teaches the map-reading skills used in MS-ESS2-2 investigations. Each activity is a supplement to your curriculum, not a full unit.'],
   ['Can the whole class open the same setup?', 'Yes. Set a lab up the way you want and press Copy share link: everyone who opens that link sees the same settings. In the Epicenter Finder’s Challenge mode everyone gets the same three quakes, so scores can be compared fairly.'],
 ];
 ---
-<Layout title="Earth Science Lab for Teachers: Free Activities & Answer Keys" description="Six free earth science virtual labs with printable worksheets and answer keys: earthquakes, plates, contour maps, rivers, water and rock cycles. No logins." section="For teachers" ads={false} crumbs={[['For teachers']]}>
+<Layout title="Earth Science Lab for Teachers: Free Activities & Answer Keys" description={`${LabCount} free earth science labs with printable worksheets and answer keys: earthquakes, plates, maps, rivers, rock layers, water and rock cycles. No logins.`} section="For teachers" ads={false} crumbs={[['For teachers']]}>
   <div class="wrap">
     <div class="page-intro">
       <span class="eyebrow">For teachers</span>

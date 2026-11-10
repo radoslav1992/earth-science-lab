@@ -32,7 +32,22 @@ The sixth lab is the **Rock Cycle Builder** (`/tools/rock-cycle/`): students mel
 metamorphose and uplift material through 21 real rocks, with only geologically sound changes allowed and the depth,
 temperature, time and energy source shown for each step.
 
+The seventh lab is the **Rock Layers Lab** (`/tools/rock-layers/`), in two linked parts. In part 1 students put the
+layers, faults, intrusions, tilting and erosion surfaces of five cross-sections in order (relative dating), and the
+lab answers a wrong order with the evidence to look at and the rule behind it. Part 2 is a radioactive decay model
+for five parent → daughter pairs. Each cross-section has dated igneous rocks, which students use to bracket the age
+of a layer, a fault or an erosion surface.
+
+The eighth lab is the **Plate Boundaries Map** (`/tools/plate-map/`): a world map of 15 plates and the boundaries
+between them, colored by type, with layers for example earthquakes and volcanoes, close-ups of ten regions (the
+Ring of Fire view crosses the 180° line), details for every line and marker, links to the matching cross-section
+in the Plate Tectonics Explorer, and a challenge mode. Its boundaries are a simplified hand-drawn sketch; see
+[Map data, sources and licenses](#map-data-sources-and-licenses).
+
 `/tools/` lists every lab (from `src/lib/labs.mjs`), and lab pages sit under **Labs** in the menu and breadcrumbs.
+Pages that say how many labs there are (the home page, the Labs hub and its title, About, For teachers) take the
+word from `labCount` in `src/lib/labs.mjs`; `public/llms.txt` is hand-written, and `tests/config.test.mjs` fails if
+its count or its list of labs and activities falls behind.
 
 Static site: Astro 5, `@astrojs/sitemap`, vanilla TypeScript islands, no framework runtime.
 
@@ -48,6 +63,7 @@ npm run build      # writes dist/
 npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys noindex and out of the sitemap
 npm run preview    # serves dist/
 npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
+npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atlas package (only after changing the script)
 ```
 
 `npm run og-image` uses an installed Playwright and Chromium (`npx playwright install chromium`); point
@@ -85,7 +101,18 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 | `src/lib/rock-share.mjs` | Rock cycle share links (`?start=granite&steps=up.we.dm.cc.h1`, `?mode=challenge`) with friendly fallback notes |
 | `src/lib/activities/rock-cycle.mjs` | The rock cycle journey worksheet and answer key (imported by `activities.mjs`) |
 | `src/components/rock/` | The builder's markup (`RockBuilder.astro`), interactive code (`builder.ts`) and styles (`rock.css`) |
-| `src/lib/labs.mjs` | Every lab in menu order: name, menu section, topic and blurb for the Labs hub and the home page |
+| `src/lib/rock-layers.mjs` | Rock layers model: half-life maths both ways for five isotope pairs and which ages each method suits; the five cross-sections written as their own histories, the evidence worked out from each history, the order check, dated rocks and the bracketing questions |
+| `src/lib/rock-layers-view.mjs` | Cross-section geometry (lay down, tilt, erode, fault and intrude polygons, then place the labels), the decay curve, the box of atoms and the lab's shared markup, used by the server and the browser |
+| `src/lib/rock-layers-share.mjs` | Rock layers share links (`?part=layers&section=tilted`, `?part=decay&iso=k40&left=25`) with friendly fallback notes |
+| `src/lib/activities/rock-layers.mjs` | The relative and radiometric dating worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/layers/` | The lab's markup (`LayersLab.astro`), interactive code (`lab.ts`) and styles (`layers.css`) |
+| `src/lib/plate-map.mjs` | Plate map model: the 15 plates, the hand-built boundary lines with their kind and type, the earthquake and volcano examples, great-circle distances and the nearest boundary to each example, regions, share links and the challenge questions |
+| `src/lib/plate-map-land.mjs` | Generated land outlines (Natural Earth 1:50m, simplified). Do not edit; run `npm run map-land` |
+| `scripts/plate-map-land.mjs` | Builds the land outlines from `world-atlas` (a development dependency): decodes the TopoJSON, simplifies each outline and drops small islands |
+| `src/lib/plate-map-view.mjs` | The map SVG (a plain latitude–longitude grid, with the land drawn three times so that close-ups can cross the 180° line), view boxes for regions and the lab's shared markup |
+| `src/lib/activities/plate-map.mjs` | The plate boundaries map worksheet and answer key (imported by `activities.mjs`) |
+| `src/components/platemap/` | The map's markup (`PlateMapLab.astro`), interactive code (`map.ts`) and styles (`platemap.css`) |
+| `src/lib/labs.mjs` | Every lab in menu order: name, menu section, topic and blurb for the Labs hub and the home page, plus `labCount`, the number of labs as a word |
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
@@ -141,6 +168,12 @@ Events sent with `track()` (`src/lib/analytics.ts`, a no-op without a Google tag
 | `water_challenge_complete` | Last water cycle challenge answered | `score`, `total` |
 | `rock_explore` | Take a step or change the start (debounced) | `process`, `rock`, `steps` |
 | `rock_challenge_complete` | Last rock cycle challenge answered | `score`, `total` |
+| `layers_order_solved` | A cross-section's events are put in the right order | `section`, `tries` |
+| `layers_all_solved` | All five cross-sections solved | `first_try` |
+| `layers_bracket` | A bracketing question is answered | `section`, `right` |
+| `layers_decay` | Change the decay model's isotope, time or percentage (debounced) | `isotope`, `half_lives` |
+| `platemap_explore` | Change the map's region or layers (debounced) | `region`, `layers` |
+| `platemap_challenge_complete` | Last plate map challenge answered | `score`, `total` |
 | `worksheet_print` | Print button on a worksheet or answer key | `page` |
 | `share_classroom` | A Share to Google Classroom link is clicked | `page` |
 
@@ -174,3 +207,31 @@ surface. That gives S–P lag = d × (1/3.5 − 1/6.0), exactly 1 s per 8.4 km. 
 travel-time tables, many stations, and solve for depth and origin time too. The optional magnitude,
 ML = log10(A) + 3·log10(8·Δt) − 2.92 (a fit to the Richter nomogram, after Lillie), is labeled as a classroom
 approximation. The map, towns and seismograms are fictional and generated by the model.
+
+The Rock Layers Lab's cross-sections are drawings, not real places. Each is written as a history (the events in the
+order they happened) and drawn by replaying that history, so the picture, the evidence and the answer cannot disagree;
+a history in which two events that follow each other leave no visible evidence is rejected when the module loads. The
+decay model uses the standard rounded half-lives (carbon-14 5,730 years, potassium-40 1.25 billion, uranium-238
+4.47 billion, uranium-235 704 million, rubidium-87 48.8 billion; USGS “Geologic Time”) and treats every decay as
+parent → daughter in one step with no daughter at the start, which the page says. The useful ranges of each method
+are rough textbook values, labeled “roughly”, and the lab measurements printed under the cross-sections are made up
+to give round answers.
+
+## Map data, sources and licenses
+
+The Plate Boundaries Map uses three kinds of data. Only the first comes from a package.
+
+| Data | Source | License | How it is used |
+| --- | --- | --- | --- |
+| Land outlines | [Natural Earth](https://www.naturalearthdata.com/) 1:50m land polygons, redistributed as TopoJSON by the [`world-atlas`](https://github.com/topojson/world-atlas) npm package (version 2.0.2) | Natural Earth data is in the public domain; the `world-atlas` package is ISC-licensed (Copyright 2013–2019 Michael Bostock) | `scripts/plate-map-land.mjs` simplifies it to about 5,200 points (0.22° tolerance, islands under 0.35 square degrees dropped) and writes `src/lib/plate-map-land.mjs`, which is committed. `world-atlas` is a development dependency only: the site builds and runs without it, and nothing from it is shipped except the simplified outlines inside the map's SVG (about 55 KB of HTML before compression) |
+| Plate boundaries | Drawn by hand for this lab, in `src/lib/plate-map.mjs` | Original to this project | A simplified schematic of about 60 lines between 15 plates. **It is not a plate model and contains no data from one.** No plate-boundary dataset (such as Peter Bird's PB2002 model or Hugo Ahlenius's GeoJSON conversion of it) is available as an npm package, so the lines were placed from well-known geography and may be 100–200 km from the true position. The page and the map's caption say so |
+| Earthquakes and volcanoes | Curated examples, in `src/lib/plate-map.mjs` | Facts; rounded values as listed by the USGS earthquake catalog and the Smithsonian Global Volcanism Program | About 60 large or well-known earthquakes (name, year, magnitude, epicenter to about 0.1°) and about 60 well-known volcanoes. They are labeled as examples, not a catalog |
+
+What keeps the hand-drawn map honest (`tests/plate-map.test.mjs`):
+
+- every boundary's type, and which plate sinks at each subduction zone, is listed in the test and compared with the data, so no line is typed without being checked;
+- the lines are tested against the Natural Earth land: trenches must lie in water within reach of their coast, mid-ocean ridges at sea (the Mid-Atlantic Ridge on land only in Iceland), collision zones, rifts and continental faults on land, and the lines must pass close to fixed points such as San Francisco, Þingvellir, the Dead Sea and the Challenger Deep;
+- every line must end at another line unless it is one of five listed open ends, and each plate's name must sit nearest to one of that plate's own boundaries;
+- each earthquake and volcano is assigned to its nearest boundary line by great-circle distance (four are assigned by hand, listed in the code, where a nearer line would be the wrong one), and must lie within 300 km (earthquakes) or 450 km (volcanoes) of it; the five hotspot volcanoes are marked as such.
+
+Known simplifications, also stated on the page: one Indo-Australian Plate; Japan and far eastern Siberia on the North American Plate (no Okhotsk Plate); no Anatolian, Sunda, Caroline, Rivera or other small plates; one line each through the Mediterranean, around Fiji and along northern New Guinea; mid-ocean ridges drawn without their transform offsets; one type per line. The map is an equirectangular (latitude–longitude) grid.

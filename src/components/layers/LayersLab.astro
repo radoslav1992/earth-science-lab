@@ -1,0 +1,121 @@
+---
+// The interactive Rock Layers Lab. The server draws both parts in their default state (the first
+// cross-section and uranium-235 after one half-life) with the controls disabled; ./lab.ts switches them on.
+import './layers.css';
+import { SECTIONS, DEFAULT_SECTION, ISOTOPES, DEFAULT_ISOTOPE, MAX_HALF_LIVES, RULES, RULE_IDS, sectionById, isotope, bracketQuestion, fmtYears, atomsLeft } from '../../lib/rock-layers.mjs';
+import {
+  CURVE, ATOMS, sectionSize, sectionSvg, describeSection, poolHtml, orderHtml, samplesHtml, bracketHtml, decaySvg, describeDecay, atomsSvg, resultsHtml, methodHtml,
+} from '../../lib/rock-layers-view.mjs';
+
+const section = sectionById(DEFAULT_SECTION);
+const size = sectionSize(section);
+const iso = isotope(DEFAULT_ISOTOPE);
+const halfLives = 1;
+const left = 50;
+---
+<section class="rl" id="lab" data-layers data-part="layers" aria-label="Rock Layers Lab">
+  <div class="rl-bar">
+    <div class="mode-switch" role="group" aria-label="Part of the lab">
+      <button type="button" data-part-btn="layers" aria-pressed="true" disabled>1. Rock layers</button>
+      <button type="button" data-part-btn="decay" aria-pressed="false" disabled>2. Radiometric dating</button>
+    </div>
+    <div class="rl-tools">
+      <span class="rl-progress" data-progress>Solved 0 of {SECTIONS.length}</span>
+      <button type="button" class="btn small" data-copy-link disabled>Copy share link</button>
+    </div>
+  </div>
+  <p class="rl-hint" data-hint><strong>New here?</strong> Look at the picture and decide what happened first. Tap the events from oldest to youngest, then press <em>Check my order</em>. The letters are only labels: they are not in age order.</p>
+  <div class="note rl-note" data-note hidden></div>
+  <noscript><p class="note rl-noscript">The lab needs JavaScript to check your order and run the decay model. Below it, the page explains the five rules, the half-life formula and each dating method.</p></noscript>
+
+  <div class="rl-part" data-part-panel="layers">
+    <div class="rl-picker" role="group" aria-label="Choose a cross-section">
+      {SECTIONS.map(s => (
+        <button type="button" class="rl-pick" data-section-btn={s.id} aria-pressed={String(s.id === section.id)} disabled>
+          <span class="rl-pick-level">Level {s.level}</span>
+          <span class="rl-pick-name">{s.name}</span>
+          <span class="rl-pick-done" data-solved-mark hidden>✓ solved</span>
+        </button>
+      ))}
+    </div>
+    <div class="rl-grid">
+      <figure class="rl-panel rl-figure">
+        <figcaption class="rl-panel-head"><h3 data-section-title>Cross-section {section.level}: {section.name}</h3></figcaption>
+        <svg class="rl-svg" viewBox={`0 0 ${size.width} ${size.height}`} role="img" aria-label={describeSection(section)} data-section-svg set:html={sectionSvg(section, { prefix: 'rl-lab' })} />
+        <p class="rl-fig-note">A slice down through the ground, not to scale. <span class="rl-key rl-key-erosion">Wavy line</span>: a buried erosion surface. <span class="rl-key rl-key-fault">Red line</span>: a fault.</p>
+      </figure>
+      <div class="rl-panel rl-order">
+        <h3>Put the events in order</h3>
+        <p class="rl-help">Tap each event, starting with the oldest. Number 1 is the first thing that happened.</p>
+        <div class="rl-pool" role="group" aria-label="Events to place" data-pool set:html={poolHtml(section, [], { disabled: true })} />
+        <ol class="rl-list" aria-label="Your order, oldest first" data-order set:html={orderHtml(section, [])} />
+        <p class="rl-empty" data-order-empty>Your order will build up here, oldest first.</p>
+        <div class="rl-actions">
+          <button type="button" class="btn primary" data-check disabled>Check my order</button>
+          <button type="button" class="btn small" data-clear disabled>Start again</button>
+          <button type="button" class="btn small" data-reveal hidden>Show the order</button>
+        </div>
+        <div class="rl-feedback" data-feedback hidden tabindex="-1"></div>
+      </div>
+    </div>
+    <details class="rl-panel rl-rules">
+      <summary>The five rules for reading rock layers</summary>
+      <dl>{RULE_IDS.map(id => <div><dt>{RULES[id].name}</dt><dd>{RULES[id].text}</dd></div>)}</dl>
+    </details>
+    <div class="rl-panel rl-dates">
+      <h3>Put numbers on it</h3>
+      <p class="rl-help">Relative dating gives the order, not the ages. Sedimentary layers are made of grains from older rocks, so they can’t be dated directly. Igneous rocks can: a lab measured how much of a radioactive parent isotope is left in each one below. Work out each age, then use the dated rocks to bracket something that can’t be dated.</p>
+      <div class="rl-samples" data-samples set:html={samplesHtml(section, { disabled: true })} />
+      <div class="rl-bracket" data-bracket hidden>
+        <p class="rl-q-prompt" data-bracket-prompt tabindex="-1">{bracketQuestion(section).prompt}</p>
+        <div class="rl-choices" role="group" aria-label="Answer choices" data-bracket-choices set:html={bracketHtml(section, { disabled: true })} />
+        <div class="rl-feedback" data-bracket-feedback hidden tabindex="-1"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rl-part" data-part-panel="decay">
+    <div class="note rl-banner" data-banner hidden>
+      <p data-banner-text></p>
+      <button type="button" class="btn small" data-banner-back>Back to the cross-section</button>
+    </div>
+    <div class="rl-decay">
+      <div class="rl-panel rl-controls">
+        <h3>Radioactive decay model</h3>
+        <label class="rl-field" for="rl-iso"><span class="rl-group-label">Isotope pair (parent → daughter)</span>
+          <select id="rl-iso" data-iso disabled>
+            {ISOTOPES.map(i => <option value={i.id} selected={i.id === iso.id}>{i.parent} → {i.daughter}</option>)}
+          </select>
+        </label>
+        <label class="rl-field" for="rl-time"><span class="rl-group-label">Time passed: <output data-time-out>{fmtYears(halfLives * iso.halfLife)}</output></span>
+          <input id="rl-time" type="range" min="0" max={MAX_HALF_LIVES} step="0.005" value={halfLives} data-time disabled />
+        </label>
+        <div class="rl-jumps" role="group" aria-label="Jump to a number of half-lives">
+          <span class="rl-group-label">Half-lives</span>
+          {[0, 1, 2, 3, 4, 5].map(n => <button type="button" class="rl-jump" data-jump={n} aria-label={`${n} half-lives`} disabled>{n}</button>)}
+        </div>
+        <label class="rl-field" for="rl-left"><span class="rl-group-label">Parent isotope left (%)</span>
+          <input id="rl-left" type="number" inputmode="decimal" min="0.1" max="100" step="any" value={left} data-left disabled />
+        </label>
+        <div class="rl-method-box" data-method set:html={methodHtml(iso)} />
+      </div>
+      <div class="rl-decay-main">
+        <figure class="rl-panel rl-curve">
+          <svg class="dc" viewBox={`0 0 ${CURVE.width} ${CURVE.height}`} role="img" aria-label={describeDecay(iso, halfLives)} data-curve set:html={decaySvg(iso, halfLives)} />
+        </figure>
+        <figure class="rl-panel rl-atoms">
+          <figcaption class="rl-panel-head"><h3>A box of {ATOMS.total} atoms</h3><span class="rl-legend"><span class="rl-dot rl-dot-parent"></span><span data-legend-parent>{iso.parent}</span> <span class="rl-dot rl-dot-daughter"></span><span data-legend-daughter>{iso.daughter}</span></span></figcaption>
+          <svg class="at" viewBox={`0 0 ${ATOMS.width} ${ATOMS.height}`} role="img" aria-label={`${atomsLeft(left / 100, ATOMS.total)} of ${ATOMS.total} atoms are still the parent isotope.`} data-atoms set:html={atomsSvg(atomsLeft(left / 100, ATOMS.total))} />
+        </figure>
+        <div class="rl-panel rl-results" data-results set:html={resultsHtml(iso, halfLives)} />
+      </div>
+    </div>
+  </div>
+  <p class="visually-hidden" aria-live="polite" data-live></p>
+</section>
+
+<script>
+  import { initLayers } from './lab';
+  const root = document.querySelector<HTMLElement>('[data-layers]');
+  if (root) initLayers(root);
+</script>
