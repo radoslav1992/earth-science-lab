@@ -102,7 +102,11 @@ npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 5. After launch, add the site to Google Search Console and Bing Webmaster Tools and submit
    `https://earthsciencelab.org/sitemap-index.xml`.
 
-`public/_headers` sets security headers and long caching for `/_astro/*`.
+`public/_headers` sets security headers and long caching for `/_astro/*`. It sends
+`Strict-Transport-Security: max-age=31536000; includeSubDomains` on every response, so browsers that have visited
+once always use HTTPS. A static site cannot redirect by scheme itself: the `http://` URLs that showed up in Search
+Console go away only while **Always Use HTTPS** (step 4) is on in the Cloudflare dashboard, so check that it is.
+Do not add host- or scheme-based rules to a `_redirects` file; Workers static assets rejects them.
 
 ## Google Analytics 4
 
