@@ -1,11 +1,13 @@
 // Every lab on the site, in menu order. `section` is the Layout section its pages pass, which puts them under
-// Labs in the menu and in the breadcrumb trail. Used by the Labs hub, the home page and the footer.
+// Labs in the menu and in the breadcrumb trail. `kind` says what sort of tool it is, in the words people search
+// with; the Labs hub shows it above each name. Used by the Labs hub, the home page and the footer.
 export const labs = [
   {
     slug: 'earthquake-epicenter',
     name: 'Earthquake Epicenter Finder',
     section: 'Epicenter Finder',
     topic: 'Earthquakes',
+    kind: 'Virtual earthquake lab',
     blurb: 'Read three seismograms, turn each S–P lag into a distance and triangulate where an earthquake began.',
   },
   {
@@ -13,6 +15,7 @@ export const labs = [
     name: 'Plate Tectonics Explorer',
     section: 'Plate Tectonics',
     topic: 'Plate tectonics',
+    kind: 'Plate tectonics simulation',
     blurb: 'Pull plates apart, push them together or slide them past each other, and see which landforms, volcanoes and earthquakes form.',
   },
   {
@@ -20,6 +23,7 @@ export const labs = [
     name: 'Contour Map Playground',
     section: 'Contour Maps',
     topic: 'Maps and landforms',
+    kind: 'Contour map practice',
     blurb: 'Sculpt hills, valleys and volcanoes and watch the topographic map redraw, then read slopes, rivers and cross-sections.',
   },
   {
@@ -27,6 +31,7 @@ export const labs = [
     name: 'River Erosion Sandbox',
     section: 'River Erosion',
     topic: 'Rivers and erosion',
+    kind: 'Virtual stream table',
     blurb: 'Tilt a stream table, choose the sediment and turn up the water, then watch a river cut its channel, build point bars and a delta, and read why on the Hjulström diagram.',
   },
   {
@@ -34,6 +39,7 @@ export const labs = [
     name: 'Water Cycle Explorer',
     section: 'Water Cycle',
     topic: 'Water cycle',
+    kind: 'Water cycle simulation',
     blurb: 'Follow a water droplet through oceans, clouds, ice, soil and groundwater, see where Earth’s water is stored, and switch off the sun or gravity to see what drives the cycle.',
   },
   {
@@ -41,6 +47,7 @@ export const labs = [
     name: 'Rock Cycle Builder',
     section: 'Rock Cycle',
     topic: 'Rocks and minerals',
+    kind: 'Rock cycle simulation',
     blurb: 'Melt, cool, weather, bury and squeeze rocks to see how granite becomes slate or magma becomes marble, and where inside Earth each change happens.',
   },
 ];

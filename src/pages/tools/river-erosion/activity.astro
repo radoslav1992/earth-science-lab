@@ -23,7 +23,7 @@ const resource = {
   educationalAlignment: act.standards.map(code => ({ '@type': 'AlignmentObject', alignmentType: 'educationalSubject', educationalFramework: 'Next Generation Science Standards', targetName: code })),
 };
 ---
-<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="River Erosion" crumbs={[['River Erosion Sandbox', '/tools/river-erosion/'], ['Classroom activity']]}>
+<Layout title={`${act.title}: Free Worksheet for Students`} description={description} section="River Erosion" crumbs={[['River Erosion Sandbox', '/tools/river-erosion/'], ['Classroom activity']]}>
   <article class="worksheet">
     <div class="breadcrumb no-print"><a href="/tools/river-erosion/">{act.toolName}</a> / Classroom activity</div>
     <header class="worksheet-head">
@@ -37,7 +37,7 @@ const resource = {
     <p class="worksheet-meta">Open the sandbox at <strong>earthsciencelab.org/tools/river-erosion/</strong> · Connects to NGSS {act.standards.join(', ')}</p>
     <div class="page-actions no-print">
       <button class="btn primary" type="button" data-print>Print worksheet</button>
-      <a class="btn" href="/tools/river-erosion/">Open the sandbox</a>
+      <a class="btn" href="/tools/river-erosion/">Open the {act.toolName}</a>
       <ClassroomShare url={url} />
     </div>
     <div class="rv-worksheet-top">

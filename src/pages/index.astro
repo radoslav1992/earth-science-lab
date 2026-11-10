@@ -16,10 +16,11 @@ const cdr = readings(GUIDED)[cdrIndex];
 const cdrRead = picked(cdr);
 
 const faq: [string, string][] = [
-  ['What is Earth Science Lab?', 'A growing set of free, interactive earth science simulations for students aged about 10 to 16. Each lab is a working model: change the conditions and see how Earth responds, then check your thinking against the numbers.'],
+  ['What is Earth Science Lab?', 'A set of free earth science virtual labs: interactive simulations for students aged about 10 to 16. Each lab is a working model: change the conditions and see how Earth responds, then check your thinking against the numbers.'],
   ['Is it free? Do students need to sign up?', 'Everything is free, with no accounts, logins or downloads. Labs run in the browser on Chromebooks, tablets, laptops and phones.'],
   ['What can I do here today?', 'Six labs are live. Find an earthquake’s epicenter from seismograms, compare plate boundaries, sculpt a landscape beside its contour map, erode a river in a stream table, follow a water droplet through the water cycle, and turn one rock into another in the rock cycle. Each has a printable classroom activity and an answer key.'],
   ['How accurate are the simulations?', 'They use the same methods scientists use, with simplified models that are honest about what they leave out. Each lab explains its simplifications, and every number on the worksheets and answer keys comes from the same model the lab runs.'],
+  ['Do the labs fit an Earth and space science course?', 'Yes, for the Earth half. The six labs cover earthquakes, plate tectonics, maps and landforms, erosion, the water cycle and the rock cycle. In the NGSS Earth and space science standards these belong to Earth’s Systems (ESS2) and Earth and Human Activity (ESS3). For space topics such as orbits and Moon phases, see our sister site, Astronomy Lab.'],
   ['Which lab should I start with?', 'Any lab works on its own. The Water Cycle Explorer is pitched at grades 5–8 and the others at grades 6–10. The Epicenter Finder, the Contour Map Playground and the River Erosion Sandbox ask students to measure and do simple math, and the Plate Tectonics Explorer ties earthquakes, volcanoes and mountains together.'],
 ];
 ---
@@ -27,9 +28,9 @@ const faq: [string, string][] = [
   <div class="wrap">
     <section class="hero">
       <div>
-        <span class="eyebrow">{site.name} · free interactive labs</span>
-        <h1>{site.tagline}</h1>
-        <p class="lede">Hands-on earth science simulations for students aged 10–16 and the teachers who teach them. Read seismograms, test ideas and learn how scientists work out what the planet is doing, all in the browser.</p>
+        <span class="eyebrow">{site.name} · six interactive labs</span>
+        <h1>Free earth science virtual labs and simulations</h1>
+        <p class="lede">{site.tagline} Hands-on earth science labs for students aged 10–16 and the teachers who teach them. Read seismograms, move tectonic plates, erode a river and learn how scientists work out what the planet is doing, all in the browser.</p>
         <div class="page-actions">
           <a class="btn primary" href="/tools/earthquake-epicenter/">Find an earthquake’s epicenter</a>
           <a class="btn" href="/teachers/">For teachers</a>
@@ -60,7 +61,7 @@ const faq: [string, string][] = [
           </ul>
           <div class="page-actions">
             <a class="btn primary" href="/tools/earthquake-epicenter/">Open the Epicenter Finder</a>
-            <a class="btn" href="/tools/earthquake-epicenter/activity/">Classroom activity</a>
+            <a class="btn" href="/tools/earthquake-epicenter/activity/">Classroom activity<span class="visually-hidden">: Earthquake Epicenter Finder</span></a>
           </div>
         </div>
         <figure style="margin:0">
@@ -83,7 +84,7 @@ const faq: [string, string][] = [
           </div>
         ))}
       </div>
-      <p style="margin-top:18px"><a href="/tools/">See all six labs side by side →</a></p>
+      <p style="margin-top:18px"><a href="/tools/">See all six earth science labs and simulations side by side →</a></p>
     </section>
 
     <section class="section" aria-labelledby="why">

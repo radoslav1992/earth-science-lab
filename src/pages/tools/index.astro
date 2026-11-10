@@ -16,8 +16,8 @@ import '../../components/water/water.css';
 import '../../components/river/river.css';
 import '../../components/rock/rock.css';
 
-const title = 'Free Earth Science Simulations and Virtual Labs';
-const description = 'All six Earth Science Lab simulations side by side, from earthquakes and moving plates to rivers, water and rocks, each with a printable worksheet and answer key.';
+const title = 'Earth Science Labs: Six Free Interactive Simulations';
+const description = 'Six free earth science labs and simulations side by side: earthquakes, plate tectonics, contour maps, river erosion, the water cycle and the rock cycle.';
 const url = new URL('/tools/', Astro.site).href;
 const volcano = mapSvg(createTerrain('volcano'), { interval: 20, overlays: ['index'], className: 'lab-thumb-map', label: 'Contour map of a volcano with a crater at its summit' });
 const river = planInner(simulate(RIVER_START), RIVER_START.t);
@@ -37,8 +37,8 @@ const itemList = {
   <div class="wrap">
     <div class="page-intro">
       <span class="eyebrow">All labs</span>
-      <h1>Earth science simulations</h1>
-      <p class="lede">Each lab is a small, working model of the Earth system. Change the conditions, see how Earth responds, and check your thinking against the numbers. Every lab comes with a one-page classroom activity and an answer key.</p>
+      <h1>Earth science labs and simulations</h1>
+      <p class="lede">Six free virtual labs for earth science classes. Each lab is a small, working model of the Earth system. Change the conditions, see how Earth responds, and check your thinking against the numbers. Every lab comes with a one-page classroom activity and an answer key.</p>
     </div>
 
     <section class="section lab-list" aria-label="Labs">
@@ -55,11 +55,11 @@ const itemList = {
               {lab.slug === 'water-cycle' && <svg class="wc-scene" viewBox={`0 0 ${WATER_VIEW.width} ${WATER_VIEW.height}`} role="img" aria-label="Water cycle diagram: ocean, atmosphere, glacier, ice sheet, soil, plants, river, lake and groundwater" set:html={sceneBaseSvg()} />}
             </a>
             <div class="lab-body">
-              <span class="eyebrow">{lab.topic}</span>
+              <span class="eyebrow">{lab.kind}</span>
               <h2><a href={`/tools/${lab.slug}/`}>{lab.name}</a></h2>
               <p>{lab.blurb}</p>
               {act && <p class="muted lab-meta">{act.grade} · {act.minutes}-minute classroom activity{act.standards.length ? ` · NGSS ${act.standards.join(', ')}` : ''}</p>}
-              <p class="page-actions"><a class="btn primary" href={`/tools/${lab.slug}/`}>Open the lab</a>{act && <a class="btn" href={`/tools/${lab.slug}/activity/`}>Classroom activity</a>}</p>
+              <p class="page-actions"><a class="btn primary" href={`/tools/${lab.slug}/`}>Open the lab<span class="visually-hidden">: {lab.name}</span></a>{act && <a class="btn" href={`/tools/${lab.slug}/activity/`}>Classroom activity<span class="visually-hidden">: {act.title}</span></a>}</p>
             </div>
           </article>
         );

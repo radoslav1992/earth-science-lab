@@ -5,6 +5,24 @@ import { activity as act, standards, ROWS } from '../src/lib/activities/plate-te
 
 const close = (a, b, tol = 1e-9) => assert.ok(Math.abs(a - b) <= tol, `${a} ≈ ${b}`);
 
+test('crust budget: created at divergent, destroyed at convergent, neither at transform boundaries', () => {
+  assert.deepEqual(p.CRUST_BUDGET.map(row => row.type), p.TYPES);
+  assert.deepEqual(Object.fromEntries(p.CRUST_BUDGET.map(row => [row.type, row.effect])), { divergent: 'created', convergent: 'destroyed', transform: 'neither' });
+  // Only a boundary where plates slide past each other leaves the crust as it is.
+  for (const row of p.CRUST_BUDGET) {
+    const motions = new Set(Object.values(p.CASES).filter(c => c.type === row.type).map(c => c.motion));
+    assert.deepEqual([...motions], [{ created: 'apart', destroyed: 'together', neither: 'past' }[row.effect]], row.type);
+    assert.ok(row.label.startsWith('Crust is ') && row.text.length > 40, row.type);
+  }
+  const text = Object.fromEntries(p.CRUST_BUDGET.map(row => [row.type, row.text]));
+  assert.match(text.divergent, /mid-ocean ridge/);
+  assert.match(text.convergent, /subduction zone/);
+  assert.match(text.convergent, /continents collide/);
+  assert.match(text.transform, /San Andreas/);
+  // No transform case has volcanoes: nothing rises or sinks there.
+  for (const c of Object.values(p.CASES)) if (c.type === 'transform') assert.equal(c.volcanoes, false);
+});
+
 test('facts table: one complete case per valid boundary and plate pair', () => {
   const valid = p.TYPES.flatMap(type => p.VALID[type].map(plates => p.caseKey(type, plates)));
   assert.deepEqual([...p.CASE_KEYS].sort(), [...valid].sort());

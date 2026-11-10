@@ -5,7 +5,7 @@ import ClassroomShare from '../../../components/ClassroomShare.astro';
 import { activity as act, standards } from '../../../lib/activities/plate-tectonics.mjs';
 
 const url = new URL('/tools/plate-tectonics/activity/', Astro.site).href;
-const description = `Free printable plate boundaries worksheet for ${act.grade.toLowerCase()}: compare divergent, convergent and transform boundaries by quakes and volcanoes. ${act.minutes} minutes.`;
+const description = `Free printable plate tectonics worksheet for ${act.grade.toLowerCase()}: students compare divergent, convergent and transform boundaries in a simulation. ${act.minutes} minutes.`;
 const resource = {
   '@context': 'https://schema.org',
   '@type': 'LearningResource',
@@ -20,7 +20,7 @@ const resource = {
   educationalAlignment: act.standards.map(code => ({ '@type': 'AlignmentObject', alignmentType: 'educationalSubject', educationalFramework: 'Next Generation Science Standards', targetName: code })),
 };
 ---
-<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Plate Tectonics" crumbs={[['Plate Tectonics Explorer', '/tools/plate-tectonics/'], ['Classroom activity']]}>
+<Layout title={`${act.title}: Plate Tectonics Student Worksheet`} description={description} section="Plate Tectonics" crumbs={[['Plate Tectonics Explorer', '/tools/plate-tectonics/'], ['Classroom activity']]}>
   <article class="worksheet">
     <div class="breadcrumb no-print"><a href="/tools/plate-tectonics/">{act.toolName}</a> / Classroom activity</div>
     <header class="worksheet-head">
@@ -34,7 +34,7 @@ const resource = {
     <p class="worksheet-meta">Open the explorer at <strong>earthsciencelab.org/tools/plate-tectonics/</strong> · Connects to NGSS {act.standards.join(', ')}</p>
     <div class="page-actions no-print">
       <button class="btn primary" type="button" data-print>Print worksheet</button>
-      <a class="btn" href="/tools/plate-tectonics/">Open the explorer</a>
+      <a class="btn" href="/tools/plate-tectonics/">Open the {act.toolName}</a>
       <ClassroomShare url={url} />
     </div>
     <h2>What to do</h2>

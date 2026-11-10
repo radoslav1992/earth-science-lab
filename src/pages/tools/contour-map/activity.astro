@@ -8,7 +8,7 @@ import { mapSvg, sketchSvg } from '../../../lib/contour-svg.mjs';
 import '../../../styles/contour.css';
 
 const url = new URL('/tools/contour-map/activity/', Astro.site).href;
-const description = `Free printable contour map worksheet for ${act.grade.toLowerCase()}: find the contour interval, read elevations, use the V-rule and sketch a cross-section. About ${act.minutes} minutes.`;
+const description = `Free printable contour map worksheet for ${act.grade.toLowerCase()}: find the contour interval, read elevations, use the V-rule and sketch a cross-section. ${act.minutes} minutes.`;
 const marks = Object.entries(WORKSHEET_POINTS).map(([label, p]) => ({ ...p, label }));
 const map = mapSvg(createTerrain(WORKSHEET_MAP.preset), {
   interval: WORKSHEET_MAP.interval, seaLevel: WORKSHEET_MAP.seaLevel, overlays: ['index'], marks, line: WORKSHEET_LINE,
@@ -30,7 +30,7 @@ const resource = {
   inLanguage: 'en',
 };
 ---
-<Layout title={`${act.title}: Free Printable Worksheet`} description={description} section="Contour Maps" crumbs={[['Contour Map Playground', '/tools/contour-map/'], ['Classroom activity']]}>
+<Layout title={`${act.title}: Free Worksheet for Students`} description={description} section="Contour Maps" crumbs={[['Contour Map Playground', '/tools/contour-map/'], ['Classroom activity']]}>
   <article class="worksheet">
     <div class="breadcrumb no-print"><a href="/tools/contour-map/">{act.toolName}</a> / Classroom activity</div>
     <header class="worksheet-head">
@@ -44,7 +44,7 @@ const resource = {
     <p class="worksheet-meta">Open the playground at <strong>earthsciencelab.org/tools/contour-map/</strong> and choose <strong>Ridge and valley</strong>.</p>
     <div class="page-actions no-print">
       <button class="btn primary" type="button" data-print>Print worksheet</button>
-      <a class="btn" href="/tools/contour-map/">Open the playground</a>
+      <a class="btn" href="/tools/contour-map/">Open the {act.toolName}</a>
       <ClassroomShare url={url} />
     </div>
     <div class="worksheet-map">
