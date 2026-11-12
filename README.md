@@ -116,6 +116,8 @@ npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atla
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
+| `src/components/NextLabs.astro` | "Keep going" links placed right after a lab, so a class that finishes one has an obvious next one (used on the Plate Tectonics Explorer) |
+| `src/components/LinkSnippet.astro` | Ready-made link code with a Copy button, for teachers to paste into a class website; it points at the page's canonical URL (used on the Plate Tectonics Explorer) |
 
 ## Deploy (Cloudflare Workers static assets)
 

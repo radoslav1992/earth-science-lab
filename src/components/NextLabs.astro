@@ -1,0 +1,16 @@
+---
+// "Keep going" links placed right after a lab, so a class that finishes one activity has an obvious next one.
+// items: [{ href, name, text }], where text says in a few words what the next lab adds.
+interface Item { href: string; name: string; text: string }
+interface Props { items: Item[]; heading?: string }
+const { items, heading = 'Keep going' } = Astro.props;
+const id = `next-${heading.toLowerCase().replace(/[^a-z]+/g, '-')}`;
+---
+<nav class="next-labs" aria-labelledby={id}>
+  <h2 id={id}>{heading}</h2>
+  <ul>
+    {items.map(item => (
+      <li><a href={item.href}><strong>{item.name} <span aria-hidden="true">→</span></strong><span>{item.text}</span></a></li>
+    ))}
+  </ul>
+</nav>

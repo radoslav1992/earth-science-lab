@@ -1,0 +1,34 @@
+---
+// A ready-made link a teacher can paste into a class website, blog or newsletter. It points at the page's
+// canonical URL (no ?classroom), so it is an ordinary public link to the lab.
+interface Props { url: string; name: string }
+const { url, name } = Astro.props;
+const html = `<a href="${url}">${name} – Earth Science Lab</a>`;
+const id = `link-snippet-${url.split('/').filter(Boolean).pop()}`;
+---
+<div class="link-snippet" data-link-snippet>
+  <label for={id}>Link to it from your class website</label>
+  <textarea id={id} readonly rows="2" spellcheck="false">{html}</textarea>
+  <div class="link-snippet-actions">
+    <button type="button" class="btn small" data-copy-snippet>Copy the link code</button>
+    <span class="muted" role="status" aria-live="polite" data-copy-status></span>
+  </div>
+</div>
+<script>
+  document.querySelectorAll<HTMLElement>('[data-link-snippet]').forEach(box => {
+    const field = box.querySelector('textarea')!;
+    const button = box.querySelector<HTMLButtonElement>('[data-copy-snippet]')!;
+    const status = box.querySelector<HTMLElement>('[data-copy-status]')!;
+    field.addEventListener('focus', () => field.select());
+    button.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(field.value);
+        status.textContent = 'Copied. Paste it into your page’s HTML.';
+      } catch {
+        field.focus();
+        field.select();
+        status.textContent = 'Press Ctrl+C (or ⌘C) to copy the selected code.';
+      }
+    });
+  });
+</script>
