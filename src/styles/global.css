@@ -378,3 +378,20 @@ details.graph-details summary { cursor: pointer; font-weight: 700; color: var(--
   .worksheet-foot { font-size: 7.5pt; margin-top: 4px; color: #333; }
   .key-answers li { break-inside: avoid; }
 }
+
+/* "Keep going" links after a lab (NextLabs.astro) */
+.next-labs { margin: 28px 0 8px; }
+.next-labs h2 { font-size: 1.25rem; margin: 0 0 12px; }
+.next-labs ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.next-labs a { display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--ink); text-decoration: none; }
+.next-labs a:hover { border-color: var(--ink); }
+.next-labs a:focus-visible { outline: 3px solid var(--ocean); outline-offset: 2px; }
+.next-labs strong { color: var(--lava); }
+.next-labs a span:not([aria-hidden]) { font-size: .92rem; color: var(--muted); }
+
+/* Link code for a class website (LinkSnippet.astro) */
+.link-snippet { margin-top: 18px; display: grid; gap: 8px; }
+.link-snippet label { font-weight: 700; }
+.link-snippet textarea { width: 100%; padding: 8px 10px; border: 1.5px solid var(--line); border-radius: 8px; background: #fff; color: var(--ink); font: .86rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; resize: none; }
+.link-snippet textarea:focus-visible { outline: 3px solid var(--ocean); outline-offset: 1px; }
+.link-snippet-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: .9rem; }

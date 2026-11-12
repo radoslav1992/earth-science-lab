@@ -3,6 +3,8 @@ import Layout from '../../../layouts/Layout.astro';
 import PlateExplorer from '../../../components/plates/PlateExplorer.astro';
 import CrossSection from '../../../components/plates/CrossSection.astro';
 import ClassroomShare from '../../../components/ClassroomShare.astro';
+import NextLabs from '../../../components/NextLabs.astro';
+import LinkSnippet from '../../../components/LinkSnippet.astro';
 import AdSlot from '../../../components/AdSlot.astro';
 import Faq from '../../../components/Faq.astro';
 import { site } from '../../../lib/site.mjs';
@@ -63,6 +65,12 @@ const app = {
     </div>
 
     <PlateExplorer />
+
+    <NextLabs items={[
+      { href: '/tools/plate-map/', name: 'Plate Boundaries Map', text: 'See where each kind of boundary is on Earth, with well-known earthquakes and volcanoes.' },
+      { href: '/tools/earthquake-epicenter/', name: 'Earthquake Epicenter Finder', text: 'Read three seismograms and find where an earthquake began.' },
+      { href: '/tools/rock-cycle/', name: 'Rock Cycle Builder', text: 'Melt, cool and squeeze rock to see how volcanoes and mountain ranges make new rock.' },
+    ]} />
 
     <section class="section prose" aria-labelledby="types">
       <h2 id="types">The three types of plate boundaries</h2>
@@ -171,6 +179,7 @@ const app = {
         <div>
           <p class="muted">Share the explorer with your class in one click. Students need no accounts or logins.</p>
           <ClassroomShare url={url} />
+          <LinkSnippet url={url} name="Plate Tectonics Explorer" />
         </div>
       </div>
     </section>
