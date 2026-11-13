@@ -99,5 +99,17 @@ export const learningApps = [
     "color": "#0f7a49",
     "tint": "#e4f3ea",
     "path": "M20 16h40v36H20z M20 28h40 M20 40h40 M34 16v36"
+  },
+  {
+    "id": "reading",
+    "name": "Fiction & Fact Library",
+    "subject": "Reading",
+    "url": "https://fictionandfactlibrary.com",
+    "description": "Build a plot diagram, sort facts from opinions, tag the parts of speech, and read fables aloud.",
+    "mark": "Aa",
+    "caption": "read it, check it, question it",
+    "color": "#2b3190",
+    "tint": "#e6e7f7",
+    "path": "M40 22c-6-5-14-6-24-5v30c10-1 18 0 24 5 6-5 14-6 24-5V17c-10-1-18 0-24 5z M40 22v30"
   }
 ];

@@ -37,4 +37,4 @@ There are eight labs, listed below. In the first, the Earthquake Epicenter Finde
 ## Optional
 
 - [Interactive Periodic Table](https://interactiveperiodictable.net/): The flagship app from the same makers.
-- [Physics Lab](https://thephysicslab.org/), [Biology Lab](https://thebiologylab.org/), [Astronomy Lab](https://theastronomylab.com/), [Geometry Lab](https://geometrylab.net/), [KidsCode](https://kidscode.dev/), [Cell by Cell](https://cellbycell.app/): Sister learning apps.
+- [Physics Lab](https://thephysicslab.org/), [Biology Lab](https://thebiologylab.org/), [Astronomy Lab](https://theastronomylab.com/), [Geometry Lab](https://geometrylab.net/), [KidsCode](https://kidscode.dev/), [Cell by Cell](https://cellbycell.app/), [Fiction & Fact Library](https://fictionandfactlibrary.com/): Sister learning apps.
