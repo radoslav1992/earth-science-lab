@@ -8,9 +8,13 @@
 //   wording shared with the other seven, and none repeats its lab page. That is the same kind of page as the Biology
 //   Lab's activities, so they follow the same rule: kept for teachers and linked from their lab, the Labs hub, the
 //   home page and the teacher hub, but out of the index, so the lab is the page that ranks.
+//   Exception: the earthquake-epicenter activity earns its own search clicks (10 in the 90 days to 14 Nov 2026,
+//   position 9.4, more than any other activity on the five lab sites), so it stays indexed.
 export const noindexPatterns = [/^\/404(\/|\.html)?$/, /^\/teachers\/answers\//, /\/activity\/$/];
+export const indexedActivities = ['/tools/earthquake-epicenter/activity/'];
 /** path: a site path such as "/tools/plate-map/" (or a full URL). */
 export const isIndexable = path => {
   const p = /^https?:/.test(path) ? new URL(path).pathname : path;
+  if (indexedActivities.includes(p)) return true;
   return !noindexPatterns.some(re => re.test(p));
 };

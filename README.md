@@ -60,7 +60,7 @@ npm ci
 npm run dev        # http://localhost:4321
 npm test           # model, share-link, worksheet and config tests (node --test)
 npm run build      # writes dist/
-npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys and activities noindex and out of the sitemap
+npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys and activities noindex and out of the sitemap (except the earthquake-epicenter activity, which earns its own clicks)
 npm run preview    # serves dist/
 npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atlas package (only after changing the script)

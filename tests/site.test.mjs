@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { isIndexable } from '../src/lib/indexing.mjs';
+import { isIndexable, indexedActivities } from '../src/lib/indexing.mjs';
 import { labs } from '../src/lib/labs.mjs';
 import { activities } from '../src/lib/activities.mjs';
 import { site } from '../src/lib/site.mjs';
@@ -67,7 +67,10 @@ test('robots tags follow src/lib/indexing.mjs; activities, answer keys and the 4
     assert.equal(noindex(page), !isIndexable(path), `${path}: ${page.robots}`);
     if (noindex(page)) assert.match(page.robots, /(^|,)\s*follow/, `${path} must stay follow`);
   }
-  for (const act of activities) assert.ok(noindex(data.pages[`/tools/${act.tool}/activity/`]), act.tool);
+  for (const act of activities) {
+    const p = `/tools/${act.tool}/activity/`;
+    assert.equal(noindex(data.pages[p]), !indexedActivities.includes(p), act.tool);
+  }
   assert.ok(noindex(data.pages['/404/']), '/404/');
 });
 

@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import assert from 'node:assert/strict';
 import { activities } from '../src/lib/activities.mjs';
+import { indexedActivities } from '../src/lib/indexing.mjs';
 import { site } from '../src/lib/site.mjs';
 
 const root = path.resolve('dist');
@@ -64,8 +65,15 @@ for (const page of ['/', '/tools/', '/tools/earthquake-epicenter/', '/tools/plat
 }
 // Printable activities are noindex and out of the sitemap (src/lib/indexing.mjs).
 for (const act of activities) {
-  assert.match(read(path.join('tools', act.tool, 'activity', 'index.html')), /<meta name="robots" content="noindex,follow"/, `${act.tool} activity: noindex`);
-  assert.ok(!sitemap.includes(`/tools/${act.tool}/activity/`), `${act.tool} activity must stay out of the sitemap`);
+  const kept = indexedActivities.includes(`/tools/${act.tool}/activity/`);
+  const html = read(path.join('tools', act.tool, 'activity', 'index.html'));
+  if (kept) {
+    assert.doesNotMatch(html, /<meta name="robots" content="noindex/, `${act.tool} activity: stays indexed`);
+    assert.ok(sitemap.includes(`/tools/${act.tool}/activity/`), `${act.tool} activity stays in the sitemap`);
+  } else {
+    assert.match(html, /<meta name="robots" content="noindex,follow"/, `${act.tool} activity: noindex`);
+    assert.ok(!sitemap.includes(`/tools/${act.tool}/activity/`), `${act.tool} activity must stay out of the sitemap`);
+  }
 }
 for (const file of ['robots.txt', 'llms.txt', 'favicon.svg', 'og-image.png', '_headers']) assert.ok(fs.existsSync(path.join(root, file)), `dist/${file}`);
 
