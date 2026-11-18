@@ -52,16 +52,21 @@ const keys = pages.filter(file => file.startsWith(`teachers${path.sep}answers${p
 assert.equal(keys.length, activities.length, 'one answer key per activity');
 for (const file of [...keys, path.join('teachers', 'index.html')]) {
   const html = read(file);
-  if (keys.includes(file)) assert.match(html, /<meta name="robots" content="noindex"/, `${file}: noindex`);
+  if (keys.includes(file)) assert.match(html, /<meta name="robots" content="noindex,follow"/, `${file}: noindex`);
   assert.ok(!html.includes('class="ad-slot'), `${file}: ads`);
 }
-assert.match(read('404.html'), /<meta name="robots" content="noindex"/, '404: noindex');
+assert.match(read('404.html'), /<meta name="robots" content="noindex,follow"/, '404: noindex');
 const sitemap = fs.readFileSync(path.join(root, 'sitemap-0.xml'), 'utf8');
 assert.ok(!sitemap.includes('/teachers/answers/'), 'answer keys must stay out of the sitemap');
 assert.ok(!sitemap.includes('/404'), '404 must stay out of the sitemap');
-for (const page of ['/', '/tools/', '/tools/earthquake-epicenter/', '/tools/earthquake-epicenter/activity/', '/tools/plate-tectonics/', '/tools/plate-tectonics/activity/', '/tools/contour-map/', '/tools/contour-map/activity/', '/tools/river-erosion/', '/tools/river-erosion/activity/', '/tools/water-cycle/', '/tools/water-cycle/activity/', '/tools/rock-cycle/', '/tools/rock-cycle/activity/', '/tools/rock-layers/', '/tools/rock-layers/activity/', '/tools/plate-map/', '/tools/plate-map/activity/', '/teachers/', '/about/', '/privacy/']) {
+for (const page of ['/', '/tools/', '/tools/earthquake-epicenter/', '/tools/plate-tectonics/', '/tools/contour-map/', '/tools/river-erosion/', '/tools/water-cycle/', '/tools/rock-cycle/', '/tools/rock-layers/', '/tools/plate-map/', '/teachers/', '/about/', '/privacy/']) {
   assert.ok(sitemap.includes(`<loc>https://earthsciencelab.org${page}</loc>`), `sitemap lists ${page}`);
+}
+// Printable activities are noindex and out of the sitemap (src/lib/indexing.mjs).
+for (const act of activities) {
+  assert.match(read(path.join('tools', act.tool, 'activity', 'index.html')), /<meta name="robots" content="noindex,follow"/, `${act.tool} activity: noindex`);
+  assert.ok(!sitemap.includes(`/tools/${act.tool}/activity/`), `${act.tool} activity must stay out of the sitemap`);
 }
 for (const file of ['robots.txt', 'llms.txt', 'favicon.svg', 'og-image.png', '_headers']) assert.ok(fs.existsSync(path.join(root, file)), `dist/${file}`);
 
-console.log(`Verified ${pages.length} pages: unique titles and H1s, ${structured} JSON-LD blocks, unique IDs, ${links} local links/assets; answer keys noindex, ad-free and out of the sitemap.`);
+console.log(`Verified ${pages.length} pages: unique titles and H1s, ${structured} JSON-LD blocks, unique IDs, ${links} local links/assets; answer keys noindex, ad-free and out of the sitemap; activities noindex and out of the sitemap.`);
