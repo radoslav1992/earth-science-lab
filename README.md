@@ -60,7 +60,7 @@ npm ci
 npm run dev        # http://localhost:4321
 npm test           # model, share-link, worksheet and config tests (node --test)
 npm run build      # writes dist/
-npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys noindex and out of the sitemap
+npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys and activities noindex and out of the sitemap (except the earthquake-epicenter activity, which earns its own clicks)
 npm run preview    # serves dist/
 npm run og-image   # re-renders public/og-image.png (1200×630) with Playwright
 npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atlas package (only after changing the script)
@@ -118,6 +118,25 @@ npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atla
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
 | `src/components/NextLabs.astro` | "Keep going" links placed right after a lab, so a class that finishes one has an obvious next one (used on the Plate Tectonics Explorer) |
 | `src/components/LinkSnippet.astro` | Ready-made link code with a Copy button, for teachers to paste into a class website; it points at the page's canonical URL (used on the Plate Tectonics Explorer) |
+
+## Indexing
+
+`src/lib/indexing.mjs` lists the pages that are `noindex, follow` and out of the sitemap: the 404 page, teacher
+answer keys and the printable activities (`/tools/<lab>/activity/`). The layout defaults its robots tag from it and
+`astro.config.mjs` filters the sitemap with it. The activities are blank one-page worksheets of 287–386 words, the
+same kind of page the Biology Lab keeps out of its index, so the lab each one belongs to is the page that ranks;
+teachers reach them from the lab, the Labs hub, the home page and `/teachers/`. `public/llms.txt` still lists them
+for AI assistants.
+
+`tests/site.test.mjs` checks the built `dist/` (it is skipped until a build exists): the sitemap lists exactly the
+indexable pages, robots tags follow `src/lib/indexing.mjs`, canonicals are self-referencing, internal links resolve
+with trailing slashes and nothing uses `http://`, every indexable page is within two clicks of the home page, the
+home page and `/tools/` link every lab, and titles (≤ 65 characters, the layout's limit) and descriptions (120–160)
+fit search snippets.
+
+A new lab is linked from the home page and `/tools/` and listed in the sitemap as soon as it is built; Google can
+still report it as “URL is unknown” for a while (the Rock Layers Lab and Plate Boundaries Map, added on
+10 November 2026, were inspected on 16 November).
 
 ## Deploy (Cloudflare Workers static assets)
 

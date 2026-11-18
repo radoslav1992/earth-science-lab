@@ -8,6 +8,7 @@ import { site } from '../lib/site.mjs';
 import { anyAds } from '../lib/ads.mjs';
 import { learningApps, currentApp, flagship } from '../lib/learning-apps.mjs';
 import { labBySection } from '../lib/labs.mjs';
+import { isIndexable } from '../lib/indexing.mjs';
 
 interface Props {
   title?: string;
@@ -17,10 +18,11 @@ interface Props {
   crumbs?: [string, string?][];
   /** false on teacher pages: no ad space at all. */
   ads?: boolean;
+  /** Defaults to src/lib/indexing.mjs: the 404 page, answer keys and activities are noindex. */
   noindex?: boolean;
 }
 
-const { title = site.defaultTitle, description = site.defaultDescription, section = '', crumbs = [], ads = true, noindex = false } = Astro.props;
+const { title = site.defaultTitle, description = site.defaultDescription, section = '', crumbs = [], ads = true, noindex = !isIndexable(Astro.url.pathname) } = Astro.props;
 const suffix = ` | ${site.name}`;
 const fullTitle = title.includes(site.name) || title.length + suffix.length > 65 ? title : title + suffix;
 const canonical = new URL(Astro.url.pathname, Astro.site);
@@ -58,7 +60,7 @@ const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
     <ConsentDefaults />
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
-    {noindex && <meta name="robots" content="noindex" />}
+    {noindex && <meta name="robots" content="noindex,follow" />}
     <link rel="canonical" href={canonical} />
     <meta name="theme-color" content="#f6efe3" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
