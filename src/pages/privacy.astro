@@ -2,21 +2,41 @@
 import Layout from '../layouts/Layout.astro';
 import { site } from '../lib/site.mjs';
 import { anyAds } from '../lib/ads.mjs';
+import { waitlistConfig } from '../lib/waitlist.mjs';
 
 const analytics = Boolean(site.analyticsId);
 const consentNeeded = analytics || anyAds;
+// The teacher plan waitlist (an optional form on /teachers/) is the one place that asks for an email address. While it
+// is not configured, nothing on the site does, and this page says so.
+const waitlist = waitlistConfig(import.meta.env).enabled;
+const updated = waitlist ? 'November 19, 2026' : 'October 26, 2026';
+const description = waitlist
+  ? 'How Earth Science Lab handles your data: no accounts, nothing collected from students, an optional teacher waitlist, anonymous analytics and browser storage.'
+  : 'How Earth Science Lab handles your data: no accounts, no personal details, optional anonymous analytics with a cookie choice, and what is kept in your browser.';
 ---
-<Layout title="Privacy Policy" description="How Earth Science Lab handles your data: no accounts, no personal details, optional anonymous analytics with a cookie choice, and what is kept in your browser." section="" crumbs={[['Privacy policy']]}>
+<Layout title="Privacy Policy" description={description} section="" crumbs={[['Privacy policy']]}>
   <div class="wrap prose">
     <div class="page-intro">
       <span class="eyebrow">Privacy</span>
       <h1>Privacy policy</h1>
-      <p class="lede">Earth Science Lab is built for students. We don’t have accounts, we never ask for names or email addresses, and the labs save nothing about who you are.</p>
-      <p class="muted">Last updated October 26, 2026.</p>
+      {waitlist ? (
+        <p class="lede">Earth Science Lab is built for students. We don’t have accounts, students are never asked for names or email addresses, and the labs save nothing about who you are. The only thing that asks for an email address is the optional teacher plan waitlist for teachers.</p>
+      ) : (
+        <p class="lede">Earth Science Lab is built for students. We don’t have accounts, we never ask for names or email addresses, and the labs save nothing about who you are.</p>
+      )}
+      <p class="muted">Last updated {updated}.</p>
     </div>
 
     <h2>No accounts, no personal details</h2>
     <p>You can use every lab, worksheet and answer key without signing up. The labs run in your browser; your readings, circles and guesses are not sent to us. A shared lab link (Copy share link) carries only the lab’s settings, such as the mode and a challenge number.</p>
+
+    {waitlist && (
+      <Fragment>
+        <h2 id="teacher-plan-waitlist">Teacher plan waitlist</h2>
+        <p>Teachers can join a waitlist for a planned teacher plan on the <a href="/teachers/#teacher-plan">teachers page</a>. If you do, we store your email address and your answers (your role, subjects, grades, what you would use and whether your school buys software) to contact you about the teacher plan, and for nothing else. Cloudflare stores and processes them for us. Signups are deleted 12 months after they were made, or sooner if you ask: email <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>. No student data is collected.</p>
+        <p>To stop spam, the form uses Cloudflare Turnstile, which runs only on the teachers page. It checks that a person is filling in the form, and Cloudflare processes the technical details it needs for that check, such as your IP address and browser.</p>
+      </Fragment>
+    )}
 
     <h2>Analytics</h2>
     {analytics ? (
@@ -33,13 +53,14 @@ const consentNeeded = analytics || anyAds;
     )}
 
     <h2>What is stored in your browser</h2>
-    <p>The site may keep up to three small values in your browser’s local storage. They stay on your device and are never sent to us.</p>
+    <p>The site may keep up to {waitlist ? 'four' : 'three'} small values in your browser’s local storage. They stay on your device and are never sent to us.</p>
     <div class="table-wrap">
       <table>
         <thead><tr><th scope="col">Key</th><th scope="col">What it is for</th><th scope="col">How long</th></tr></thead>
         <tbody>
           <tr><td><code>cookieConsent</code></td><td>Your Accept or Reject choice from the cookie banner (only saved if the banner is shown and you choose).</td><td>180 days</td></tr>
           <tr><td><code>adFreeUntil</code></td><td>Set when you arrive from Google Classroom, Canvas or Schoology, or through a Share to Google Classroom link, so school visits stay ad-free.</td><td>30 days</td></tr>
+          {waitlist && <tr><td><code>waitlistPromptDismissed</code></td><td>When you closed the teacher plan note that appears after a Share to Google Classroom click, so it stays closed.</td><td>30 days</td></tr>}
           <tr><td><code>contourSculpt</code></td><td>Landscapes you sculpt in the Contour Map Playground, one per starting landscape, so your work is still there when you come back. Only the heights are saved.</td><td>Until you press Reset landscape or clear your browser data</td></tr>
         </tbody>
       </table>
@@ -57,7 +78,11 @@ const consentNeeded = analytics || anyAds;
     <p>The site is served by Cloudflare, which processes standard request data (such as IP addresses) to deliver and protect the site. Text is set in fonts loaded from Google Fonts, which receives your IP address when the fonts are downloaded.</p>
 
     <h2>Children</h2>
-    <p>The labs are designed for students aged about 10 to 16 and do not collect personal information from anyone. Teachers can use them in class without collecting any student data.</p>
+    {waitlist ? (
+      <p>The labs are designed for students aged about 10 to 16 and do not collect personal information from students. The teacher plan waitlist is for teachers and school staff. Teachers can use the labs in class without collecting any student data.</p>
+    ) : (
+      <p>The labs are designed for students aged about 10 to 16 and do not collect personal information from anyone. Teachers can use them in class without collecting any student data.</p>
+    )}
 
     <h2>Contact</h2>
     <p>Questions about privacy: <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a>.</p>

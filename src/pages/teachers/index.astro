@@ -2,11 +2,14 @@
 import Layout from '../../layouts/Layout.astro';
 import Faq from '../../components/Faq.astro';
 import ClassroomShare from '../../components/ClassroomShare.astro';
+import TeacherPlan from '../../components/TeacherPlan.astro';
+import { waitlistConfig } from '../../lib/waitlist.mjs';
 import { activities, standards } from '../../lib/activities.mjs';
 import { site } from '../../lib/site.mjs';
 import { anyAds } from '../../lib/ads.mjs';
 import { LabCount } from '../../lib/labs.mjs';
 
+const waitlist = waitlistConfig(import.meta.env);
 const toolUrl = (act: { tool: string }) => new URL(`/tools/${act.tool}/`, Astro.site).href;
 const tracking = site.analyticsId
   ? 'The site uses Google Analytics for anonymous, aggregated usage statistics, and asks for consent first where the law requires it.'
@@ -155,6 +158,8 @@ const faq: [string, string][] = [
         </div>
       </div>
     </section>
+
+    {waitlist.enabled && <TeacherPlan endpoint={waitlist.endpoint} siteKey={waitlist.siteKey} pageUrl={new URL('/teachers/', Astro.site).href} />}
 
     <Faq items={faq} title="Questions teachers ask" eyebrow="Teacher FAQ" />
   </div>
