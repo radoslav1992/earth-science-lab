@@ -4,11 +4,13 @@ import AdFree from '../components/AdFree.astro';
 import AdSlot from '../components/AdSlot.astro';
 import ConsentDefaults from '../components/ConsentDefaults.astro';
 import ConsentBanner from '../components/ConsentBanner.astro';
+import SharePrompt from '../components/SharePrompt.astro';
 import { site } from '../lib/site.mjs';
 import { anyAds } from '../lib/ads.mjs';
 import { learningApps, currentApp, flagship } from '../lib/learning-apps.mjs';
 import { labBySection } from '../lib/labs.mjs';
 import { isIndexable } from '../lib/indexing.mjs';
+import { waitlistConfig } from '../lib/waitlist.mjs';
 
 interface Props {
   title?: string;
@@ -34,6 +36,8 @@ const activeNav = lab ? 'Labs' : section;
 const trail: [string, string?][] = lab ? [['Labs', '/tools/'], ...crumbs] : crumbs;
 // Cookies only exist once Google Analytics or ads are switched on, so until then there is nothing to ask about.
 const consentNeeded = Boolean(site.analyticsId) || anyAds;
+// The teacher plan prompt after a Share to Google Classroom click exists only while the waitlist is configured.
+const waitlist = waitlistConfig(import.meta.env);
 
 const structured = [];
 if (isHome) {
@@ -127,6 +131,7 @@ const sisterApps = learningApps.filter(app => app.id !== currentApp && app.url);
       </nav>
     </footer>
     {consentNeeded && <ConsentBanner ads={anyAds} />}
+    {waitlist.enabled && <SharePrompt />}
     <script>
       import { trackCommonEvents } from '../lib/analytics';
       trackCommonEvents();

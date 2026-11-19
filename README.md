@@ -58,7 +58,7 @@ Requires Node 22 (see `.nvmrc`).
 ```sh
 npm ci
 npm run dev        # http://localhost:4321
-npm test           # model, share-link, worksheet and config tests (node --test)
+npm test           # model, share-link, worksheet, config and waitlist tests (node --test; the waitlist tests build twice into temp folders)
 npm run build      # writes dist/
 npm run check      # checks dist/: unique titles and H1s, valid JSON-LD, local links, answer keys and activities noindex and out of the sitemap (except the earthquake-epicenter activity, which earns its own clicks)
 npm run preview    # serves dist/
@@ -114,10 +114,48 @@ npm run map-land   # re-generates src/lib/plate-map-land.mjs from the world-atla
 | `src/components/platemap/` | The map's markup (`PlateMapLab.astro`), interactive code (`map.ts`) and styles (`platemap.css`) |
 | `src/lib/labs.mjs` | Every lab in menu order: name, menu section, topic and blurb for the Labs hub and the home page, plus `labCount`, the number of labs as a word |
 | `src/lib/site.mjs` | Site name, URL, contact address and the Google Analytics ID |
+| `src/lib/waitlist.mjs` | Teacher plan waitlist: reads the two `PUBLIC_*` settings, the form's choices, result messages and the prompt's 30-day dismissal |
+| `src/components/TeacherPlan.astro` | The `#teacher-plan` section of `/teachers/`: pitch, waitlist form and the Turnstile script (only there) |
+| `src/components/SharePrompt.astro` | The small "join the list" note shown after a Share to Google Classroom click |
 | `src/lib/ads.mjs` | Adsterra keys (empty: no ads) |
 | `src/lib/learning-apps.mjs` | Sister apps shown in the footer and on the home page |
 | `src/components/NextLabs.astro` | "Keep going" links placed right after a lab, so a class that finishes one has an obvious next one (used on the Plate Tectonics Explorer) |
 | `src/components/LinkSnippet.astro` | Ready-made link code with a Copy button, for teachers to paste into a class website; it points at the page's canonical URL (used on the Plate Tectonics Explorer) |
+
+## Teacher plan waitlist
+
+`/teachers/` can carry a **Teacher plan** section (`#teacher-plan`): a short pitch for a planned paid plan for teachers
+and schools (the labs stay free for students) and a form to join the waitlist. Signups go to the `/api/waitlist` route
+of the classroomlabs.org Worker, which the lab sites share. Two build-time variables switch it on (see `.env.example`):
+
+| Variable | Value |
+| --- | --- |
+| `PUBLIC_WAITLIST_ENDPOINT` | `https://classroomlabs.org/api/waitlist` once the service is live |
+| `PUBLIC_TURNSTILE_SITE_KEY` | The Cloudflare Turnstile site key for the widget (public; the secret stays in the Worker) |
+
+Set them in `.env` locally, or as build variables in Cloudflare (Workers & Pages → the project → Settings → Build →
+Variables and secrets), then rebuild. **While either is empty nothing renders**: no section, no Turnstile script, no
+prompt, and the privacy page keeps its "we never ask for email addresses" wording. So the code can be merged before the
+service exists.
+
+Once both are set:
+
+- The form has email, role, subjects, grades, interests, "does your school buy software for teachers?", an unticked
+  consent checkbox linking the privacy page, a hidden honeypot (`website`), the Turnstile widget and hidden `site`
+  (`earthsciencelab.org`), `source` and `return` (`https://earthsciencelab.org/teachers/#teacher-plan`) fields.
+- Without JavaScript the form posts natively and the service 303s back with `?waitlist=ok` (or an error code); a
+  small script shows the matching message. With JavaScript it is sent with `fetch` as JSON, the button is disabled
+  while sending, and the result is shown and focused in a live region (entered values are kept on errors).
+- Turnstile's script (`challenges.cloudflare.com`) loads only on `/teachers/`; student pages never get the form or
+  the script. `public/_headers` sets no Content-Security-Policy, so nothing needs allowing there.
+- After a Share to Google Classroom click on any page, a dismissible note links to
+  `/teachers/?source=after_share#teacher-plan`; the teachers page copies `source` into the form. Dismissing or
+  following it hides it for 30 days (`waitlistPromptDismissed` in local storage).
+- `/privacy/` adds its **Teacher plan waitlist** paragraph (what is stored, Cloudflare, 12-month deletion, Turnstile)
+  and lists the prompt's storage key.
+
+`tests/waitlist.test.mjs` checks the helpers and builds the site twice into temporary folders, with the variables
+empty and with test values, to check the teachers page, the student pages and the privacy page in both states.
 
 ## Indexing
 
@@ -197,6 +235,8 @@ Events sent with `track()` (`src/lib/analytics.ts`, a no-op without a Google tag
 | `platemap_challenge_complete` | Last plate map challenge answered | `score`, `total` |
 | `worksheet_print` | Print button on a worksheet or answer key | `page` |
 | `share_classroom` | A Share to Google Classroom link is clicked | `page` |
+| `waitlist_signup` | The teacher plan waitlist form is sent successfully (never the email or anything typed) | `site`, `role`, `source` |
+| `waitlist_prompt_click` | The "join the list" link in the note after a Share to Google Classroom click | `page` |
 
 ## Ads (Adsterra)
 

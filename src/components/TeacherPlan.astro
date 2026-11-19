@@ -1,0 +1,195 @@
+---
+// "Teacher plan" section of the teachers page: a short pitch and the waitlist form. Rendered only when the waitlist is
+// configured (src/lib/waitlist.mjs). The form posts natively to the service, which 303s back here with ?waitlist=…;
+// with JavaScript it is sent with fetch instead. Turnstile's script loads here, so only on this page.
+import { site } from '../lib/site.mjs';
+import { ROLES, INTERESTS, SCHOOL_BUYS, SECTION_ID, TURNSTILE_SCRIPT, returnUrl } from '../lib/waitlist.mjs';
+
+interface Props {
+  endpoint: string;
+  siteKey: string;
+  /** Absolute URL of the teachers page. */
+  pageUrl: string;
+}
+const { endpoint, siteKey, pageUrl } = Astro.props;
+const hostname = new URL(site.url).hostname;
+---
+<section class="section teacher-plan" id={SECTION_ID} aria-labelledby="teacher-plan-heading">
+  <div class="teacher-plan-grid">
+    <div class="teacher-plan-pitch">
+      <span class="eyebrow">Teacher plan</span>
+      <h2 id="teacher-plan-heading">Help shape a plan for teachers</h2>
+      <p>Earth Science Lab stays free for students. Every lab, worksheet and answer key that is free today stays free, with no accounts.</p>
+      <p>We’re planning a paid plan for teachers and schools, with things like:</p>
+      <ul class="checklist">
+        <li>class results without student accounts</li>
+        <li>editable worksheets and answer keys</li>
+        <li>quiz banks for each lab</li>
+        <li>one license for all the Classroom Labs sites, from earth science to chemistry and physics</li>
+      </ul>
+      <p>Nothing is decided yet, including the price. Join the list to be asked first and to tell us what would really help your class. We’ll only email you about the teacher plan.</p>
+    </div>
+
+    <form class="card waitlist-form" method="post" action={endpoint} data-waitlist-form data-contact={site.contactEmail}>
+      <div class="waitlist-field">
+        <label for="waitlist-email">Email address</label>
+        <input id="waitlist-email" type="email" name="email" required maxlength="254" autocomplete="email" spellcheck="false" />
+      </div>
+      <div class="waitlist-field">
+        <label for="waitlist-role">I am a</label>
+        <select id="waitlist-role" name="role" required>
+          {ROLES.map(([value, label]) => <option value={value}>{label}</option>)}
+        </select>
+      </div>
+      <div class="waitlist-pair">
+        <div class="waitlist-field">
+          <label for="waitlist-subjects">Subjects you teach <span class="waitlist-optional">(optional)</span></label>
+          <input id="waitlist-subjects" type="text" name="subjects" maxlength="200" autocomplete="off" placeholder="e.g. Earth science" />
+        </div>
+        <div class="waitlist-field">
+          <label for="waitlist-grades">Grades <span class="waitlist-optional">(optional)</span></label>
+          <input id="waitlist-grades" type="text" name="grades" maxlength="100" autocomplete="off" placeholder="e.g. 6–8" />
+        </div>
+      </div>
+      <fieldset class="waitlist-choices">
+        <legend>What would you use? <span class="waitlist-optional">(optional)</span></legend>
+        {INTERESTS.map(([value, label]) => (
+          <label class="waitlist-check"><input type="checkbox" name="interests" value={value} /><span>{label}</span></label>
+        ))}
+      </fieldset>
+      <fieldset class="waitlist-choices waitlist-inline">
+        <legend>Does your school buy software for teachers?</legend>
+        {SCHOOL_BUYS.map(([value, label], i) => (
+          <label class="waitlist-check"><input type="radio" name="school_buys" value={value} required={i === 0} /><span>{label}</span></label>
+        ))}
+      </fieldset>
+      <div class="waitlist-hp" aria-hidden="true">
+        <label for="waitlist-website">Website</label>
+        <input id="waitlist-website" type="text" name="website" tabindex="-1" autocomplete="off" />
+      </div>
+      <label class="waitlist-check waitlist-consent">
+        <input type="checkbox" name="consent" value="yes" required />
+        <span>I agree that Earth Science Lab can keep my email address and answers to contact me about the teacher plan, as described in the <a href="/privacy/#teacher-plan-waitlist">privacy policy</a>.</span>
+      </label>
+      <input type="hidden" name="site" value={hostname} />
+      <input type="hidden" name="source" value="teachers_page" data-waitlist-source />
+      <input type="hidden" name="return" value={returnUrl(pageUrl)} />
+      <div class="waitlist-turnstile">
+        <div class="cf-turnstile" data-sitekey={siteKey} data-action="waitlist" data-theme="light" data-size="flexible"></div>
+      </div>
+      <noscript><p class="waitlist-noscript">The spam check needs JavaScript. If it is turned off, email <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a> and we’ll add you to the list.</p></noscript>
+      <div class="waitlist-actions">
+        <button class="btn primary" type="submit" data-waitlist-submit>Join the list</button>
+        <p class="waitlist-message" role="status" aria-live="polite" tabindex="-1" data-waitlist-message></p>
+      </div>
+    </form>
+  </div>
+</section>
+<script is:inline async defer src={TURNSTILE_SCRIPT}></script>
+
+<script>
+  import { track } from '../lib/analytics';
+  import { messageFor, payloadFrom, resultFrom, signupEvent, sourceFrom } from '../lib/waitlist.mjs';
+
+  type Turnstile = { reset: (widget?: string | HTMLElement) => void };
+
+  const form = document.querySelector<HTMLFormElement>('[data-waitlist-form]');
+  if (form) {
+    const message = form.querySelector<HTMLElement>('[data-waitlist-message]')!;
+    const button = form.querySelector<HTMLButtonElement>('[data-waitlist-submit]')!;
+    const source = form.querySelector<HTMLInputElement>('[data-waitlist-source]')!;
+    const contact = form.dataset.contact ?? '';
+    let sending = false;
+
+    const show = (code: string) => {
+      const { kind, text } = messageFor(code, contact);
+      message.textContent = text;
+      message.dataset.kind = kind;
+      message.focus({ preventScroll: false });
+    };
+
+    // A teacher who arrives from the after-share prompt keeps that source, also after form.reset().
+    source.defaultValue = sourceFrom(location.search);
+
+    // Back from a form post without fetch: show the result once, then tidy the address.
+    const result = resultFrom(location.search);
+    if (result) {
+      show(result);
+      const url = new URL(location.href);
+      url.searchParams.delete('waitlist');
+      history.replaceState(history.state, '', url);
+    }
+
+    form.addEventListener('submit', async event => {
+      if (typeof fetch !== 'function') return;
+      event.preventDefault();
+      if (sending) return;
+      const data = new FormData(form);
+      if (!String(data.get('cf-turnstile-response') ?? '')) { show('pending'); return; }
+      const payload = payloadFrom(data);
+      sending = true;
+      button.disabled = true;
+      form.setAttribute('aria-busy', 'true');
+      message.textContent = '';
+      let code = 'network';
+      try {
+        const response = await fetch(form.action, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+          body: JSON.stringify(payload),
+          credentials: 'omit',
+        });
+        const body = await response.json().catch(() => null);
+        code = response.ok && body?.ok === true ? 'ok' : typeof body?.error === 'string' ? body.error : 'unknown';
+      } catch {
+        code = 'network';
+      }
+      sending = false;
+      button.disabled = false;
+      form.removeAttribute('aria-busy');
+      // A Turnstile token works once, so get a fresh one for the next try.
+      try { (window as unknown as { turnstile?: Turnstile }).turnstile?.reset(form.querySelector<HTMLElement>('.cf-turnstile') ?? undefined); } catch { /* not loaded */ }
+      if (code === 'ok') {
+        track('waitlist_signup', signupEvent(payload));
+        form.reset();
+      }
+      show(code);
+    });
+  }
+</script>
+
+<style>
+  .teacher-plan { scroll-margin-top: 12px; }
+  .teacher-plan-grid { display: grid; gap: 24px 40px; align-items: start; }
+  @media (min-width: 900px) { .teacher-plan-grid { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); } }
+  .teacher-plan-pitch { max-width: 62ch; }
+  .waitlist-form { display: grid; gap: 18px; padding: 24px; box-shadow: var(--shadow); }
+  .waitlist-field { display: grid; gap: 6px; min-width: 0; }
+  .waitlist-field label, .waitlist-choices legend { font-weight: 700; }
+  .waitlist-optional { font-weight: 400; color: var(--muted); }
+  .waitlist-field input, .waitlist-field select { width: 100%; min-height: 46px; padding: 10px 12px; border: 1.5px solid #b9a98f; border-radius: 10px; background: #fff; }
+  .waitlist-field input::placeholder { color: #857a6c; }
+  .waitlist-field input:focus-visible, .waitlist-field select:focus-visible { border-color: var(--lava-fill); }
+  .waitlist-pair { display: grid; gap: 18px; }
+  @media (min-width: 560px) { .waitlist-pair { grid-template-columns: 1fr 1fr; } }
+  .waitlist-choices { margin: 0; padding: 0; border: 0; display: grid; gap: 2px; min-width: 0; }
+  .waitlist-choices legend { padding: 0; margin-bottom: 6px; }
+  .waitlist-inline { grid-template-columns: repeat(auto-fit, minmax(110px, max-content)); column-gap: 18px; }
+  .waitlist-check { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; cursor: pointer; line-height: 1.4; }
+  .waitlist-check input { flex: none; width: 20px; height: 20px; margin: 1px 0 0; accent-color: var(--lava-fill); cursor: pointer; }
+  .waitlist-consent { padding: 12px 14px; border-radius: 10px; background: var(--sand); }
+  .waitlist-hp { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+  .waitlist-turnstile { min-height: 65px; }
+  .waitlist-noscript { margin: 0; font-size: .95rem; color: var(--muted); }
+  .waitlist-actions { display: grid; gap: 12px; justify-items: start; }
+  .waitlist-message { width: 100%; margin: 0; min-height: calc(3.2em + 22px); font-weight: 500; }
+  @media (max-width: 560px) { .waitlist-message { min-height: calc(4.8em + 22px); } }
+  .waitlist-message:focus { outline: none; }
+  .waitlist-message:focus-visible { outline: 3px solid var(--lava-fill); outline-offset: 3px; }
+  .waitlist-message:not(:empty) { padding: 10px 14px; border-radius: 10px; border-left: 4px solid; }
+  .waitlist-message[data-kind='success'] { background: var(--ocean-tint); border-color: var(--ocean); color: #173f43; }
+  .waitlist-message[data-kind='error'] { background: var(--lava-tint); border-color: var(--lava-fill); color: #6f2f16; }
+  .waitlist-form[aria-busy='true'] [data-waitlist-submit] { cursor: progress; }
+  @media (max-width: 420px) { .waitlist-form { margin: 0 -8px; padding: 20px 12px; } }
+  @media print { .teacher-plan { display: none; } }
+</style>
